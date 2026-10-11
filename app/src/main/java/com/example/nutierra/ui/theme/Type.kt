@@ -1,34 +1,94 @@
+
 package com.example.nutierra.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.example.nutierra.R
 
-// Set of Material typography styles to start with
+val Baloo = FontFamily(
+    Font(R.font.baloo_400, FontWeight.Normal),
+    Font(R.font.baloo_500, FontWeight.Medium),
+    Font(R.font.baloo_600, FontWeight.SemiBold),
+    Font(R.font.baloo_700, FontWeight.Bold),
+    Font(R.font.baloo_800, FontWeight.ExtraBold)
+)
+
 val Typography = Typography(
+    // Headline Large - 28sp
+    headlineLarge = TextStyle(
+        fontFamily = Baloo,
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        lineHeight = 34.sp
+    ),
+
+    // Headline Medium - 24sp
+    headlineMedium = TextStyle(
+        fontFamily = Baloo,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp,
+        lineHeight = 30.sp
+    ),
+
+    // Title Large - 20sp
+    titleLarge = TextStyle(
+        fontFamily = Baloo,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 20.sp,
+        lineHeight = 26.sp
+    ),
+
+    // Title Medium - 18sp
+    titleMedium = TextStyle(
+        fontFamily = Baloo,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+        lineHeight = 24.sp
+    ),
+
+    // Body Large - 16sp
     bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
+        fontFamily = Baloo,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
+        lineHeight = 22.sp
     ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
+
+    // Body Medium - 14sp
+    bodyMedium = TextStyle(
+        fontFamily = Baloo,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp,
+        lineHeight = 20.sp
+    ),
+
+    // Label Large - 14sp
+    labelLarge = TextStyle(
+        fontFamily = Baloo,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 14.sp,
+        lineHeight = 18.sp,
+        letterSpacing = 0.1.sp
+    ),
+
+    // Label Medium - 12sp
+    labelMedium = TextStyle(
+        fontFamily = Baloo,
         fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
+        fontSize = 12.sp,
         lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
+        letterSpacing = 0.2.sp
     )
-    */
+)
+
+// Estilo personalizado para precios
+val PriceDisplay = TextStyle(
+    fontFamily = Baloo,
+    fontWeight = FontWeight.Bold,
+    fontSize = 18.sp,
+    lineHeight = 22.sp
 )
