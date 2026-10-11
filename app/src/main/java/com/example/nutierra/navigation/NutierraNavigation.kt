@@ -42,7 +42,7 @@ fun NutierraNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "login"
+        startDestination = "splash"
     ) {
 
         // =========================
@@ -55,7 +55,9 @@ fun NutierraNavigation() {
                     navController.navigate("catalog")
                 },
                 onOrdersClick = {
-                    // Pendiente: OrdersScreen
+                    navController.navigate("orders") {
+                        launchSingleTop = true
+                    }
                 },
                 onProfileClick = {
                     navController.navigate("profile")
@@ -122,7 +124,9 @@ fun NutierraNavigation() {
                     navController.navigate("product/$id")
                 },
                 onOrdersClick = {
-                    // Pendiente: OrdersScreen
+                    navController.navigate("orders") {
+                        launchSingleTop = true
+                    }
                 },
                 onProfileClick = {
                     navController.navigate("profile")
@@ -183,7 +187,9 @@ fun NutierraNavigation() {
                     navController.popBackStack()
                 },
                 onViewOrder = {
-                    // Pendiente: OrdersScreen
+                    navController.navigate("orders") {
+                        launchSingleTop = true
+                    }
                 },
                 onCatalogClick = {
                     navController.navigate("catalog") {
@@ -204,13 +210,35 @@ fun NutierraNavigation() {
                     goToCatalog()
                 },
                 onOrdersClick = {
-                    // Pendiente: OrdersScreen
+                    navController.navigate("orders") {
+                        launchSingleTop = true
+                    }
                 },
                 onLogout = {
                     navController.navigate("login") {
                         popUpTo(navController.graph.id) {
                             inclusive = true
                         }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable("orders") {
+            OrdersScreen(
+                onHomeClick = {
+                    navController.navigate("home") {
+                        launchSingleTop = true
+                    }
+                },
+                onCatalogClick = {
+                    navController.navigate("catalog") {
+                        launchSingleTop = true
+                    }
+                },
+                onProfileClick = {
+                    navController.navigate("profile") {
                         launchSingleTop = true
                     }
                 }
@@ -231,7 +259,9 @@ fun NutierraNavigation() {
                     goToAdminInventory()
                 },
                 onOrdersClick = {
-                    // Pendiente: pedidos administrativos
+                    navController.navigate("admin/orders") {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -246,7 +276,9 @@ fun NutierraNavigation() {
                     goToAdminInventory()
                 },
                 onOrdersClick = {
-                    // Pendiente: pedidos administrativos
+                    navController.navigate("admin/orders") {
+                        launchSingleTop = true
+                    }
                 },
                 onAddProductClick = {
                     navController.navigate("admin/products/create")
@@ -310,9 +342,32 @@ fun NutierraNavigation() {
                     goToAdminProducts()
                 },
                 onOrdersClick = {
-                    // Pendiente: pedidos administrativos
+                    navController.navigate("admin/orders") {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
+
+        composable("admin/orders") {
+            AdminOrdersScreen(
+                onHomeClick = {
+                    navController.navigate("admin/home") {
+                        launchSingleTop = true
+                    }
+                },
+                onProductsClick = {
+                    navController.navigate("admin/products") {
+                        launchSingleTop = true
+                    }
+                },
+                onInventoryClick = {
+                    navController.navigate("admin/inventory") {
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
     }
 }

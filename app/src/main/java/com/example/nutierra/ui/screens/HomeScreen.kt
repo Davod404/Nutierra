@@ -202,7 +202,9 @@ fun HomeScreen(
 
                                 1 -> onCatalogClick()
 
-                                2 -> onOrdersClick()
+                                2 -> onOrdersClick(
+
+                                )
 
                                 3 -> onProfileClick()
                             }
