@@ -39,10 +39,10 @@ private data class HomeProduct(
 
 @Composable
 fun HomeScreen(
-    onCatalogClick: () -> Unit = {},
-    onOrdersClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {},
-    onCartClick: () -> Unit = {}
+    onCatalogClick: () -> Unit,
+    onOrdersClick: () -> Unit,
+    onProfileClick: () -> Unit,
+    onCartClick: () -> Unit
 ) {
 
     val colors = MaterialTheme.colorScheme
@@ -191,21 +191,37 @@ fun HomeScreen(
                 items.forEach { (label, icon, index) ->
                     NavigationBarItem(
                         selected = selectedTab == index,
+
                         onClick = {
-                            if (index == 0) {
-                                selectedTab = 0
-                                selectedCategory = null
-                                search = ""
-                            } else {
-                                message = "Pantalla $label pendiente"
+                            when (index) {
+                                0 -> {
+                                    selectedTab = 0
+                                    selectedCategory = null
+                                    search = ""
+                                }
+
+                                1 -> onCatalogClick()
+
+                                2 -> onOrdersClick()
+
+                                3 -> onProfileClick()
                             }
                         },
+
                         icon = {
-                            Icon(icon, contentDescription = label)
+                            Icon(
+                                icon,
+                                contentDescription = label
+                            )
                         },
+
                         label = {
-                            Text(label, style = typography.labelMedium)
+                            Text(
+                                label,
+                                style = typography.labelMedium
+                            )
                         },
+
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = colors.primary,
                             selectedTextColor = colors.primary,

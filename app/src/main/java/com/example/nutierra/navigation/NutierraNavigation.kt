@@ -1,29 +1,53 @@
+
 package com.example.nutierra.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-
-import com.example.nutierra.ui.screens.HomeScreen
-import com.example.nutierra.ui.screens.LoginScreen
-import com.example.nutierra.ui.screens.RegisterScreen
-import com.example.nutierra.ui.screens.ProfileScreen
-import com.example.nutierra.ui.screens.CatalogScreen
-import com.example.nutierra.ui.screens.ProductDetailScreen
-import com.example.nutierra.ui.screens.CartScreen
-import com.example.nutierra.ui.screens.CheckoutScreen
-import com.example.nutierra.ui.screens.OrderSuccessScreen
+import androidx.navigation.navArgument
+import com.example.nutierra.ui.screens.*
 
 @Composable
 fun NutierraNavigation() {
-
     val navController = rememberNavController()
+
+    fun goToCatalog() {
+        navController.navigate("catalog") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToAdminHome() {
+        navController.navigate("admin/home") {
+            popUpTo("admin/home") {
+                inclusive = false
+            }
+            launchSingleTop = true
+        }
+    }
+
+    fun goToAdminProducts() {
+        navController.navigate("admin/products") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToAdminInventory() {
+        navController.navigate("admin/inventory") {
+            launchSingleTop = true
+        }
+    }
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "login"
     ) {
+
+        // =========================
+        // CLIENTE
+        // =========================
 
         composable("home") {
             HomeScreen(
@@ -31,7 +55,7 @@ fun NutierraNavigation() {
                     navController.navigate("catalog")
                 },
                 onOrdersClick = {
-                    // Pendiente: crear OrdersScreen
+                    // Pendiente: OrdersScreen
                 },
                 onProfileClick = {
                     navController.navigate("profile")
@@ -51,10 +75,20 @@ fun NutierraNavigation() {
                     navController.navigate("register")
                 },
                 onClientLogin = {
-                    navController.navigate("catalog")
+                    navController.navigate("catalog") {
+                        popUpTo("login") {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 },
                 onAdminLogin = {
-                    navController.navigate("catalog")
+                    navController.navigate("admin/home") {
+                        popUpTo("login") {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -68,7 +102,11 @@ fun NutierraNavigation() {
                     navController.navigate("login")
                 },
                 onRegisterSuccess = {
-                    navController.navigate("login")
+                    navController.navigate("login") {
+                        popUpTo("register") {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
@@ -76,13 +114,15 @@ fun NutierraNavigation() {
         composable("catalog") {
             CatalogScreen(
                 onHomeClick = {
-                    navController.navigate("home")
+                    navController.navigate("home") {
+                        launchSingleTop = true
+                    }
                 },
-                onProductClick = { productId ->
-                    navController.navigate("product/$productId")
+                onProductClick = { id ->
+                    navController.navigate("product/$id")
                 },
                 onOrdersClick = {
-                    navController.navigate("cart")
+                    // Pendiente: OrdersScreen
                 },
                 onProfileClick = {
                     navController.navigate("profile")
@@ -90,7 +130,14 @@ fun NutierraNavigation() {
             )
         }
 
-        composable("product/{productId}") {
+        composable(
+            route = "product/{productId}",
+            arguments = listOf(
+                navArgument("productId") {
+                    type = NavType.IntType
+                }
+            )
+        ) {
             ProductDetailScreen(
                 onBack = {
                     navController.popBackStack()
@@ -107,7 +154,7 @@ fun NutierraNavigation() {
                     navController.popBackStack()
                 },
                 onContinueShopping = {
-                    navController.navigate("catalog")
+                    goToCatalog()
                 },
                 onCheckout = {
                     navController.navigate("checkout")
@@ -121,7 +168,11 @@ fun NutierraNavigation() {
                     navController.popBackStack()
                 },
                 onOrderSuccess = {
-                    navController.navigate("success")
+                    navController.navigate("success") {
+                        popUpTo("checkout") {
+                            inclusive = true
+                        }
+                    }
                 }
             )
         }
@@ -132,13 +183,10 @@ fun NutierraNavigation() {
                     navController.popBackStack()
                 },
                 onViewOrder = {
-                    // Se conectará a Mis Pedidos
+                    // Pendiente: OrdersScreen
                 },
                 onCatalogClick = {
                     navController.navigate("catalog") {
-                        popUpTo("catalog") {
-                            inclusive = false
-                        }
                         launchSingleTop = true
                     }
                 }
@@ -148,16 +196,121 @@ fun NutierraNavigation() {
         composable("profile") {
             ProfileScreen(
                 onHomeClick = {
-                    navController.navigate("home")
+                    navController.navigate("home") {
+                        launchSingleTop = true
+                    }
                 },
                 onCatalogClick = {
-                    navController.navigate("catalog")
+                    goToCatalog()
                 },
                 onOrdersClick = {
-                    navController.navigate("cart")
+                    // Pendiente: OrdersScreen
                 },
                 onLogout = {
-                    navController.navigate("login")
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        // =========================
+        // ADMINISTRADOR
+        // =========================
+
+        // 1. Inicio Administrador
+        composable("admin/home") {
+            AdminHomeScreen(
+                onProductsClick = {
+                    goToAdminProducts()
+                },
+                onInventoryClick = {
+                    goToAdminInventory()
+                },
+                onOrdersClick = {
+                    // Pendiente: pedidos administrativos
+                }
+            )
+        }
+
+        // 2. Gestión de Productos
+        composable("admin/products") {
+            AdminProductsScreen(
+                onHomeClick = {
+                    goToAdminHome()
+                },
+                onInventoryClick = {
+                    goToAdminInventory()
+                },
+                onOrdersClick = {
+                    // Pendiente: pedidos administrativos
+                },
+                onAddProductClick = {
+                    navController.navigate("admin/products/create")
+                },
+                onEditProductClick = { productId ->
+                    navController.navigate(
+                        "admin/products/edit/$productId"
+                    )
+                }
+            )
+        }
+
+        // 3. Crear Producto
+        composable("admin/products/create") {
+            AdminCreateProductScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onSaveProduct = { newProduct ->
+                    // Pendiente: guardar newProduct en Room/API.
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // 4. Editar Producto
+        composable(
+            route = "admin/products/edit/{productId}",
+            arguments = listOf(
+                navArgument("productId") {
+                    type = NavType.IntType
+                }
+            )
+        ) { backStackEntry ->
+
+            val productId = backStackEntry.arguments
+                ?.getInt("productId") ?: 1
+
+            AdminEditProductScreen(
+                productId = productId,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onInventoryClick = {
+                    goToAdminInventory()
+                },
+                onSaveProduct = { editedProduct ->
+                    // Pendiente: guardar editedProduct en Room/API.
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        // 5. Inventario
+        composable("admin/inventory") {
+            AdminInventoryScreen(
+                onHomeClick = {
+                    goToAdminHome()
+                },
+                onProductsClick = {
+                    goToAdminProducts()
+                },
+                onOrdersClick = {
+                    // Pendiente: pedidos administrativos
                 }
             )
         }
