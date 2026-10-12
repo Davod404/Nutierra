@@ -40,6 +40,7 @@ fun AdminHomeScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .background(adminBackground)
                     .height(64.dp)
                     .padding(horizontal = 16.dp),

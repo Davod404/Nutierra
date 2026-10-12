@@ -83,6 +83,7 @@ fun AdminInventoryScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .height(64.dp)
                     .background(inventoryBackground)
                     .padding(horizontal = 16.dp),

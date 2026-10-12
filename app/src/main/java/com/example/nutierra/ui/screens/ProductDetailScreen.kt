@@ -66,6 +66,7 @@ fun ProductDetailScreen(
         // ENCABEZADO
         topBar = {
             Surface(
+                modifier = Modifier.statusBarsPadding(),
                 color = colors.surface,
                 shadowElevation = 2.dp
             ) {

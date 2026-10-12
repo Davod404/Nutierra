@@ -45,6 +45,18 @@ fun NutierraNavigation() {
         startDestination = "splash"
     ) {
 
+        composable("splash") {
+            SplashScreen(
+                onFinished = {
+                    navController.navigate("login") {
+                        popUpTo("splash") {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
         // =========================
         // CLIENTE
         // =========================
@@ -77,7 +89,7 @@ fun NutierraNavigation() {
                     navController.navigate("register")
                 },
                 onClientLogin = {
-                    navController.navigate("catalog") {
+                    navController.navigate("home") {
                         popUpTo("login") {
                             inclusive = true
                         }

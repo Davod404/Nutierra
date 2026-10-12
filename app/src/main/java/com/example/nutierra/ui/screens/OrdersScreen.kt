@@ -100,6 +100,7 @@ fun OrdersScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .height(64.dp)
                     .background(ordersBackground)
                     .padding(horizontal = 16.dp),

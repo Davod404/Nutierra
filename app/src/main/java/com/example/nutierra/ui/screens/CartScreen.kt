@@ -99,6 +99,7 @@ fun CartScreen(
         containerColor = colors.surface,
         topBar = {
             Surface(
+                modifier = Modifier.statusBarsPadding(),
                 color = colors.surface,
                 shadowElevation = 2.dp
             ) {

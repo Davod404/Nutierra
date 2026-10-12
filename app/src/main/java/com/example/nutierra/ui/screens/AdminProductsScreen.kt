@@ -77,6 +77,7 @@ fun AdminProductsScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .background(productsBackground)
                     .height(64.dp)
                     .padding(horizontal = 16.dp),

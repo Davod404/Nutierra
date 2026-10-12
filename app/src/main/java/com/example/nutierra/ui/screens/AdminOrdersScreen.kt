@@ -157,6 +157,7 @@ fun AdminOrdersScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
+                    .statusBarsPadding()
                     .height(64.dp)
                     .background(adminOrdersBackground)
                     .padding(horizontal = 16.dp),
