@@ -380,6 +380,37 @@ fun NutierraNavigation() {
                 }
             )
         }
+        composable("store_map") {
+            StoreMapScreen(
+                onBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable("qr_scanner") {
+            QRScannerScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onProductClick = { productId ->
+                    navController.navigate("product/$productId")
+                }
+            )
+        }
+        composable("admin/product-camera") {
+            ProductCameraScreen(
+                onBack = {
+                    navController.popBackStack()
+                },
+                onPhotoSelected = { imageUri ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("product_image_uri", imageUri)
+
+                    navController.popBackStack()
+                }
+            )
+        }
 
     }
 }
