@@ -44,4 +44,5 @@ Las pantallas no contienen lógica de negocio: observan el estado del ViewModel 
 4. Para generar el APK: **Build → Generate App Bundles or APKs → Generate APKs**.
 
 ## Planificación
-Trello: _(agregar enlace)_
+agregar mockup
+
