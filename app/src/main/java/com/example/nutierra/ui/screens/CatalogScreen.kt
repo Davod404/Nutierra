@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ProductoEntity
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -46,41 +47,6 @@ private data class CatalogProduct(
     val imageUrl: String
 )
 
-private val catalogProducts = listOf(
-    CatalogProduct(
-        1, "Almendras Naturales 250 g", "Frutos secos", 4990, 24,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuAz5dnzOkuHwlp8wpHDfLuIloxHRb2V9LOztdq2tz_MZ31sJ-Np6O-oeQeT_7Lv36cBybBvtBFIGSeA98h41MHYTlci03coveINDXQSglWmSk3U52NvP3N_WJEEJ5l_DgXHxnRrsEXiF4JAEtiUUhMfIFFehz7-GG6k9Hky26wspOnzYhQdRqYCRUXeBcFpfpX5PMUT9KUNv1DQhd5tA2WNmJAVDfKBnaO5jnpA9No"
-    ),
-    CatalogProduct(
-        2, "Nueces Mariposa 250 g", "Frutos secos", 5490, 18,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCvcDOM1-IzpzTYZ9LdzEvaNrmKoLw_bQR55J36C603fQ7JA56yWl4K85h6cmcD2fcGMxs7ItRcjgOT9nmhQRl4AeE56yiUNGJQTg-pyRqLNMYhz2gvyR8Kuf_pyP4oVKy84kTqzmKB7PQMlUSwCIuEy6-1rlfb7htyC4PsyfLOlM2CZPNnNRFmIVcHBXLqDofIQdrlVpV739xzv5dfmA3H-Yu0Y-gr4fLKrJU9gmo"
-    ),
-    CatalogProduct(
-        3, "Maní Tostado 500 g", "Frutos secos", 3290, 32,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBlbJFLgNnJEviDRDzX-I8D0Hh9uEzOLY2GsEhF7eBQNFN-7EK_QMiji-nkyM5-SbhwEb-EOR2VVHiETq3W7sWfOk8EahVIYSSdyoRuNAZSTBQAzxvZsio_RO1BW3UcjEb-98t8nlN-P--5RDfXnh5lJJAAMWs4YRqcMFWkSMam5UpLXnmY9BJ9oHBF3XTxkxhu-BFpkJPtHabELGpPOe865925kSFzgWHUC8LNVcU"
-    ),
-    CatalogProduct(
-        4, "Semillas de Chía 250 g", "Semillas", 2990, 40,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCO4V0PXVODW2kteBFV4_L2nh49HnqEJcGVVJT8iXjWdvP8abQP_ZMBCTDAezTNBtLL0wmOID1IF19ie5K5AsHZzcsMGSeCMO-VYQ9fdxAzCfSdpFLIQAZTFkSHWyoOZPXX0z3_2eudq6m_SnVWrKHw5rPU9DKY96v3T5RvVQTUrANQKhIbMvXFwkKdREBfd0QxDLSDIkOa8DhNx3brvxR8ALRFcYoQy_BnxRqpB98"
-    ),
-    CatalogProduct(
-        5, "Semillas de Linaza 500 g", "Semillas", 2490, 15,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuCfovxzO0Ua7AVwgcveHSw9Il5XjqaI3iGw9_wLHQMfAPuZk0Arzr3KiRdSeq_tCUvssHJ_Wt_OYD_35yrPu2S6KYS5d1Kh_SSp3foUMcJDTRD5n5X3lkDyhxMTwo9MtCtfTyV0hjrtzoA4Ffr8kBQl1pdwdPm0QcHA6NUAcKUnKrFfTzOMXf0CX75ZLP1tj1spySxr0k4pSe45SwM8SiVAKZyGRXCmq85dcOEB39U"
-    ),
-    CatalogProduct(
-        6, "Pasas Rubias 250 g", "Deshidratados", 2790, 21,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuBlPYN02qcN-0-brRALT0bpbq8bW5fTKwJZKXpV5_MZmteXk3d5xD46Wo9dL5XdmshoTZXYin0syhCz-qnG57Qqljrh4snfW37TI1OSUuuPy6oI7_WJo2RlB2q4LrJdnTXm1Qt7F3FC1chGRgDypi1PwEJ6IbACmluCCtuHrOn_tkaV1IYsWvtvbSaJHfRZvivu67m9nYXts4jy1boryioHdaGbjQOoiONo2bnD1a8"
-    ),
-    CatalogProduct(
-        7, "Cranberries 250 g", "Deshidratados", 4290, 0,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuC2-hJqCt-CTdqksXXJ5-vo2oIw5UIbSZ3zKkraUdZPC7aSR5wakWQ5R0yWjkF7AGqZ3ESKKT71KSr4jJiZ1Cbonetqveol0y-GutywnLRWjA_CbYBG0wApEfAAfZAmD90Sxggy9pFtvr-tDjJnm-1DafYMrRW_sjWyU31PfpyVG5-qszYkLr9EBdjy7e4cU0J-P_bmPVjh5rH5bgdWHvjE_o4NgHQCbakOIR3vafI"
-    ),
-    CatalogProduct(
-        8, "Damascos Deshidratados 250 g", "Deshidratados", 3990, 12,
-        "https://lh3.googleusercontent.com/aida-public/AB6AXuA7sllKwRO-DYMPsQJvXsmmjjW4D7sEuRmegHemGm7-csHoScfhHEYR88PJNdYLr0jTH7D72Pn0qkRg7wd6f7gY7-XERs0w3T4ULG1fbjI-dqdh89CbWOUZ-yAuTGryqKtv8GKKzv-AB31P2pRkbNinKgh4QUge8ci6Jooe0M18t-pIFNLLXLa2rsiuTawBaUmJN0NqqZQr9ataGVqrMwaBD8nx4VUWGbsD0eywOEs"
-    )
-)
-
 private val catalogCategories = listOf(
     "Todos", "Frutos secos", "Semillas", "Deshidratados"
 )
@@ -96,9 +62,24 @@ fun CatalogScreen(
     onHomeClick: () -> Unit = {},
     onProductClick: (Int) -> Unit = {},
     onOrdersClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    productos: List<ProductoEntity> = emptyList()
 ) {
     val colors = MaterialTheme.colorScheme
+
+    // Productos leídos desde SQLite (Room) a través del ProductoViewModel
+    val catalogProducts = remember(productos) {
+        productos.map {
+            CatalogProduct(
+                id = it.id,
+                name = it.nombre,
+                category = it.categoria,
+                price = it.precio,
+                stock = it.stock,
+                imageUrl = it.imagenUri ?: ""
+            )
+        }
+    }
     val typography = MaterialTheme.typography
 
     var search by remember { mutableStateOf("") }
@@ -107,7 +88,7 @@ fun CatalogScreen(
     var sortExpanded by remember { mutableStateOf(false) }
 
     // Filtrado y ordenamiento reactivo
-    val visibleProducts = remember(search, category, sort) {
+    val visibleProducts = remember(catalogProducts, search, category, sort) {
         val filtered = catalogProducts.filter { product ->
             (category == "Todos" || product.category == category) &&
                     product.name.contains(search.trim(), ignoreCase = true)

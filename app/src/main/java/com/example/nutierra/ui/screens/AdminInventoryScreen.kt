@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ProductoEntity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -38,27 +39,27 @@ private data class InventoryProduct(
     val stock: Int
 )
 
-private val initialInventory = listOf(
-    InventoryProduct(1, "ALM-250", "Almendras Naturales", "Frutos secos", "250g", 4990, 24),
-    InventoryProduct(2, "NUE-250", "Nueces Mariposa", "Frutos secos", "250g", 3890, 18),
-    InventoryProduct(3, "LIN-500", "Semillas de Linaza", "Semillas", "500g", 2490, 5),
-    InventoryProduct(4, "CRA-250", "Cranberries", "Deshidratados", "250g", 3290, 0),
-    InventoryProduct(5, "CHI-250", "Semillas de Chía", "Semillas", "250g", 2190, 40),
-    InventoryProduct(6, "MAN-500", "Maní Tostado", "Frutos secos", "500g", 2890, 32),
-    InventoryProduct(7, "DAM-250", "Damascos Deshidratados", "Deshidratados", "250g", 3990, 12),
-    InventoryProduct(8, "PAS-250", "Pasas Rubias", "Deshidratados", "250g", 2390, 21)
-)
-
 @Composable
 fun AdminInventoryScreen(
     onHomeClick: () -> Unit,
     onProductsClick: () -> Unit,
     onOrdersClick: () -> Unit,
-    onNotificationsClick: () -> Unit = {}
+    onNotificationsClick: () -> Unit = {},
+    productos: List<ProductoEntity> = emptyList(),
+    onActualizarStock: (Int, Int) -> Unit = { _, _ -> }
 ) {
-    val products = remember {
-        mutableStateListOf<InventoryProduct>().apply {
-            addAll(initialInventory)
+    // Existencias reales desde SQLite; cada ajuste se guarda con el ViewModel
+    val products = remember(productos) {
+        productos.map {
+            InventoryProduct(
+                id = it.id,
+                sku = it.nombre.take(3).uppercase() + "-" + it.id.toString().padStart(3, '0'),
+                name = it.nombre,
+                category = it.categoria,
+                format = it.peso,
+                price = it.precio,
+                stock = it.stock
+            )
         }
     }
 
@@ -432,10 +433,7 @@ fun AdminInventoryScreen(
             product = product,
             onDismiss = { selectedProduct = null },
             onSave = { newStock ->
-                val index = products.indexOfFirst { it.id == product.id }
-                if (index >= 0) {
-                    products[index] = products[index].copy(stock = newStock)
-                }
+                onActualizarStock(product.id, newStock)
                 selectedProduct = null
                 showSuccess = true
             }

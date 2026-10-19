@@ -42,7 +42,9 @@ fun HomeScreen(
     onCatalogClick: () -> Unit,
     onOrdersClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onCartClick: () -> Unit
+    onCartClick: () -> Unit,
+    onMapClick: () -> Unit = {},
+    onScanClick: () -> Unit = {}
 ) {
 
     val colors = MaterialTheme.colorScheme
@@ -184,8 +186,9 @@ fun HomeScreen(
             ) {
                 val items = listOf(
                     Triple("Inicio", Icons.Default.Home, 0),
-                    Triple("Catálogo", Icons.Default.Storefront, 1),
-                    Triple("Mis Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 2),
+                    Triple("Mapa", Icons.Default.Map, 1),
+                    Triple("Escanear", Icons.Default.QrCodeScanner, 4),
+                    Triple("Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 2),
                     Triple("Perfil", Icons.Default.Person, 3)
                 )
 
@@ -201,7 +204,9 @@ fun HomeScreen(
                                     search = ""
                                 }
 
-                                1 -> onCatalogClick()
+                                1 -> onMapClick()
+
+                                4 -> onScanClick()
 
                                 2 -> onOrdersClick(
 

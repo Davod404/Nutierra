@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ProductoEntity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -39,17 +40,6 @@ private data class AdminProduct(
     val stock: Int
 )
 
-private val adminProductList = listOf(
-    AdminProduct(1, "Almendras Naturales 250 g", "Frutos secos", "$4.990", 24),
-    AdminProduct(2, "Nueces Mariposa 250 g", "Frutos secos", "$5.490", 18),
-    AdminProduct(3, "Maní Tostado 500 g", "Frutos secos", "$2.890", 32),
-    AdminProduct(4, "Semillas de Chía 250 g", "Semillas", "$2.190", 40),
-    AdminProduct(5, "Semillas de Linaza 500 g", "Semillas", "$2.490", 5),
-    AdminProduct(6, "Cranberries 250 g", "Deshidratados", "$3.290", 0),
-    AdminProduct(7, "Damascos Deshidratados 250 g", "Deshidratados", "$3.990", 12),
-    AdminProduct(8, "Pasas Rubias 250 g", "Deshidratados", "$2.390", 21)
-)
-
 @Composable
 fun AdminProductsScreen(
     onHomeClick: () -> Unit,
@@ -57,8 +47,24 @@ fun AdminProductsScreen(
     onOrdersClick: () -> Unit,
     onAddProductClick: () -> Unit,
     onEditProductClick: (Int) -> Unit,
-    onNotificationsClick: () -> Unit = {}
+    onNotificationsClick: () -> Unit = {},
+    productos: List<ProductoEntity> = emptyList()
 ) {
+    // Lista real desde SQLite (Room)
+    val adminProductList = remember(productos) {
+        productos.map {
+            AdminProduct(
+                id = it.id,
+                name = it.nombre,
+                category = it.categoria,
+                price = "$" + java.text.NumberFormat
+                    .getIntegerInstance(java.util.Locale.forLanguageTag("es-CL"))
+                    .format(it.precio),
+                stock = it.stock
+            )
+        }
+    }
+
     var search by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("Todos") }
     var showFilters by remember { mutableStateOf(false) }

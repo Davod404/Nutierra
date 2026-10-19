@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ProductoEntity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -49,16 +50,29 @@ private fun detailPrice(amount: Int): String {
 @Composable
 fun ProductDetailScreen(
     onBack: () -> Unit = {},
-    onAddToCart: (Int, Int) -> Unit = { _, _ -> }
+    onAddToCart: (Int, Int) -> Unit = { _, _ -> },
+    producto: ProductoEntity? = null
 ) {
+    // Datos del producto leído desde SQLite (si aún no carga, se muestran los de ejemplo)
+    val precio = producto?.precio ?: DETAIL_PRICE
+    val stock = producto?.stock ?: DETAIL_STOCK
+    val nombre = producto?.nombre ?: "Almendras Naturales 250 g"
+    val categoria = producto?.categoria ?: "Frutos secos"
+    val formato = producto?.peso ?: "250 g"
+    val imagen = producto?.imagenUri ?: DETAIL_IMAGE
+    val descripcion = producto?.descripcion?.takeIf { it.isNotBlank() }
+        ?: ("Almendras nonpareil seleccionadas de la más alta " +
+                "calidad, cosechadas en valles centrales chilenos. " +
+                "Sin sal añadida, ideales para colaciones y recetas saludables.")
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     val context = LocalContext.current
 
-    var quantity by remember { mutableIntStateOf(2) }
+    var quantity by remember(producto?.id) { mutableIntStateOf(1) }
     var isFavorite by remember { mutableStateOf(false) }
 
-    val total = quantity * DETAIL_PRICE
+    val total = quantity * precio
 
     Scaffold(
         containerColor = colors.surface,
@@ -143,7 +157,7 @@ fun ProductDetailScreen(
                 ) {
                     Button(
                         onClick = {
-                            onAddToCart(1, quantity)
+                            onAddToCart(producto?.id ?: 1, quantity)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -250,9 +264,7 @@ fun ProductDetailScreen(
                                 type = "text/plain"
                                 putExtra(
                                     Intent.EXTRA_TEXT,
-                                    "Almendras Naturales 250 g - Nutierra. " +
-                                            "Descubre estas almendras seleccionadas " +
-                                            "de valles centrales chilenos."
+                                    "$nombre - Nutierra. $descripcion"
                                 )
                             }
 
@@ -293,7 +305,7 @@ fun ProductDetailScreen(
                     .background(colors.surfaceContainerLowest)
             ) {
                 DetailRemoteImage(
-                    url = DETAIL_IMAGE,
+                    url = imagen,
                     modifier = Modifier.fillMaxSize()
                 )
 
@@ -304,7 +316,7 @@ fun ProductDetailScreen(
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     DetailImageBadge(
-                        "Frutos secos",
+                        categoria,
                         Icons.Default.Category,
                         colors.primaryContainer,
                         colors.onPrimary
@@ -353,7 +365,7 @@ fun ProductDetailScreen(
 
             // NOMBRE Y PRECIO
             Text(
-                "Almendras Naturales 250 g",
+                nombre,
                 style = typography.headlineMedium,
                 color = colors.onSurface
             )
@@ -365,7 +377,7 @@ fun ProductDetailScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    detailPrice(DETAIL_PRICE),
+                    detailPrice(precio),
                     style = typography.headlineLarge,
                     color = colors.primary,
                     fontWeight = FontWeight.Bold
@@ -382,7 +394,10 @@ fun ProductDetailScreen(
                     shape = RoundedCornerShape(4.dp)
                 ) {
                     Text(
-                        "($19.960 / kg)",
+                        formato.filter { it.isDigit() }.toIntOrNull()
+                            ?.takeIf { it > 0 }
+                            ?.let { gramos -> "(${detailPrice(precio * 1000 / gramos)} / kg)" }
+                            ?: formato,
                         style = typography.labelMedium,
                         color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(
@@ -416,7 +431,8 @@ fun ProductDetailScreen(
                     )
 
                     Text(
-                        "En stock: 24 unidades disponibles",
+                        if (stock > 0) "En stock: $stock unidades disponibles"
+                        else "Sin stock por ahora",
                         style = typography.labelLarge,
                         color = colors.primary
                     )
@@ -435,9 +451,7 @@ fun ProductDetailScreen(
             Spacer(Modifier.height(6.dp))
 
             Text(
-                "Almendras nonpareil seleccionadas de la más alta " +
-                        "calidad, cosechadas en valles centrales chilenos. " +
-                        "Sin sal añadida, ideales para colaciones y recetas saludables.",
+                descripcion,
                 style = typography.bodyLarge,
                 color = colors.onSurfaceVariant
             )
@@ -457,7 +471,7 @@ fun ProductDetailScreen(
                     DetailSpecification(
                         icon = Icons.Default.Scale,
                         label = "Formato",
-                        value = "250 gramos"
+                        value = formato
                     )
 
                     DetailSpecification(
@@ -577,9 +591,9 @@ fun ProductDetailScreen(
 
                         IconButton(
                             onClick = {
-                                if (quantity < DETAIL_STOCK) quantity++
+                                if (quantity < stock) quantity++
                             },
-                            enabled = quantity < DETAIL_STOCK,
+                            enabled = quantity < stock,
                             modifier = Modifier
                                 .size(40.dp)
                                 .background(colors.primary, CircleShape)
