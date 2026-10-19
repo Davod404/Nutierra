@@ -5,8 +5,9 @@ Aplicación Android (Kotlin + Jetpack Compose + Material 3) desarrollada para la
 catálogo de frutos secos, semillas y deshidratados con perfiles de **Cliente** y **Administrador**.
 
 ## Integrantes
-- _(completar)_
-- _(completar)_
+- DAVID SCHATZ
+- CLAUDIO BERTIN
+- SOFIA CARVAJAL
 
 ## Arquitectura (MVVM)
 ```
