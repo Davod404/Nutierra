@@ -2,6 +2,11 @@
 package com.example.nutierra.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.viewmodel.ProductoViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -12,6 +17,11 @@ import com.example.nutierra.ui.screens.*
 @Composable
 fun NutierraNavigation() {
     val navController = rememberNavController()
+
+    // Un solo ProductoViewModel para toda la app (ligado a la Activity):
+    // todas las pantallas ven la misma lista de productos guardada en SQLite.
+    val productoViewModel: ProductoViewModel = viewModel()
+    val productos by productoViewModel.productos.collectAsStateWithLifecycle()
 
     fun goToCatalog() {
         navController.navigate("catalog") {
@@ -76,6 +86,12 @@ fun NutierraNavigation() {
                 },
                 onCartClick = {
                     navController.navigate("cart")
+                },
+                onMapClick = {
+                    navController.navigate("store_map")
+                },
+                onScanClick = {
+                    navController.navigate("qr_scanner")
                 }
             )
         }
@@ -127,6 +143,7 @@ fun NutierraNavigation() {
 
         composable("catalog") {
             CatalogScreen(
+                productos = productos,
                 onHomeClick = {
                     navController.navigate("home") {
                         launchSingleTop = true
@@ -153,8 +170,11 @@ fun NutierraNavigation() {
                     type = NavType.IntType
                 }
             )
-        ) {
+        ) { backStackEntry ->
+            val productId = backStackEntry.arguments?.getInt("productId") ?: 0
+
             ProductDetailScreen(
+                producto = productos.firstOrNull { it.id == productId },
                 onBack = {
                     navController.popBackStack()
                 },
@@ -281,6 +301,7 @@ fun NutierraNavigation() {
         // 2. Gestión de Productos
         composable("admin/products") {
             AdminProductsScreen(
+                productos = productos,
                 onHomeClick = {
                     goToAdminHome()
                 },
@@ -304,15 +325,33 @@ fun NutierraNavigation() {
         }
 
         // 3. Crear Producto
-        composable("admin/products/create") {
+        composable("admin/products/create") { backStackEntry ->
+            // URI de la foto que devuelve ProductCameraScreen
+            val fotoTomada by backStackEntry.savedStateHandle
+                .getStateFlow<String?>("product_image_uri", null)
+                .collectAsStateWithLifecycle()
+
             AdminCreateProductScreen(
                 onBack = {
                     navController.popBackStack()
                 },
                 onSaveProduct = { newProduct ->
-                    // Pendiente: guardar newProduct en Room/API.
+                    productoViewModel.insertarProducto(
+                        ProductoEntity(
+                            nombre = newProduct.name,
+                            categoria = newProduct.category,
+                            precio = newProduct.price,
+                            stock = newProduct.stock,
+                            peso = newProduct.weight,
+                            imagenUri = newProduct.imageUri
+                        )
+                    )
                     navController.popBackStack()
-                }
+                },
+                onTakePhotoClick = {
+                    navController.navigate("admin/product-camera")
+                },
+                fotoTomada = fotoTomada
             )
         }
 
@@ -329,8 +368,11 @@ fun NutierraNavigation() {
             val productId = backStackEntry.arguments
                 ?.getInt("productId") ?: 1
 
+            val producto = productos.firstOrNull { it.id == productId }
+
             AdminEditProductScreen(
                 productId = productId,
+                producto = producto,
                 onBack = {
                     navController.popBackStack()
                 },
@@ -338,7 +380,17 @@ fun NutierraNavigation() {
                     goToAdminInventory()
                 },
                 onSaveProduct = { editedProduct ->
-                    // Pendiente: guardar editedProduct en Room/API.
+                    // Se conservan los campos que el formulario no edita (stock, peso, etc.)
+                    producto?.let {
+                        productoViewModel.actualizarProducto(
+                            it.copy(
+                                nombre = editedProduct.name,
+                                categoria = editedProduct.category,
+                                precio = editedProduct.price,
+                                imagenUri = editedProduct.imageUri ?: it.imagenUri
+                            )
+                        )
+                    }
                     navController.popBackStack()
                 }
             )
@@ -347,6 +399,10 @@ fun NutierraNavigation() {
         // 5. Inventario
         composable("admin/inventory") {
             AdminInventoryScreen(
+                productos = productos,
+                onActualizarStock = { id, nuevoStock ->
+                    productoViewModel.actualizarStock(id, nuevoStock)
+                },
                 onHomeClick = {
                     goToAdminHome()
                 },

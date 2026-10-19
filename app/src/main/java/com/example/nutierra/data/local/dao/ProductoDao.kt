@@ -1,4 +1,3 @@
-ProductoDao.kt
 
 package com.example.nutierra.data.local.dao
 
@@ -25,6 +24,10 @@ interface ProductoDao {
     // Insertar un nuevo producto
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertarProducto(producto: ProductoEntity): Long
+
+    // Insertar datos iniciales sin duplicarlos (mismo id = se ignora)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertarSiNoExisten(productos: List<ProductoEntity>)
 
     // Actualizar un producto existente
     @Update

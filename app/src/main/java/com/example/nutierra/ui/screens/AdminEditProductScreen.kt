@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ProductoEntity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -42,18 +43,25 @@ fun AdminEditProductScreen(
     productId: Int = 1,
     onBack: () -> Unit,
     onInventoryClick: () -> Unit,
-    onSaveProduct: (EditedAdminProduct) -> Unit
+    onSaveProduct: (EditedAdminProduct) -> Unit,
+    producto: ProductoEntity? = null
 ) {
-    var productName by remember(productId) {
-        mutableStateOf("Almendras Naturales 250 g")
+    // Valores originales leídos desde SQLite
+    val originalName = producto?.nombre ?: "Almendras Naturales 250 g"
+    val originalCategory = producto?.categoria ?: "Frutos secos"
+    val originalPrice = (producto?.precio ?: 4990).toString()
+
+    // Cuando el producto llega desde la base, el formulario se rellena con sus datos
+    var productName by remember(productId, producto) {
+        mutableStateOf(originalName)
     }
-    var category by remember(productId) {
-        mutableStateOf("Frutos secos")
+    var category by remember(productId, producto) {
+        mutableStateOf(originalCategory)
     }
-    var price by remember(productId) {
-        mutableStateOf("4990")
+    var price by remember(productId, producto) {
+        mutableStateOf(originalPrice)
     }
-    var imageUri by remember(productId) {
+    var imageUri by remember(productId, producto) {
         mutableStateOf<String?>(null)
     }
     var attemptedSave by remember(productId) {
@@ -63,9 +71,6 @@ fun AdminEditProductScreen(
         mutableStateOf(false)
     }
 
-    val originalName = "Almendras Naturales 250 g"
-    val originalCategory = "Frutos secos"
-    val originalPrice = "4990"
 
     val validName = productName.isNotBlank() && productName.length <= 60
     val validPrice = (price.toIntOrNull() ?: 0) > 0

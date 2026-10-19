@@ -25,59 +25,50 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.data.local.entity.Roles
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.ui.viewmodel.LoginViewModel
 
 @Composable
 fun LoginScreen(
     onBack: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
     onClientLogin: () -> Unit = {},
-    onAdminLogin: () -> Unit = {}
+    onAdminLogin: () -> Unit = {},
+    viewModel: LoginViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    var email by remember { mutableStateOf("cliente@nutierra.cl") }
-    var password by remember { mutableStateOf("Semillas2025!") }
+    // El estado vive en el ViewModel; la pantalla solo lo observa y envía eventos
+    val estado by viewModel.uiState.collectAsStateWithLifecycle()
+
+    val email = estado.correo.valor
+    val password = estado.contrasena.valor
+    val isLoading = estado.cargando
+    val errorMessage = estado.errorGeneral
+    val detectedRole = estado.rolDetectado
+
+    // Visibilidad de la contraseña: estado puramente visual, se queda en la UI
     var passwordVisible by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    // Detección de rol para la demostración
-    val detectedRole = when {
-        email.trim().equals("admin@nutierra.cl", ignoreCase = true) ->
-            "Administrador"
-        email.trim().equals("cliente@nutierra.cl", ignoreCase = true) ->
-            "Cliente"
-        else -> null
-    }
-
-    // Validación simulada de credenciales
-    fun validateCredentials(): Boolean {
-        return when (email.trim().lowercase()) {
-            "cliente@nutierra.cl" -> password == "Semillas2025!"
-            "admin@nutierra.cl" -> password == "AdminMaster2025!"
-            else -> false
-        }
-    }
-
-    LaunchedEffect(isLoading) {
-        if (isLoading) {
-            delay(700)
-
-            isLoading = false
-
-            if (validateCredentials()) {
-                errorMessage = null
-
-                if (detectedRole == "Administrador") {
-                    onAdminLogin()
-                } else {
-                    onClientLogin()
-                }
-            } else {
-                errorMessage =
-                    "Credenciales incorrectas. Revisa tu correo y contraseña."
+    // Cuando el ViewModel autentica, se navega según el rol guardado en SQLite
+    LaunchedEffect(estado.rolAutenticado) {
+        when (estado.rolAutenticado) {
+            Roles.ADMIN -> {
+                viewModel.navegacionRealizada()
+                onAdminLogin()
+            }
+            Roles.CLIENTE -> {
+                viewModel.navegacionRealizada()
+                onClientLogin()
             }
         }
     }
@@ -294,9 +285,10 @@ fun LoginScreen(
                             style = typography.labelMedium,
                             color = colors.primary,
                             modifier = Modifier.clickable {
-                                email = "cliente@nutierra.cl"
-                                password = "Semillas2025!"
-                                errorMessage = null
+                                viewModel.usarCuentaDemo(
+                                    "cliente@nutierra.cl",
+                                    "Semillas2025!"
+                                )
                             }
                         )
 
@@ -305,9 +297,10 @@ fun LoginScreen(
                             style = typography.labelMedium,
                             color = colors.primary,
                             modifier = Modifier.clickable {
-                                email = "admin@nutierra.cl"
-                                password = "AdminMaster2025!"
-                                errorMessage = null
+                                viewModel.usarCuentaDemo(
+                                    "admin@nutierra.cl",
+                                    "AdminMaster2025!"
+                                )
                             }
                         )
 
@@ -374,10 +367,9 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = {
-                    email = it
-                    errorMessage = null
-                },
+                onValueChange = viewModel::cambiarCorreo,
+                isError = estado.correo.error != null,
+                supportingText = textoDeError(estado.correo.error),
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("ejemplo@correo.cl") },
                 leadingIcon = {
@@ -410,10 +402,9 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = password,
-                onValueChange = {
-                    password = it
-                    errorMessage = null
-                },
+                onValueChange = viewModel::cambiarContrasena,
+                isError = estado.contrasena.error != null,
+                supportingText = textoDeError(estado.contrasena.error),
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("••••••••") },
                 leadingIcon = {
@@ -455,7 +446,13 @@ fun LoginScreen(
             Spacer(Modifier.height(16.dp))
 
             // MENSAJE DE ERROR
-            errorMessage?.let { message ->
+            AnimatedVisibility(
+                visible = errorMessage != null,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+              Column {
+                val message = errorMessage ?: ""
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = colors.errorContainer,
@@ -481,6 +478,7 @@ fun LoginScreen(
                 }
 
                 Spacer(Modifier.height(16.dp))
+              }
             }
 
             // INFORMACIÓN DEL ROL
@@ -508,14 +506,7 @@ fun LoginScreen(
 
             // INICIAR SESIÓN
             Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        errorMessage = "Ingresa tu correo y contraseña."
-                    } else if (!isLoading) {
-                        errorMessage = null
-                        isLoading = true
-                    }
-                },
+                onClick = viewModel::iniciarSesion,
                 enabled = !isLoading,
                 modifier = Modifier
                     .fillMaxWidth()

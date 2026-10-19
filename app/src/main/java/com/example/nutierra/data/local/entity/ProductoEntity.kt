@@ -1,4 +1,3 @@
-ProductoEntity.kt
 
 package com.example.nutierra.data.local.entity
 

@@ -1,5 +1,15 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.ui.viewmodel.RegisterViewModel
+import kotlinx.coroutines.delay
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,27 +34,37 @@ import androidx.compose.ui.unit.dp
 fun RegisterScreen(
     onBack: () -> Unit = {},
     onLoginClick: () -> Unit = {},
-    onRegisterSuccess: () -> Unit = {}
+    onRegisterSuccess: () -> Unit = {},
+    viewModel: RegisterViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
+    // Estado del formulario: vive en el ViewModel (validaciones desacopladas de la UI)
+    val estado by viewModel.uiState.collectAsStateWithLifecycle()
 
+    val firstName = estado.nombre.valor
+    val lastName = estado.apellido.valor
+    val email = estado.correo.valor
+    val password = estado.contrasena.valor
+    val confirmPassword = estado.confirmacion.valor
+    val acceptedTerms = estado.aceptaTerminos
+    val errorMessage = estado.errorGeneral ?: estado.errorTerminos
+    val successMessage = estado.registroExitoso
+    val passwordsMatch = estado.contrasenasCoinciden
+
+    // Estados solo visuales
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    var acceptedTerms by remember { mutableStateOf(false) }
 
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var successMessage by remember { mutableStateOf(false) }
-
-    val passwordsMatch = password.isNotEmpty() &&
-            confirmPassword.isNotEmpty() &&
-            password == confirmPassword
+    // Tras guardar en SQLite: muestra el mensaje un momento y vuelve al login
+    LaunchedEffect(estado.registroExitoso) {
+        if (estado.registroExitoso) {
+            delay(1200)
+            viewModel.registroConsumido()
+            onRegisterSuccess()
+        }
+    }
 
     val fieldShape = RoundedCornerShape(12.dp)
 
@@ -195,7 +215,9 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = firstName,
-                        onValueChange = { firstName = it },
+                        onValueChange = viewModel::cambiarNombre,
+                        isError = estado.nombre.error != null,
+                        supportingText = textoDeError(estado.nombre.error),
                         placeholder = { Text("Francisca") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -216,7 +238,9 @@ fun RegisterScreen(
 
                     OutlinedTextField(
                         value = lastName,
-                        onValueChange = { lastName = it },
+                        onValueChange = viewModel::cambiarApellido,
+                        isError = estado.apellido.error != null,
+                        supportingText = textoDeError(estado.apellido.error),
                         placeholder = { Text("Morales") },
                         singleLine = true,
                         modifier = Modifier.fillMaxWidth(),
@@ -240,7 +264,9 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = email,
-                onValueChange = { email = it },
+                onValueChange = viewModel::cambiarCorreo,
+                isError = estado.correo.error != null,
+                supportingText = textoDeError(estado.correo.error),
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
                     Text("francisca.morales@correo.cl")
@@ -284,7 +310,9 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = password,
-                onValueChange = { password = it },
+                onValueChange = viewModel::cambiarContrasena,
+                isError = estado.contrasena.error != null,
+                supportingText = textoDeError(estado.contrasena.error),
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("••••••••") },
                 leadingIcon = {
@@ -353,7 +381,9 @@ fun RegisterScreen(
 
             OutlinedTextField(
                 value = confirmPassword,
-                onValueChange = { confirmPassword = it },
+                onValueChange = viewModel::cambiarConfirmacion,
+                isError = estado.confirmacion.error != null,
+                supportingText = textoDeError(estado.confirmacion.error),
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("••••••••") },
                 leadingIcon = {
@@ -400,7 +430,7 @@ fun RegisterScreen(
             ) {
                 Checkbox(
                     checked = acceptedTerms,
-                    onCheckedChange = { acceptedTerms = it },
+                    onCheckedChange = viewModel::cambiarTerminos,
                     colors = CheckboxDefaults.colors(
                         checkedColor = colors.primary
                     )
@@ -414,7 +444,7 @@ fun RegisterScreen(
                         .weight(1f)
                         .padding(top = 10.dp)
                         .clickable {
-                            acceptedTerms = !acceptedTerms
+                            viewModel.cambiarTerminos(!acceptedTerms)
                         }
                 )
             }
@@ -422,14 +452,19 @@ fun RegisterScreen(
             Spacer(Modifier.height(20.dp))
 
             // MENSAJE DE VALIDACIÓN
-            errorMessage?.let {
+            AnimatedVisibility(
+                visible = errorMessage != null,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+              Column {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = colors.errorContainer,
                     shape = fieldShape
                 ) {
                     Text(
-                        text = it,
+                        text = errorMessage ?: "",
                         modifier = Modifier.padding(12.dp),
                         color = colors.onErrorContainer,
                         style = typography.bodyMedium
@@ -437,9 +472,15 @@ fun RegisterScreen(
                 }
 
                 Spacer(Modifier.height(12.dp))
+              }
             }
 
-            if (successMessage) {
+            AnimatedVisibility(
+                visible = successMessage,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+              Column {
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = colors.primaryContainer,
@@ -454,46 +495,13 @@ fun RegisterScreen(
                 }
 
                 Spacer(Modifier.height(12.dp))
+              }
             }
 
             // BOTÓN CREAR CUENTA
             Button(
-                onClick = {
-                    errorMessage = null
-                    successMessage = false
-
-                    when {
-                        firstName.isBlank() ||
-                                lastName.isBlank() ||
-                                email.isBlank() ||
-                                password.isBlank() ||
-                                confirmPassword.isBlank() -> {
-                            errorMessage = "Completa todos los campos obligatorios."
-                        }
-
-                        !android.util.Patterns.EMAIL_ADDRESS
-                            .matcher(email.trim()).matches() -> {
-                            errorMessage = "Ingresa un correo electrónico válido."
-                        }
-
-                        password.length < 8 -> {
-                            errorMessage = "La contraseña debe tener al menos 8 caracteres."
-                        }
-
-                        password != confirmPassword -> {
-                            errorMessage = "Las contraseñas ingresadas no coinciden."
-                        }
-
-                        !acceptedTerms -> {
-                            errorMessage = "Debes aceptar las condiciones de servicio."
-                        }
-
-                        else -> {
-                            successMessage = true
-                            onRegisterSuccess()
-                        }
-                    }
-                },
+                onClick = viewModel::registrar,
+                enabled = !estado.guardando && !successMessage,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

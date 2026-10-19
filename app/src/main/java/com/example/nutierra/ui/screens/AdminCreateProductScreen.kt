@@ -41,7 +41,9 @@ data class NewAdminProduct(
 @Composable
 fun AdminCreateProductScreen(
     onBack: () -> Unit,
-    onSaveProduct: (NewAdminProduct) -> Unit
+    onSaveProduct: (NewAdminProduct) -> Unit,
+    onTakePhotoClick: () -> Unit = {},
+    fotoTomada: String? = null
 ) {
     var name by remember {
         mutableStateOf("Nueces Chandler Peladas 500 g")
@@ -52,6 +54,13 @@ fun AdminCreateProductScreen(
     var weight by remember { mutableStateOf("500 g") }
     var imageUri by remember { mutableStateOf<String?>(null) }
     var attemptedSave by remember { mutableStateOf(false) }
+
+    // Foto tomada con la cámara (recurso nativo) que vuelve desde ProductCameraScreen
+    LaunchedEffect(fotoTomada) {
+        if (fotoTomada != null) {
+            imageUri = fotoTomada
+        }
+    }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -441,6 +450,15 @@ fun AdminCreateProductScreen(
                             fontSize = 12.sp,
                             color = createMuted
                         )
+
+                        OutlinedButton(onClick = onTakePhotoClick) {
+                            Icon(
+                                Icons.Default.PhotoCamera,
+                                contentDescription = null
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Tomar foto con la cámara")
+                        }
 
                         OutlinedButton(
                             onClick = {
