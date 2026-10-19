@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -99,7 +100,8 @@ fun AdminOrdersScreen(
     onHomeClick: () -> Unit,
     onProductsClick: () -> Unit,
     onInventoryClick: () -> Unit,
-    onNotificationsClick: () -> Unit = {}
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val orders = remember {
         mutableStateListOf<AdminOrder>().apply {
@@ -222,7 +224,8 @@ fun AdminOrdersScreen(
                     Box(
                         modifier = Modifier
                             .size(34.dp)
-                            .background(adminOrdersGreen, CircleShape),
+                            .background(adminOrdersGreen, CircleShape)
+                            .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

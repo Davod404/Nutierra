@@ -32,7 +32,8 @@ fun AdminHomeScreen(
     onProductsClick: () -> Unit,
     onInventoryClick: () -> Unit,
     onOrdersClick: () -> Unit,
-    onNotificationsClick: () -> Unit = {}
+    onNotificationsClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = adminBackground,
@@ -89,7 +90,8 @@ fun AdminHomeScreen(
                     Box(
                         modifier = Modifier
                             .size(34.dp)
-                            .background(adminGreen, CircleShape),
+                            .background(adminGreen, CircleShape)
+                            .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

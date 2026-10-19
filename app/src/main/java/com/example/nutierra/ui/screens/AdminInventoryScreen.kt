@@ -46,7 +46,8 @@ fun AdminInventoryScreen(
     onOrdersClick: () -> Unit,
     onNotificationsClick: () -> Unit = {},
     productos: List<ProductoEntity> = emptyList(),
-    onActualizarStock: (Int, Int) -> Unit = { _, _ -> }
+    onActualizarStock: (Int, Int) -> Unit = { _, _ -> },
+    onProfileClick: () -> Unit = {}
 ) {
     // Existencias reales desde SQLite; cada ajuste se guarda con el ViewModel
     val products = remember(productos) {
@@ -132,7 +133,8 @@ fun AdminInventoryScreen(
                     Box(
                         modifier = Modifier
                             .size(34.dp)
-                            .background(inventoryGreen, CircleShape),
+                            .background(inventoryGreen, CircleShape)
+                            .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

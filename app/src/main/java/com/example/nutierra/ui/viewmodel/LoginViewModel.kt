@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nutierra.data.local.NutierraDatabase
 import com.example.nutierra.data.repository.UsuarioRepository
+import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.model.CampoFormulario
 import com.example.nutierra.model.Validaciones
 import kotlinx.coroutines.delay
@@ -93,6 +94,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 repository.autenticar(validado.correo.valor, validado.contrasena.valor)
             } catch (e: Exception) {
                 null
+            }
+
+            // Se guarda quién inició sesión para mostrar su cuenta personal
+            if (usuario != null) {
+                SesionManager.iniciarSesion(usuario)
             }
 
             _uiState.update {

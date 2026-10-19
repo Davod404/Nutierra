@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.clickable
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
@@ -81,7 +82,8 @@ private fun cartPrice(value: Int): String {
 fun CartScreen(
     onBack: () -> Unit = {},
     onContinueShopping: () -> Unit = {},
-    onCheckout: () -> Unit = {}
+    onCheckout: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
@@ -144,7 +146,8 @@ fun CartScreen(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(colors.primary, CircleShape),
+                            .background(colors.primary, CircleShape)
+                            .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
