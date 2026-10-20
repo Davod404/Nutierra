@@ -218,19 +218,29 @@ fun NutierraNavigation() {
             CatalogScreen(
                 productos = productos,
                 onHomeClick = {
-                    navController.navigate("home") { launchSingleTop = true }
+                    navController.navigate("home") {
+                        launchSingleTop = true
+                    }
                 },
                 onMapClick = {
-                    navController.navigate("store_map") { launchSingleTop = true }
+                    navController.navigate("store_map") {
+                        launchSingleTop = true
+                    }
                 },
                 onScanClick = {
-                    navController.navigate("qr_scanner") { launchSingleTop = true }
+                    navController.navigate("qr_scanner") {
+                        launchSingleTop = true
+                    }
                 },
                 onOrdersClick = {
-                    navController.navigate("orders") { launchSingleTop = true }
+                    navController.navigate("orders") {
+                        launchSingleTop = true
+                    }
                 },
                 onProfileClick = {
-                    navController.navigate("profile") { launchSingleTop = true }
+                    navController.navigate("profile") {
+                        launchSingleTop = true
+                    }
                 },
                 onProductClick = { id ->
                     navController.navigate("product/$id")
@@ -320,6 +330,16 @@ fun NutierraNavigation() {
                 onCatalogClick = {
                     goToCatalog()
                 },
+                onMapClick = {
+                    navController.navigate("store_map") {
+                        launchSingleTop = true
+                    }
+                },
+                onScanClick = {
+                    navController.navigate("qr_scanner") {
+                        launchSingleTop = true
+                    }
+                },
                 onOrdersClick = {
                     navController.navigate("orders") {
                         launchSingleTop = true
@@ -339,19 +359,29 @@ fun NutierraNavigation() {
         composable("orders") {
             OrdersScreen(
                 onHomeClick = {
-                    navController.navigate("home") { launchSingleTop = true }
+                    navController.navigate("home") {
+                        launchSingleTop = true
+                    }
                 },
                 onCatalogClick = {
-                    navController.navigate("catalog") { launchSingleTop = true }
+                    navController.navigate("catalog") {
+                        launchSingleTop = true
+                    }
                 },
                 onMapClick = {
-                    navController.navigate("store_map") { launchSingleTop = true }
+                    navController.navigate("store_map") {
+                        launchSingleTop = true
+                    }
                 },
                 onScanClick = {
-                    navController.navigate("qr_scanner") { launchSingleTop = true }
+                    navController.navigate("qr_scanner") {
+                        launchSingleTop = true
+                    }
                 },
                 onProfileClick = {
-                    navController.navigate("profile") { launchSingleTop = true }
+                    navController.navigate("profile") {
+                        launchSingleTop = true
+                    }
                 }
             )
         }
@@ -436,7 +466,6 @@ fun NutierraNavigation() {
             )
         }
 
-        // 4. Editar Producto
         composable(
             route = "admin/products/edit/{productId}",
             arguments = listOf(
