@@ -1,6 +1,10 @@
 
 package com.example.nutierra.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -13,6 +17,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.nutierra.ui.screens.*
+
+// ===== TRANSICIONES ENTRE PANTALLAS =====
+private const val DURACION_TRANSICION = 350
+
+// Pantallas de las barras inferiores: entre ellas se usa un fundido (no deslizamiento)
+private val rutasDeBarra = setOf(
+    "home", "catalog", "orders", "profile",
+    "admin/home", "admin/products", "admin/inventory", "admin/orders", "admin/profile"
+)
+
+// true si es un cambio de pestaña o la salida del Splash (casos en que se usa fundido)
+private fun usaFundido(desde: String?, hacia: String?): Boolean =
+    desde == "splash" || (desde in rutasDeBarra && hacia in rutasDeBarra)
 
 @Composable
 fun NutierraNavigation() {
@@ -62,7 +79,53 @@ fun NutierraNavigation() {
 
     NavHost(
         navController = navController,
-        startDestination = "splash"
+        startDestination = "splash",
+        // Avanzar: la nueva pantalla entra desde la derecha
+        enterTransition = {
+            if (usaFundido(initialState.destination.route, targetState.destination.route)) {
+                fadeIn(tween(DURACION_TRANSICION))
+            } else {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Start,
+                    tween(DURACION_TRANSICION)
+                ) + fadeIn(tween(DURACION_TRANSICION))
+            }
+        },
+        // Avanzar: la pantalla anterior se corre un poco a la izquierda
+        exitTransition = {
+            if (usaFundido(initialState.destination.route, targetState.destination.route)) {
+                fadeOut(tween(DURACION_TRANSICION))
+            } else {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Start,
+                    tween(DURACION_TRANSICION),
+                    targetOffset = { it / 4 }
+                ) + fadeOut(tween(DURACION_TRANSICION))
+            }
+        },
+        // Volver: la pantalla anterior regresa desde la izquierda
+        popEnterTransition = {
+            if (usaFundido(initialState.destination.route, targetState.destination.route)) {
+                fadeIn(tween(DURACION_TRANSICION))
+            } else {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.End,
+                    tween(DURACION_TRANSICION),
+                    initialOffset = { it / 4 }
+                ) + fadeIn(tween(DURACION_TRANSICION))
+            }
+        },
+        // Volver: la pantalla actual sale hacia la derecha
+        popExitTransition = {
+            if (usaFundido(initialState.destination.route, targetState.destination.route)) {
+                fadeOut(tween(DURACION_TRANSICION))
+            } else {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.End,
+                    tween(DURACION_TRANSICION)
+                ) + fadeOut(tween(DURACION_TRANSICION))
+            }
+        }
     ) {
 
         composable("splash") {
@@ -155,29 +218,19 @@ fun NutierraNavigation() {
             CatalogScreen(
                 productos = productos,
                 onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("home") { launchSingleTop = true }
                 },
                 onMapClick = {
-                    navController.navigate("store_map") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("store_map") { launchSingleTop = true }
                 },
                 onScanClick = {
-                    navController.navigate("qr_scanner") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("qr_scanner") { launchSingleTop = true }
                 },
                 onOrdersClick = {
-                    navController.navigate("orders") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("orders") { launchSingleTop = true }
                 },
                 onProfileClick = {
-                    navController.navigate("profile") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("profile") { launchSingleTop = true }
                 },
                 onProductClick = { id ->
                     navController.navigate("product/$id")
@@ -267,16 +320,6 @@ fun NutierraNavigation() {
                 onCatalogClick = {
                     goToCatalog()
                 },
-                onMapClick = {
-                    navController.navigate("store_map") {
-                        launchSingleTop = true
-                    }
-                },
-                onScanClick = {
-                    navController.navigate("qr_scanner") {
-                        launchSingleTop = true
-                    }
-                },
                 onOrdersClick = {
                     navController.navigate("orders") {
                         launchSingleTop = true
@@ -296,29 +339,19 @@ fun NutierraNavigation() {
         composable("orders") {
             OrdersScreen(
                 onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("home") { launchSingleTop = true }
                 },
                 onCatalogClick = {
-                    navController.navigate("catalog") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("catalog") { launchSingleTop = true }
                 },
                 onMapClick = {
-                    navController.navigate("store_map") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("store_map") { launchSingleTop = true }
                 },
                 onScanClick = {
-                    navController.navigate("qr_scanner") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("qr_scanner") { launchSingleTop = true }
                 },
                 onProfileClick = {
-                    navController.navigate("profile") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("profile") { launchSingleTop = true }
                 }
             )
         }
@@ -403,6 +436,7 @@ fun NutierraNavigation() {
             )
         }
 
+        // 4. Editar Producto
         composable(
             route = "admin/products/edit/{productId}",
             arguments = listOf(
