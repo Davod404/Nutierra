@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -22,11 +23,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.nutierra.ui.theme.Surface
 
 private val inventoryGreen = Color(0xFF13522F)
 private val inventoryBackground = Color(0xFFF5FBF3)
 private val inventorySoft = Color(0xFFEAF0E8)
 private val inventoryMuted = Color(0xFF404941)
+
+private val inventoryMint = Color(0xFFB1F1C1)
 private val inventoryRed = Color(0xFFBA1A1A)
 
 private data class InventoryProduct(
@@ -44,12 +48,13 @@ fun AdminInventoryScreen(
     onHomeClick: () -> Unit,
     onProductsClick: () -> Unit,
     onOrdersClick: () -> Unit,
-    onNotificationsClick: () -> Unit = {},
     productos: List<ProductoEntity> = emptyList(),
     onActualizarStock: (Int, Int) -> Unit = { _, _ -> },
     onProfileClick: () -> Unit = {}
 ) {
-    // Existencias reales desde SQLite; cada ajuste se guarda con el ViewModel
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     val products = remember(productos) {
         productos.map {
             InventoryProduct(
@@ -62,6 +67,13 @@ fun AdminInventoryScreen(
                 stock = it.stock
             )
         }
+    }
+
+    val categoryCounts = remember(productos) {
+        productos
+            .groupingBy { it.categoria }
+            .eachCount()
+            .toSortedMap()
     }
 
     var search by remember { mutableStateOf("") }
@@ -82,100 +94,121 @@ fun AdminInventoryScreen(
     Scaffold(
         containerColor = inventoryBackground,
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .height(64.dp)
-                    .background(inventoryBackground)
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "OYL FRUTOS SECOS",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = inventoryGreen
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Surface(
-                            color = Color(0xFFB1F1C1),
-                            shape = RoundedCornerShape(12.dp)
+            Surface(
+                modifier = Modifier.statusBarsPadding(),
+                color = colors.surface,
+                shadowElevation = 2.dp
+            ){
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                "ADMIN",
-                                modifier = Modifier.padding(
-                                    horizontal = 7.dp,
-                                    vertical = 3.dp
-                                ),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(colors.primary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Eco,
+                                    contentDescription = "Nutierra",
+                                    tint = colors.onPrimary
+                                )
+                            }
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Nutierra",
+                                        style = typography.labelMedium,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Surface(
+                                        color = inventoryMint,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            "ADMIN",
+                                            modifier = Modifier.padding(
+                                                horizontal = 7.dp,
+                                                vertical = 3.dp
+                                            ),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Text(
+                                    "Inventario",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
-                    Text(
-                        "Inventario",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onNotificationsClick) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notificaciones"
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .background(inventoryGreen, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Administrador",
-                            tint = Color.White
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(inventoryGreen, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Administrador",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
         },
         bottomBar = {
-            NavigationBar(containerColor = Color.White) {
-                val tabs = listOf(
-                    Triple("Inicio", Icons.Default.Dashboard, 0),
-                    Triple("Productos", Icons.Default.Inventory2, 1),
-                    Triple("Inventario", Icons.Default.Warehouse, 2),
-                    Triple("Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 3)
+            NavigationBar(
+                containerColor = colors.surface,
+                tonalElevation = 2.dp
+            ) {
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onHomeClick,
+                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
+                    label = { Text("Inicio") }
                 )
-
-                tabs.forEach { (label, icon, index) ->
-                    NavigationBarItem(
-                        selected = index == 2,
-                        onClick = {
-                            when (index) {
-                                0 -> onHomeClick()
-                                1 -> onProductsClick()
-                                3 -> onOrdersClick()
-                            }
-                        },
-                        icon = {
-                            Icon(icon, contentDescription = label)
-                        },
-                        label = { Text(label, fontSize = 11.sp) },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = inventoryGreen,
-                            selectedTextColor = inventoryGreen,
-                            indicatorColor = inventorySoft
-                        )
-                    )
-                }
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProductsClick,
+                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
+                    label = { Text("Productos") }
+                )
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
+                    label = { Text("Inventario") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onOrdersClick,
+                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
+                    label = { Text("Perfil") }
+                )
             }
         }
     ) { padding ->
@@ -210,12 +243,6 @@ fun AdminInventoryScreen(
                             color = inventoryMuted
                         )
                     }
-                    Icon(
-                        Icons.Default.Warehouse,
-                        contentDescription = null,
-                        tint = inventoryGreen,
-                        modifier = Modifier.size(30.dp)
-                    )
                 }
             }
 
@@ -259,16 +286,16 @@ fun AdminInventoryScreen(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf(
-                        "Todos" to "Todos (8)",
-                        "Frutos secos" to "Frutos secos (3)",
-                        "Semillas" to "Semillas (2)",
-                        "Deshidratados" to "Deshidratados (3)"
-                    ).forEach { (value, label) ->
+                    (
+                        listOf("Todos" to productos.size) +
+                            categoryCounts.toList()
+                    ).forEach { (value, count) ->
                         FilterChip(
                             selected = category == value,
                             onClick = { category = value },
-                            label = { Text(label, fontSize = 12.sp) },
+                            label = {
+                                Text("$value ($count)", fontSize = 12.sp)
+                            },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = inventoryGreen,
                                 selectedLabelColor = Color.White,
@@ -408,22 +435,6 @@ fun AdminInventoryScreen(
                         )
                         Spacer(Modifier.width(5.dp))
                         Text("Reporte stock", fontSize = 12.sp)
-                    }
-
-                    Button(
-                        onClick = { showBulkAdjust = true },
-                        modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = inventoryGreen
-                        )
-                    ) {
-                        Icon(
-                            Icons.Default.SyncAlt,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(5.dp))
-                        Text("Ajuste masivo", fontSize = 12.sp)
                     }
                 }
             }

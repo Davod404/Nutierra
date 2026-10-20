@@ -50,17 +50,6 @@ class ProductoViewModel(application: Application) :
     val error: StateFlow<String?> =
         _error.asStateFlow()
 
-    init {
-        // Puebla el catálogo con datos sintéticos la primera vez que se abre la app
-        viewModelScope.launch {
-            try {
-                repository.poblarSiEstaVacia()
-            } catch (e: Exception) {
-                _error.value = e.message ?: "Error al preparar el catálogo"
-            }
-        }
-    }
-
     // 7. Obtener producto por ID
     fun obtenerProductoPorId(id: Int) {
         viewModelScope.launch {

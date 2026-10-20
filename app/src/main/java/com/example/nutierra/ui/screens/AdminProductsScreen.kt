@@ -10,21 +10,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.runtime.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,6 +30,8 @@ private val productsBackground = Color(0xFFF5FBF3)
 private val productsSurface = Color(0xFFFFFFFF)
 private val productsMuted = Color(0xFF404941)
 private val productsSoft = Color(0xFFEAF0E8)
+
+private val productsMint = Color(0xFFB1F1C1)
 private val productsError = Color(0xFFBA1A1A)
 
 private data class AdminProduct(
@@ -51,11 +49,12 @@ fun AdminProductsScreen(
     onOrdersClick: () -> Unit,
     onAddProductClick: () -> Unit,
     onEditProductClick: (Int) -> Unit,
-    onNotificationsClick: () -> Unit = {},
     productos: List<ProductoEntity> = emptyList(),
     onProfileClick: () -> Unit = {}
 ) {
-    // Lista real desde SQLite (Room)
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     val adminProductList = remember(productos) {
         productos.map {
             AdminProduct(
@@ -68,6 +67,13 @@ fun AdminProductsScreen(
                 stock = it.stock
             )
         }
+    }
+
+    val categoryCounts = remember(adminProductList) {
+        adminProductList
+            .groupingBy { it.category }
+            .eachCount()
+            .toSortedMap()
     }
 
     var search by remember { mutableStateOf("") }
@@ -85,82 +91,122 @@ fun AdminProductsScreen(
     Scaffold(
         containerColor = productsBackground,
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .background(productsBackground)
-                    .height(64.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            Surface(
+                modifier = Modifier.statusBarsPadding(),
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                Text(
-                    "Gestión De Productos",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onNotificationsClick) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notificaciones",
-                            tint = productsMuted
-                        )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(colors.primary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Eco,
+                                    contentDescription = "Nutierra",
+                                    tint = colors.onPrimary
+                                )
+                            }
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Nutierra",
+                                        style = typography.labelMedium,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Surface(
+                                        color = productsMint,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            "ADMIN",
+                                            modifier = Modifier.padding(
+                                                horizontal = 7.dp,
+                                                vertical = 3.dp
+                                            ),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Text(
+                                    "Gestión De Productos",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+                        }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .background(productsGreen, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Admin",
-                            tint = Color.White
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(productsGreen, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Administrador",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
         },
         bottomBar = {
             NavigationBar(
-                containerColor = productsSurface,
-                tonalElevation = 3.dp
+                containerColor = colors.surface,
+                tonalElevation = 2.dp
             ) {
-                val tabs = listOf(
-                    Triple("Inicio", Icons.Default.Dashboard, 0),
-                    Triple("Productos", Icons.Default.Inventory2, 1),
-                    Triple("Inventario", Icons.Default.Warehouse, 2),
-                    Triple("Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 3)
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onHomeClick,
+                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
+                    label = { Text("Inicio") }
                 )
-
-                tabs.forEach { (label, icon, index) ->
-                    NavigationBarItem(
-                        selected = index == 1,
-                        onClick = {
-                            when (index) {
-                                0 -> onHomeClick()
-                                2 -> onInventoryClick()
-                                3 -> onOrdersClick()
-                            }
-                        },
-                        icon = {
-                            Icon(icon, contentDescription = label)
-                        },
-                        label = {
-                            Text(label, fontSize = 11.sp)
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = productsGreen,
-                            selectedTextColor = productsGreen,
-                            indicatorColor = productsSoft
-                        )
-                    )
-                }
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
+                    label = { Text("Productos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onInventoryClick,
+                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
+                    label = { Text("Inventario") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onOrdersClick,
+                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
+                    label = { Text("Perfil") }
+                )
             }
         }
     ) { padding ->
@@ -190,7 +236,7 @@ fun AdminProductsScreen(
                         )
 
                         Surface(
-                            color = Color(0xFFB1F1C1),
+                            color = productsMint,
                             shape = RoundedCornerShape(20.dp)
                         ) {
                             Text(
@@ -275,17 +321,18 @@ fun AdminProductsScreen(
                     modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf(
-                        "Todos" to "Todos (8)",
-                        "Frutos secos" to "Frutos secos (3)",
-                        "Semillas" to "Semillas (2)",
-                        "Deshidratados" to "Deshidratados (3)"
-                    ).forEach { (category, label) ->
+                    (
+                        listOf("Todos" to adminProductList.size) +
+                            categoryCounts.toList()
+                    ).forEach { (category, count) ->
                         FilterChip(
                             selected = selectedCategory == category,
                             onClick = { selectedCategory = category },
                             label = {
-                                Text(label, fontSize = 12.sp)
+                                Text(
+                                    "$category ($count)",
+                                    fontSize = 12.sp
+                                )
                             },
                             leadingIcon = if (selectedCategory == category) {
                                 {

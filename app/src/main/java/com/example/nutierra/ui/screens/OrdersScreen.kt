@@ -109,14 +109,14 @@ fun OrdersScreen(
                 color = colors.surface,
                 shadowElevation = 2.dp
             ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(64.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -131,7 +131,6 @@ fun OrdersScreen(
                                 Icons.Default.Eco,
                                 contentDescription = "Nutierra",
                                 tint = colors.onPrimary
-
                             )
                         }
                         Column {
@@ -171,41 +170,41 @@ fun OrdersScreen(
                 containerColor = colors.surface,
                 tonalElevation = 2.dp
             ) {
-                Order(
-                    "Inicio",
-                    Icons.Default.Home,
-                    false,
-                    onHomeClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onHomeClick,
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") }
                 )
-                Order(
-                    "Catálogo",
-                    Icons.Default.Storefront,
-                    false,
-                    onCatalogClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onCatalogClick,
+                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
+                    label = { Text("Catálogo") }
                 )
-                Order(
-                    "Mapa",
-                    Icons.Default.Map,
-                    false,
-                    onMapClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onMapClick,
+                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
+                    label = { Text("Mapa") }
                 )
-                Order(
-                    "Escanear",
-                    Icons.Default.QrCodeScanner,
-                    false,
-                    onScanClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onScanClick,
+                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
+                    label = { Text("Escanear") }
                 )
-                Order(
-                    "Pedidos",
-                    Icons.AutoMirrored.Filled.ReceiptLong,
-                    true,
-                    {}
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
                 )
-                Order(
-                    "Perfil",
-                    Icons.Default.Person,
-                    false,
-                    onProfileClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick ,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") }
                 )
             }
         }

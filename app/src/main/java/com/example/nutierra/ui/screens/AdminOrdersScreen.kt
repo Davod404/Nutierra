@@ -26,6 +26,8 @@ private val adminOrdersGreen = Color(0xFF13522F)
 private val adminOrdersBackground = Color(0xFFF5FBF3)
 private val adminOrdersMuted = Color(0xFF404941)
 private val adminOrdersSoft = Color(0xFFEAF0E8)
+
+private val adminOrdersMint = Color(0xFFB1F1C1)
 private val adminOrdersAmber = Color(0xFF855500)
 
 private data class AdminOrder(
@@ -100,9 +102,11 @@ fun AdminOrdersScreen(
     onHomeClick: () -> Unit,
     onProductsClick: () -> Unit,
     onInventoryClick: () -> Unit,
-    onNotificationsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     val orders = remember {
         mutableStateListOf<AdminOrder>().apply {
             addAll(initialAdminOrders())
@@ -154,151 +158,125 @@ fun AdminOrdersScreen(
 
     Scaffold(
         containerColor = adminOrdersBackground,
-
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .height(64.dp)
-                    .background(adminOrdersBackground)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            "OYL FRUTOS SECOS",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = adminOrdersGreen
-                        )
-
-                        Surface(
-                            color = Color(0xFFB1F1C1),
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                "ADMIN",
-                                modifier = Modifier.padding(
-                                    horizontal = 5.dp,
-                                    vertical = 2.dp
-                                ),
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = adminOrdersGreen
-                            )
-                        }
-                    }
-
-                    Text(
-                        "Pedidos",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
+            Surface(
+                modifier = Modifier.statusBarsPadding(),
+                color = colors.surface,
+                shadowElevation = 2.dp
+            ){
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = onNotificationsClick) {
-                        BadgedBox(
-                            badge = {
-                                Badge(
-                                    containerColor = Color(0xFFBA1A1A)
+                    Column {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(colors.primary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Eco,
+                                    contentDescription = "Nutierra",
+                                    tint = colors.onPrimary
                                 )
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Notificaciones",
-                                tint = adminOrdersMuted
-                            )
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Nutierra",
+                                        style = typography.labelMedium,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Surface(
+                                        color = adminOrdersMint,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            "ADMIN",
+                                            modifier = Modifier.padding(
+                                                horizontal = 7.dp,
+                                                vertical = 3.dp
+                                            ),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Text(
+                                    "Pedidos",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                         }
                     }
-
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .background(adminOrdersGreen, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Administrador",
-                            tint = Color.White,
-                            modifier = Modifier.size(20.dp)
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(adminOrdersGreen, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Administrador",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
         },
-
         bottomBar = {
             NavigationBar(
-                containerColor = Color.White
+                containerColor = colors.surface,
+                tonalElevation = 2.dp
             ) {
                 NavigationBarItem(
                     selected = false,
                     onClick = onHomeClick,
-                    icon = {
-                        Icon(
-                            Icons.Default.Dashboard,
-                            contentDescription = "Inicio"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
                     label = { Text("Inicio") }
                 )
-
                 NavigationBarItem(
                     selected = false,
                     onClick = onProductsClick,
-                    icon = {
-                        Icon(
-                            Icons.Default.Inventory2,
-                            contentDescription = "Productos"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
                     label = { Text("Productos") }
                 )
-
                 NavigationBarItem(
                     selected = false,
                     onClick = onInventoryClick,
-                    icon = {
-                        Icon(
-                            Icons.Default.Warehouse,
-                            contentDescription = "Inventario"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
                     label = { Text("Inventario") }
                 )
-
                 NavigationBarItem(
                     selected = true,
                     onClick = {},
-                    icon = {
-                        Icon(
-                            Icons.Default.Assignment,
-                            contentDescription = "Pedidos"
-                        )
-                    },
-                    label = { Text("Pedidos") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = adminOrdersGreen,
-                        selectedTextColor = adminOrdersGreen,
-                        indicatorColor = adminOrdersSoft
-                    )
+                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
+                    label = { Text("Perfil") }
                 )
             }
         }
     ) { padding ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -306,7 +284,6 @@ fun AdminOrdersScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(5.dp)
@@ -331,7 +308,6 @@ fun AdminOrdersScreen(
                                 color = adminOrdersMuted
                             )
                         }
-
                         Surface(
                             color = adminOrdersSoft,
                             shape = RoundedCornerShape(50.dp)

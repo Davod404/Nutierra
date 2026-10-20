@@ -32,112 +32,133 @@ fun AdminHomeScreen(
     onProductsClick: () -> Unit,
     onInventoryClick: () -> Unit,
     onOrdersClick: () -> Unit,
-    onNotificationsClick: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     Scaffold(
         containerColor = adminBackground,
         topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .background(adminBackground)
-                    .height(64.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+            Surface(
+                modifier = Modifier.statusBarsPadding(),
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "OYL FRUTOS SECOS",
-                            color = adminGreen,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Surface(
-                            color = adminMint,
-                            shape = RoundedCornerShape(12.dp)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(64.dp)
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column {
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                "ADMIN",
-                                modifier = Modifier.padding(
-                                    horizontal = 7.dp,
-                                    vertical = 3.dp
-                                ),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .background(colors.primary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Eco,
+                                    contentDescription = "Nutierra",
+                                    tint = colors.onPrimary
+                                )
+                            }
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "Nutierra",
+                                        style = typography.labelMedium,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Surface(
+                                        color = adminMint,
+                                        shape = RoundedCornerShape(12.dp)
+                                    ) {
+                                        Text(
+                                            "ADMIN",
+                                            modifier = Modifier.padding(
+                                                horizontal = 7.dp,
+                                                vertical = 3.dp
+                                            ),
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                                Text(
+                                    "Inicio",
+                                    fontSize = 18.sp,
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
+
+
                         }
                     }
-                    Text(
-                        "Inicio",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onNotificationsClick) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = "Notificaciones",
-                            tint = adminMuted
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .size(34.dp)
-                            .background(adminGreen, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Administrador",
-                            tint = Color.White
-                        )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .background(adminGreen, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Administrador",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
         },
         bottomBar = {
             NavigationBar(
-                containerColor = adminSurface,
-                tonalElevation = 3.dp
+                containerColor = colors.surface,
+                tonalElevation = 2.dp
             ) {
-                val items = listOf(
-                    Triple("Inicio", Icons.Default.Dashboard, 0),
-                    Triple("Productos", Icons.Default.Inventory2, 1),
-                    Triple("Inventario", Icons.Default.Warehouse, 2),
-                    Triple("Pedidos", Icons.Default.Assignment, 3)
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
+                    label = { Text("Inicio") }
                 )
-
-                items.forEach { (label, icon, index) ->
-                    NavigationBarItem(
-                        selected = index == 0,
-                        onClick = {
-                            when (index) {
-                                1 -> onProductsClick()
-                                2 -> onInventoryClick()
-                                3 -> onOrdersClick()
-                            }
-                        },
-                        icon = {
-                            Icon(icon, contentDescription = label)
-                        },
-                        label = {
-                            Text(label, fontSize = 11.sp)
-                        },
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = adminGreen,
-                            selectedTextColor = adminGreen,
-                            indicatorColor = adminSoft
-                        )
-                    )
-                }
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProductsClick,
+                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
+                    label = { Text("Productos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onInventoryClick,
+                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
+                    label = { Text("Inventario") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onOrdersClick,
+                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
+                    label = { Text("Perfil") }
+                )
             }
         }
     ) { padding ->
@@ -188,12 +209,6 @@ fun AdminHomeScreen(
                                 color = adminMuted
                             )
                         }
-                        Icon(
-                            Icons.Default.Storefront,
-                            contentDescription = null,
-                            tint = adminGreen,
-                            modifier = Modifier.size(36.dp)
-                        )
                     }
                 }
             }
