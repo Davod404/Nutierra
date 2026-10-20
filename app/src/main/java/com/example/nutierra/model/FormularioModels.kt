@@ -42,6 +42,32 @@ object Validaciones {
         else -> null
     }
 
+    // ===== Formulario de productos (administrador) =====
+
+    fun nombreProducto(valor: String): String? = when {
+        valor.isBlank() -> "El nombre del producto es obligatorio"
+        valor.trim().length < 3 -> "Escribe al menos 3 caracteres"
+        valor.length > 60 -> "Máximo 60 caracteres"
+        else -> null
+    }
+
+    fun precio(valor: String): String? {
+        val numero = valor.toIntOrNull()
+        return when {
+            valor.isBlank() -> "El precio es obligatorio"
+            numero == null -> "Ingresa solo números"
+            numero <= 0 -> "El precio debe ser mayor a 0"
+            numero > 1_000_000 -> "El precio no puede superar \$1.000.000"
+            else -> null
+        }
+    }
+
+    fun stock(valor: Int): String? =
+        if (valor < 0) "El stock no puede ser negativo" else null
+
+    fun imagen(uri: String?): String? =
+        if (uri.isNullOrBlank()) "Agrega una imagen con la cámara o la galería" else null
+
     fun confirmacion(contrasena: String, confirmacion: String): String? = when {
         confirmacion.isBlank() -> "Confirma tu contraseña"
         confirmacion != contrasena -> "Las contraseñas no coinciden"

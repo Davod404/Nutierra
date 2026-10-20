@@ -1,5 +1,10 @@
 package com.example.nutierra.ui.screens
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.components.FilaError
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -43,22 +48,32 @@ fun AdminCreateProductScreen(
     onBack: () -> Unit,
     onSaveProduct: (NewAdminProduct) -> Unit,
     onTakePhotoClick: () -> Unit = {},
-    fotoTomada: String? = null
+    fotoTomada: String? = null,
+    viewModel: ProductoFormViewModel = viewModel()
 ) {
-    var name by remember {
-        mutableStateOf("Nueces Chandler Peladas 500 g")
+    // Estado y validaciones viven en ProductoFormViewModel
+    val estado by viewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        viewModel.iniciarNuevo()
     }
-    var category by remember { mutableStateOf("Frutos secos") }
-    var price by remember { mutableStateOf("4990") }
-    var stock by remember { mutableIntStateOf(0) }
-    var weight by remember { mutableStateOf("500 g") }
-    var imageUri by remember { mutableStateOf<String?>(null) }
-    var attemptedSave by remember { mutableStateOf(false) }
+
+    val name = estado.nombre.valor
+    val category = estado.categoria
+    val price = estado.precio.valor
+    val stock = estado.stock
+    val weight = estado.peso
+    val imageUri = estado.imagenUri
+
+    // Validez en vivo para la "Comprobación de integridad"
+    val validName = estado.nombreValido
+    val validPrice = estado.precioValido
+    val validStock = estado.stockValido
 
     // Foto tomada con la cámara (recurso nativo) que vuelve desde ProductCameraScreen
     LaunchedEffect(fotoTomada) {
         if (fotoTomada != null) {
-            imageUri = fotoTomada
+            viewModel.cambiarImagen(fotoTomada)
         }
     }
 
@@ -66,18 +81,13 @@ fun AdminCreateProductScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            imageUri = uri.toString()
+            viewModel.cambiarImagen(uri.toString())
         }
     }
 
-    val validName = name.isNotBlank() && name.length <= 60
-    val validPrice = (price.toIntOrNull() ?: 0) > 0
-    val validStock = stock >= 0
-
     fun saveProduct() {
-        attemptedSave = true
-
-        if (validName && validPrice && validStock) {
+        // El ViewModel revalida todo; solo se guarda si no hay errores
+        if (viewModel.validar(exigirImagen = true)) {
             onSaveProduct(
                 NewAdminProduct(
                     name = name.trim(),
@@ -201,16 +211,15 @@ fun AdminCreateProductScreen(
 
                 OutlinedTextField(
                     value = name,
-                    onValueChange = {
-                        if (it.length <= 60) name = it
-                    },
+                    onValueChange = viewModel::cambiarNombre,
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = {
                         Text("Ej. Nueces Chandler Peladas 500 g")
                     },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
-                    isError = attemptedSave && !validName,
+                    isError = estado.nombre.error != null,
+                    supportingText = textoDeError(estado.nombre.error),
                     colors = createFieldColors()
                 )
 
@@ -220,13 +229,6 @@ fun AdminCreateProductScreen(
                     color = createMuted
                 )
 
-                if (attemptedSave && !validName) {
-                    Text(
-                        "Ingresa un nombre comercial válido.",
-                        color = createError,
-                        fontSize = 12.sp
-                    )
-                }
             }
 
             // Categoría
@@ -243,7 +245,7 @@ fun AdminCreateProductScreen(
                         text = "Frutos secos",
                         icon = Icons.Default.Eco,
                         selected = category == "Frutos secos",
-                        onClick = { category = "Frutos secos" }
+                        onClick = { viewModel.cambiarCategoria("Frutos secos") }
                     )
 
                     CreateCategoryButton(
@@ -251,7 +253,7 @@ fun AdminCreateProductScreen(
                         text = "Semillas",
                         icon = Icons.Default.Spa,
                         selected = category == "Semillas",
-                        onClick = { category = "Semillas" }
+                        onClick = { viewModel.cambiarCategoria("Semillas") }
                     )
 
                     CreateCategoryButton(
@@ -259,7 +261,7 @@ fun AdminCreateProductScreen(
                         text = "Deshidratados",
                         icon = Icons.Default.WbSunny,
                         selected = category == "Deshidratados",
-                        onClick = { category = "Deshidratados" }
+                        onClick = { viewModel.cambiarCategoria("Deshidratados") }
                     )
                 }
             }
@@ -272,11 +274,7 @@ fun AdminCreateProductScreen(
 
                 OutlinedTextField(
                     value = price,
-                    onValueChange = { input ->
-                        if (input.all { it.isDigit() }) {
-                            price = input
-                        }
-                    },
+                    onValueChange = viewModel::cambiarPrecio,
                     modifier = Modifier.fillMaxWidth(),
                     leadingIcon = {
                         Text(
@@ -291,14 +289,15 @@ fun AdminCreateProductScreen(
                         keyboardType = KeyboardType.Number
                     ),
                     shape = RoundedCornerShape(12.dp),
-                    isError = attemptedSave && !validPrice,
+                    isError = estado.precio.error != null,
+                    supportingText = textoDeError(estado.precio.error),
                     colors = createFieldColors()
                 )
 
                 Text(
                     "No se permiten precios negativos ni cero.",
                     fontSize = 12.sp,
-                    color = if (attemptedSave && !validPrice) {
+                    color = if (estado.precio.error != null) {
                         createError
                     } else {
                         createMuted
@@ -325,7 +324,7 @@ fun AdminCreateProductScreen(
                     ) {
                         IconButton(
                             onClick = {
-                                if (stock > 0) stock--
+                                viewModel.disminuirStock()
                             }
                         ) {
                             Icon(
@@ -341,7 +340,7 @@ fun AdminCreateProductScreen(
                         )
 
                         IconButton(
-                            onClick = { stock++ }
+                            onClick = { viewModel.aumentarStock() }
                         ) {
                             Icon(
                                 Icons.Default.Add,
@@ -357,6 +356,8 @@ fun AdminCreateProductScreen(
                     fontSize = 12.sp,
                     color = createMuted
                 )
+
+                estado.errorStock?.let { FilaError(it) }
 
                 if (stock < 5) {
                     Surface(
@@ -385,7 +386,7 @@ fun AdminCreateProductScreen(
                     listOf("250 g", "500 g", "1 kg").forEach { option ->
                         FilterChip(
                             selected = weight == option,
-                            onClick = { weight = option },
+                            onClick = { viewModel.cambiarPeso(option) },
                             label = { Text(option) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = createGreen,
@@ -403,6 +404,8 @@ fun AdminCreateProductScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 CreateFieldLabel("Imagen referencial *")
+
+                estado.errorImagen?.let { FilaError(it) }
 
                 Surface(
                     color = Color.White,

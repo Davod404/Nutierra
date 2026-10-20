@@ -1,5 +1,9 @@
 package com.example.nutierra.ui.screens
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
 import com.example.nutierra.data.local.entity.ProductoEntity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -44,49 +48,43 @@ fun AdminEditProductScreen(
     onBack: () -> Unit,
     onInventoryClick: () -> Unit,
     onSaveProduct: (EditedAdminProduct) -> Unit,
-    producto: ProductoEntity? = null
+    producto: ProductoEntity? = null,
+    viewModel: ProductoFormViewModel = viewModel()
 ) {
-    // Valores originales leídos desde SQLite
-    val originalName = producto?.nombre ?: "Almendras Naturales 250 g"
-    val originalCategory = producto?.categoria ?: "Frutos secos"
-    val originalPrice = (producto?.precio ?: 4990).toString()
+    // Estado y validaciones viven en ProductoFormViewModel.
+    // Cuando el producto llega desde SQLite, el formulario se rellena con sus datos.
+    val estado by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Cuando el producto llega desde la base, el formulario se rellena con sus datos
-    var productName by remember(productId, producto) {
-        mutableStateOf(originalName)
+    LaunchedEffect(producto) {
+        producto?.let { viewModel.cargarProducto(it) }
     }
-    var category by remember(productId, producto) {
-        mutableStateOf(originalCategory)
-    }
-    var price by remember(productId, producto) {
-        mutableStateOf(originalPrice)
-    }
-    var imageUri by remember(productId, producto) {
-        mutableStateOf<String?>(null)
-    }
-    var attemptedSave by remember(productId) {
-        mutableStateOf(false)
-    }
+
+    val productName = estado.nombre.valor
+    val category = estado.categoria
+    val price = estado.precio.valor
+    // Solo se muestra como "nueva" si es distinta de la imagen guardada
+    val imageUri = estado.imagenUri?.takeIf { it != producto?.imagenUri }
+
     var showSaveBanner by remember(productId) {
         mutableStateOf(false)
     }
 
 
-    val validName = productName.isNotBlank() && productName.length <= 60
-    val validPrice = (price.toIntOrNull() ?: 0) > 0
+    // Validez en vivo para el resumen inferior
+    val validName = estado.nombreValido
+    val validPrice = estado.precioValido
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            imageUri = uri.toString()
+            viewModel.cambiarImagen(uri.toString())
         }
     }
 
     fun saveChanges() {
-        attemptedSave = true
-
-        if (validName && validPrice) {
+        // El ViewModel revalida todo; al editar se conserva la imagen anterior si no hay nueva
+        if (viewModel.validar(exigirImagen = false)) {
             onSaveProduct(
                 EditedAdminProduct(
                     id = productId,
@@ -338,7 +336,7 @@ fun AdminEditProductScreen(
                                 }
 
                                 IconButton(
-                                    onClick = { imageUri = null }
+                                    onClick = { viewModel.cambiarImagen(producto?.imagenUri) }
                                 ) {
                                     Icon(
                                         Icons.Default.Delete,
@@ -366,17 +364,14 @@ fun AdminEditProductScreen(
 
                     OutlinedTextField(
                         value = productName,
-                        onValueChange = {
-                            if (it.length <= 60) {
-                                productName = it
-                            }
-                        },
+                        onValueChange = viewModel::cambiarNombre,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = {
                             Text("Ej: Nueces Mariposa Peladas")
                         },
                         singleLine = true,
-                        isError = attemptedSave && !validName,
+                        isError = estado.nombre.error != null,
+                        supportingText = textoDeError(estado.nombre.error),
                         shape = RoundedCornerShape(12.dp),
                         colors = editTextFieldColors()
                     )
@@ -387,13 +382,6 @@ fun AdminEditProductScreen(
                         color = editMuted
                     )
 
-                    if (attemptedSave && !validName) {
-                        Text(
-                            "Ingresa un nombre comercial válido.",
-                            color = editError,
-                            fontSize = 12.sp
-                        )
-                    }
                 }
             }
 
@@ -425,7 +413,7 @@ fun AdminEditProductScreen(
                                     .weight(1f)
                                     .height(65.dp)
                                     .clickable {
-                                        category = option
+                                        viewModel.cambiarCategoria(option)
                                     },
                                 color = if (selected) {
                                     editGreen
@@ -479,11 +467,7 @@ fun AdminEditProductScreen(
 
                     OutlinedTextField(
                         value = price,
-                        onValueChange = { value ->
-                            if (value.all { it.isDigit() }) {
-                                price = value
-                            }
-                        },
+                        onValueChange = viewModel::cambiarPrecio,
                         modifier = Modifier.fillMaxWidth(),
                         leadingIcon = {
                             Text(
@@ -504,7 +488,8 @@ fun AdminEditProductScreen(
                             keyboardType = KeyboardType.Number
                         ),
                         singleLine = true,
-                        isError = attemptedSave && !validPrice,
+                        isError = estado.precio.error != null,
+                        supportingText = textoDeError(estado.precio.error),
                         shape = RoundedCornerShape(12.dp),
                         colors = editTextFieldColors()
                     )
@@ -526,13 +511,6 @@ fun AdminEditProductScreen(
                         )
                     }
 
-                    if (attemptedSave && !validPrice) {
-                        Text(
-                            "El precio debe ser mayor que cero.",
-                            fontSize = 12.sp,
-                            color = editError
-                        )
-                    }
                 }
             }
 
