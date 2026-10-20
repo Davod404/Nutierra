@@ -7,6 +7,7 @@ import com.example.nutierra.ui.viewmodel.aPerfilUi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,11 +26,13 @@ import androidx.compose.ui.unit.dp
 fun ProfileScreen(
     onHomeClick: () -> Unit = {},
     onCatalogClick: () -> Unit = {},
+    onMapClick: () -> Unit = {},
+    onScanClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     perfilViewModel: PerfilViewModel = viewModel()
 ) {
-    // Datos del usuario que inició sesión
+
     val usuario by perfilViewModel.usuario.collectAsStateWithLifecycle()
     val perfil = usuario.aPerfilUi()
 
@@ -40,8 +43,6 @@ fun ProfileScreen(
 
     Scaffold(
         containerColor = colors.surface,
-
-        // ENCABEZADO
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -53,14 +54,38 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .height(64.dp)
                         .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Mi Perfil",
-                        style = typography.titleLarge,
-                        color = colors.onSurface
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(colors.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Eco,
+                                contentDescription = "Nutierra",
+                                tint = colors.onPrimary
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Nutierra",
+                                style = typography.labelMedium,
+                                color = colors.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Mi Perfil",
+                                style = typography.titleLarge,
+                                color = colors.onSurface
+                            )
+                        }
+                    }
 
                     Box(
                         modifier = Modifier
@@ -79,7 +104,6 @@ fun ProfileScreen(
             }
         },
 
-        // NAVEGACIÓN INFERIOR
         bottomBar = {
             NavigationBar(
                 containerColor = colors.surface,
@@ -88,48 +112,37 @@ fun ProfileScreen(
                 NavigationBarItem(
                     selected = false,
                     onClick = onHomeClick,
-                    icon = {
-                        Icon(
-                            Icons.Default.Home,
-                            contentDescription = "Inicio"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") }
                 )
-
                 NavigationBarItem(
                     selected = false,
                     onClick = onCatalogClick,
-                    icon = {
-                        Icon(
-                            Icons.Default.Storefront,
-                            contentDescription = "Catálogo"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
                     label = { Text("Catálogo") }
                 )
-
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onMapClick,
+                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
+                    label = { Text("Mapa") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onScanClick,
+                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
+                    label = { Text("Escanear") }
+                )
                 NavigationBarItem(
                     selected = false,
                     onClick = onOrdersClick,
-                    icon = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ReceiptLong,
-                            contentDescription = "Mis Pedidos"
-                        )
-                    },
-                    label = { Text("Mis Pedidos") }
+                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
                 )
-
                 NavigationBarItem(
                     selected = true,
                     onClick = {},
-                    icon = {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Perfil"
-                        )
-                    },
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") }
                 )
             }
@@ -147,7 +160,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // TARJETA PRINCIPAL DEL PERFIL
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -163,7 +175,6 @@ fun ProfileScreen(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
 
-                        // AVATAR
                         Box(
                             modifier = Modifier
                                 .size(64.dp)
@@ -254,7 +265,6 @@ fun ProfileScreen(
 
                     Spacer(Modifier.height(16.dp))
 
-                    // ESTADO DEL CLIENTE
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
@@ -299,7 +309,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // DATOS DE LA CUENTA
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -319,7 +328,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // TELÉFONO
             ProfileInfoCard(
                 icon = Icons.Default.Phone,
                 label = "Teléfono móvil",
@@ -329,7 +337,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // DIRECCIÓN
             ProfileInfoCard(
                 icon = Icons.Default.LocationOn,
                 label = "Dirección de entrega",
@@ -339,7 +346,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // HISTORIAL DE COMPRAS
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -419,7 +425,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // ACERCA DEL SISTEMA
             Text(
                 "ACERCA DEL SISTEMA",
                 style = typography.labelLarge,
@@ -540,7 +545,6 @@ fun ProfileScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // CERRAR SESIÓN
             OutlinedButton(
                 onClick = {
                     showLogoutDialog = true
@@ -572,7 +576,6 @@ fun ProfileScreen(
         }
     }
 
-    // DIÁLOGO DE CONFIRMACIÓN
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = {
@@ -637,7 +640,6 @@ fun ProfileScreen(
     }
 }
 
-// TARJETAS DE INFORMACIÓN PERSONAL
 @Composable
 private fun ProfileInfoCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,

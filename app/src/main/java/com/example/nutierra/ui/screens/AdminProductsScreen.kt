@@ -24,6 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Text
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val productsGreen = Color(0xFF13522F)
 private val productsBackground = Color(0xFFF5FBF3)

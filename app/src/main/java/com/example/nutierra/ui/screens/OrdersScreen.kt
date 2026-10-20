@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -75,10 +76,15 @@ private val demoClientOrders = listOf(
 
 @Composable
 fun OrdersScreen(
-    onHomeClick: () -> Unit,
-    onCatalogClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onHomeClick: () -> Unit = {},
+    onCatalogClick: () -> Unit = {},
+    onMapClick: () -> Unit = {},
+    onScanClick: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
 ) {
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+
     var selectedFilter by remember { mutableStateOf("Todos") }
     var selectedOrder by remember { mutableStateOf<ClientOrder?>(null) }
     var showReceipt by remember { mutableStateOf<ClientOrder?>(null) }
@@ -98,88 +104,108 @@ fun OrdersScreen(
     Scaffold(
         containerColor = ordersBackground,
         topBar = {
+            Surface(
+                modifier = Modifier.statusBarsPadding(),
+                color = colors.surface,
+                shadowElevation = 2.dp
+            ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .statusBarsPadding()
                     .height(64.dp)
-                    .background(ordersBackground)
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Column {
-                    Text(
-                        "OYL Frutos Secos",
-                        fontSize = 12.sp,
-                        color = ordersMuted
-                    )
-                    Text(
-                        "Mis Pedidos",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .background(colors.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Eco,
+                                contentDescription = "Nutierra",
+                                tint = colors.onPrimary
 
-                Box(
-                    modifier = Modifier
-                        .size(34.dp)
-                        .background(ordersGreen, CircleShape)
-                        .clickable(onClick = onProfileClick),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = "Perfil",
-                        tint = Color.White
-                    )
+                            )
+                        }
+                        Column {
+                            Text(
+                                text = "Nutierra",
+                                style = typography.labelMedium,
+                                color = colors.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Pedidos",
+                                style = typography.titleMedium,
+                                color = colors.onSurface
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(ordersGreen, CircleShape)
+                            .clickable(onClick = onProfileClick),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Perfil",
+                            tint = Color.White,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
         },
+
         bottomBar = {
-            NavigationBar(containerColor = Color.White) {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onHomeClick,
-                    icon = {
-                        Icon(Icons.Default.Home, contentDescription = "Inicio")
-                    },
-                    label = { Text("Inicio") }
+            NavigationBar(
+                containerColor = colors.surface,
+                tonalElevation = 2.dp
+            ) {
+                Order(
+                    "Inicio",
+                    Icons.Default.Home,
+                    false,
+                    onHomeClick
                 )
-
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onCatalogClick,
-                    icon = {
-                        Icon(Icons.Default.Storefront, contentDescription = "Catálogo")
-                    },
-                    label = { Text("Catálogo") }
+                Order(
+                    "Catálogo",
+                    Icons.Default.Storefront,
+                    false,
+                    onCatalogClick
                 )
-
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ReceiptLong,
-                            contentDescription = "Mis Pedidos"
-                        )
-                    },
-                    label = { Text("Mis Pedidos") },
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = ordersGreen,
-                        selectedTextColor = ordersGreen,
-                        indicatorColor = ordersSoft
-                    )
+                Order(
+                    "Mapa",
+                    Icons.Default.Map,
+                    false,
+                    onMapClick
                 )
-
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProfileClick,
-                    icon = {
-                        Icon(Icons.Default.Person, contentDescription = "Perfil")
-                    },
-                    label = { Text("Perfil") }
+                Order(
+                    "Escanear",
+                    Icons.Default.QrCodeScanner,
+                    false,
+                    onScanClick
+                )
+                Order(
+                    "Pedidos",
+                    Icons.AutoMirrored.Filled.ReceiptLong,
+                    true,
+                    {}
+                )
+                Order(
+                    "Perfil",
+                    Icons.Default.Person,
+                    false,
+                    onProfileClick
                 )
             }
         }
@@ -651,4 +677,26 @@ private fun ClientOrderCard(
             }
         }
     }
+}
+
+@Composable
+private fun RowScope.Order(
+    title: String,
+    icon: ImageVector,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    NavigationBarItem(
+        selected = selected,
+        onClick = onClick,
+        icon = {
+            Icon(
+                icon,
+                contentDescription = title
+            )
+        },
+        label = {
+            Text(title)
+        }
+    )
 }

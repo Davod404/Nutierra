@@ -25,7 +25,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,7 +36,6 @@ import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
 
-// DATOS DE DEMOSTRACIÓN DEL CATÁLOGO DE FIGMA
 private data class CatalogProduct(
     val id: Int,
     val name: String,
@@ -60,14 +58,15 @@ private fun catalogPrice(value: Int): String {
 @Composable
 fun CatalogScreen(
     onHomeClick: () -> Unit = {},
-    onProductClick: (Int) -> Unit = {},
+    onMapClick: () -> Unit = {},
+    onScanClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onProductClick: (Int) -> Unit = {},
     productos: List<ProductoEntity> = emptyList()
 ) {
     val colors = MaterialTheme.colorScheme
 
-    // Productos leídos desde SQLite (Room) a través del ProductoViewModel
     val catalogProducts = remember(productos) {
         productos.map {
             CatalogProduct(
@@ -87,7 +86,6 @@ fun CatalogScreen(
     var sort by remember { mutableStateOf("Disponibilidad") }
     var sortExpanded by remember { mutableStateOf(false) }
 
-    // Filtrado y ordenamiento reactivo
     val visibleProducts = remember(catalogProducts, search, category, sort) {
         val filtered = catalogProducts.filter { product ->
             (category == "Todos" || product.category == category) &&
@@ -124,16 +122,13 @@ fun CatalogScreen(
                         Box(
                             modifier = Modifier
                                 .size(36.dp)
-                                .background(
-                                    colors.primaryFixed,
-                                    RoundedCornerShape(10.dp)
-                                ),
+                                .background(colors.primary, CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Eco,
                                 contentDescription = "Nutierra",
-                                tint = colors.primary
+                                tint = colors.onPrimary
                             )
                         }
 
@@ -173,29 +168,41 @@ fun CatalogScreen(
                 containerColor = colors.surface,
                 tonalElevation = 2.dp
             ) {
-                CatalogNavItem(
-                    "Inicio",
-                    Icons.Default.Home,
-                    false,
-                    onHomeClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onHomeClick,
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") }
                 )
-                CatalogNavItem(
-                    "Catálogo",
-                    Icons.Default.Storefront,
-                    true,
-                    {}
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
+                    label = { Text("Catálogo") }
                 )
-                CatalogNavItem(
-                    "Mis Pedidos",
-                    Icons.AutoMirrored.Filled.ReceiptLong,
-                    false,
-                    onOrdersClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onMapClick,
+                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
+                    label = { Text("Mapa") }
                 )
-                CatalogNavItem(
-                    "Perfil",
-                    Icons.Default.Person,
-                    false,
-                    onProfileClick
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onScanClick,
+                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
+                    label = { Text("Escanear") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onOrdersClick,
+                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick ,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") }
                 )
             }
         }
@@ -215,7 +222,6 @@ fun CatalogScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // TÍTULO Y BUSCADOR
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Column {
                     Spacer(Modifier.height(16.dp))
@@ -701,7 +707,6 @@ private fun CatalogProductCard(
     }
 }
 
-// IMÁGENES REMOTAS DE FIGMA
 @Composable
 private fun CatalogRemoteImage(
     url: String,
@@ -749,27 +754,4 @@ private fun CatalogRemoteImage(
             )
         }
     }
-}
-
-// BARRA DE NAVEGACIÓN INFERIOR
-@Composable
-private fun RowScope.CatalogNavItem(
-    title: String,
-    icon: ImageVector,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    NavigationBarItem(
-        selected = selected,
-        onClick = onClick,
-        icon = {
-            Icon(
-                icon,
-                contentDescription = title
-            )
-        },
-        label = {
-            Text(title)
-        }
-    )
 }

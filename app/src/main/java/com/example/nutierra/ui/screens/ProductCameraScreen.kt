@@ -57,6 +57,9 @@ fun ProductCameraScreen(
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    val previewView = remember { mutableStateOf<PreviewView?>(null) }
+    val cameraPreview = remember { mutableStateOf<Preview?>(null) }
+
     var cameraGranted by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -112,8 +115,8 @@ fun ProductCameraScreen(
         }
     }
 
-    DisposableEffect(cameraGranted, frontCamera, capturedUri) {
-        if (!cameraGranted || capturedUri != null) {
+    DisposableEffect(cameraGranted, frontCamera) {
+        if (!cameraGranted) {
             onDispose { }
         } else {
             val executor = ContextCompat.getMainExecutor(context)
@@ -123,11 +126,9 @@ fun ProductCameraScreen(
 
             val listener = Runnable {
                 if (!active) return@Runnable
-
                 try {
                     val cameraProvider = providerFuture.get()
                     if (!active) return@Runnable
-
                     provider = cameraProvider
 
                     val selector = if (frontCamera) {
@@ -137,9 +138,7 @@ fun ProductCameraScreen(
                     }
 
                     val capture = ImageCapture.Builder()
-                        .setCaptureMode(
-                            ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
-                        )
+                        .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                         .setFlashMode(flashMode)
                         .build()
 
@@ -147,23 +146,18 @@ fun ProductCameraScreen(
 
                     cameraProvider.unbindAll()
 
-                    val boundCamera = cameraProvider.bindToLifecycle(
+                    cameraProvider.bindToLifecycle(
                         lifecycleOwner,
                         selector,
                         preview,
                         capture
                     )
 
-                    camera = boundCamera
                     imageCapture = capture
-
-                    cameraPreviewSurfaceProvider = { view ->
-                        preview.surfaceProvider = view.surfaceProvider
-                    }
-
+                    cameraPreview.value = preview   // 👈 clave: publicas el Preview
                     errorMessage = null
                 } catch (e: Exception) {
-                    errorMessage = "No se pudo iniciar la cámara."
+                    errorMessage = "No se pudo iniciar la cámara: ${e.message}"
                 }
             }
 
@@ -172,9 +166,8 @@ fun ProductCameraScreen(
             onDispose {
                 active = false
                 provider?.unbindAll()
-                camera = null
                 imageCapture = null
-                cameraPreviewSurfaceProvider = null
+                cameraPreview.value = null
             }
         }
     }
@@ -327,11 +320,12 @@ fun ProductCameraScreen(
                         factory = { ctx ->
                             PreviewView(ctx).apply {
                                 scaleType = PreviewView.ScaleType.FILL_CENTER
-                                cameraPreviewSurfaceProvider?.invoke(this)
+                                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                                previewView.value = this
                             }
                         },
                         update = { view ->
-                            cameraPreviewSurfaceProvider?.invoke(view)
+                            cameraPreview.value?.surfaceProvider = view.surfaceProvider
                         },
                         modifier = Modifier.fillMaxSize()
                     )
@@ -615,8 +609,7 @@ fun ProductCameraScreen(
     }
 }
 
-private var cameraPreviewSurfaceProvider:
-        ((PreviewView) -> Unit)? = null
+private var cameraPreviewSurfaceProvider: ((PreviewView) -> Unit)? = null
 
 @Composable
 private fun CameraGridOverlay() {

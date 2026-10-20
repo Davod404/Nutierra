@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.Image
 import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -99,12 +101,16 @@ fun HomeScreen(
 
     LaunchedEffect(message) {
         message?.let {
-            snackbarHostState.showSnackbar(
+            val result = snackbarHostState.showSnackbar(
                 message = it,
                 actionLabel = "Ver carrito",
                 duration = SnackbarDuration.Short
             )
             message = null
+
+            if (result == SnackbarResult.ActionPerformed) {
+                onCartClick() // o navController.navigate("cart")
+            }
         }
     }
 
@@ -129,7 +135,6 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -187,10 +192,11 @@ fun HomeScreen(
             ) {
                 val items = listOf(
                     Triple("Inicio", Icons.Default.Home, 0),
-                    Triple("Mapa", Icons.Default.Map, 1),
-                    Triple("Escanear", Icons.Default.QrCodeScanner, 4),
-                    Triple("Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 2),
-                    Triple("Perfil", Icons.Default.Person, 3)
+                    Triple("Catálogo", Icons.Default.Storefront, 1),
+                    Triple("Mapa", Icons.Default.Map, 2),
+                    Triple("Escanear", Icons.Default.QrCodeScanner, 3),
+                    Triple("Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 4),
+                    Triple("Perfil", Icons.Default.Person, 5)
                 )
 
                 items.forEach { (label, icon, index) ->
@@ -205,15 +211,15 @@ fun HomeScreen(
                                     search = ""
                                 }
 
-                                1 -> onMapClick()
+                                1 -> onCatalogClick()
 
-                                4 -> onScanClick()
+                                2 -> onMapClick()
 
-                                2 -> onOrdersClick(
+                                3 -> onScanClick()
 
-                                )
+                                4 -> onOrdersClick()
 
-                                3 -> onProfileClick()
+                                5 -> onProfileClick()
                             }
                         },
 
@@ -341,6 +347,7 @@ fun HomeScreen(
 
                         Box(
                             modifier = Modifier.weight(1f)
+                                .fillMaxWidth()
                         ) {
                             if (search.isEmpty()) {
                                 Text(
@@ -376,6 +383,9 @@ fun HomeScreen(
 
                     if (showFilters) {
                         Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),   // 👈 clave
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             listOf(

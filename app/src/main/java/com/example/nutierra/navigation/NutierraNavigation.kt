@@ -18,8 +18,6 @@ import com.example.nutierra.ui.screens.*
 fun NutierraNavigation() {
     val navController = rememberNavController()
 
-    // Un solo ProductoViewModel para toda la app (ligado a la Activity):
-    // todas las pantallas ven la misma lista de productos guardada en SQLite.
     val productoViewModel: ProductoViewModel = viewModel()
     val productos by productoViewModel.productos.collectAsStateWithLifecycle()
 
@@ -50,8 +48,6 @@ fun NutierraNavigation() {
         }
     }
 
-
-    // Cuentas personales (íconos de perfil de las barras superiores)
     fun goToProfile() {
         navController.navigate("profile") {
             launchSingleTop = true
@@ -159,21 +155,24 @@ fun NutierraNavigation() {
             CatalogScreen(
                 productos = productos,
                 onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("home") { launchSingleTop = true }
+                },
+                onMapClick = {
+                    navController.navigate("store_map") { launchSingleTop = true }
+                },
+                onScanClick = {
+                    navController.navigate("qr_scanner") { launchSingleTop = true }
+                },
+                onOrdersClick = {
+                    navController.navigate("orders") { launchSingleTop = true }
+                },
+                onProfileClick = {
+                    navController.navigate("profile") { launchSingleTop = true }
                 },
                 onProductClick = { id ->
                     navController.navigate("product/$id")
-                },
-                onOrdersClick = {
-                    navController.navigate("orders") {
-                        launchSingleTop = true
-                    }
-                },
-                onProfileClick = {
-                    navController.navigate("profile")
                 }
+
             )
         }
 
@@ -277,19 +276,19 @@ fun NutierraNavigation() {
         composable("orders") {
             OrdersScreen(
                 onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("home") { launchSingleTop = true }
                 },
                 onCatalogClick = {
-                    navController.navigate("catalog") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("catalog") { launchSingleTop = true }
+                },
+                onMapClick = {
+                    navController.navigate("store_map") { launchSingleTop = true }
+                },
+                onScanClick = {
+                    navController.navigate("qr_scanner") { launchSingleTop = true }
                 },
                 onProfileClick = {
-                    navController.navigate("profile") {
-                        launchSingleTop = true
-                    }
+                    navController.navigate("profile") { launchSingleTop = true }
                 }
             )
         }
@@ -297,8 +296,6 @@ fun NutierraNavigation() {
         // =========================
         // ADMINISTRADOR
         // =========================
-
-        // 1. Inicio Administrador
         composable("admin/home") {
             AdminHomeScreen(
                 onProductsClick = {
@@ -318,7 +315,6 @@ fun NutierraNavigation() {
             )
         }
 
-        // 2. Gestión de Productos
         composable("admin/products") {
             AdminProductsScreen(
                 productos = productos,
@@ -347,7 +343,6 @@ fun NutierraNavigation() {
             )
         }
 
-        // 3. Crear Producto
         composable("admin/products/create") { backStackEntry ->
             // URI de la foto que devuelve ProductCameraScreen
             val fotoTomada by backStackEntry.savedStateHandle
@@ -466,7 +461,6 @@ fun NutierraNavigation() {
             )
         }
 
-        // Cuenta personal del administrador
         composable("admin/profile") {
             AdminProfileScreen(
                 totalProductos = productos.size,
