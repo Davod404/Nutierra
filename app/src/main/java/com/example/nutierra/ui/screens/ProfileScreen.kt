@@ -1,5 +1,9 @@
 package com.example.nutierra.ui.screens
 
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.viewmodel.PerfilViewModel
+import com.example.nutierra.ui.viewmodel.aPerfilUi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,8 +26,13 @@ fun ProfileScreen(
     onHomeClick: () -> Unit = {},
     onCatalogClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
-    onLogout: () -> Unit = {}
+    onLogout: () -> Unit = {},
+    perfilViewModel: PerfilViewModel = viewModel()
 ) {
+    // Datos del usuario que inició sesión
+    val usuario by perfilViewModel.usuario.collectAsStateWithLifecycle()
+    val perfil = usuario.aPerfilUi()
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -173,11 +182,10 @@ fun ProfileScreen(
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(
-                                    Icons.Default.Person,
-                                    contentDescription = "Avatar del cliente",
-                                    tint = colors.primary,
-                                    modifier = Modifier.size(36.dp)
+                                Text(
+                                    text = perfil.iniciales,
+                                    style = typography.titleLarge,
+                                    color = colors.primary
                                 )
                             }
 
@@ -202,13 +210,13 @@ fun ProfileScreen(
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Text(
-                                text = "Francisca Morales",
+                                text = perfil.nombreCompleto,
                                 style = typography.titleLarge,
                                 color = colors.onSurface
                             )
 
                             Text(
-                                text = "francisca.morales@correo.cl",
+                                text = perfil.correo,
                                 style = typography.bodyMedium,
                                 color = colors.onSurfaceVariant
                             )
@@ -235,7 +243,7 @@ fun ProfileScreen(
                                     )
 
                                     Text(
-                                        "Rol: Cliente",
+                                        "Rol: ${perfil.rol}",
                                         style = typography.labelMedium,
                                         color = colors.onPrimaryFixed
                                     )
@@ -595,6 +603,7 @@ fun ProfileScreen(
                 Button(
                     onClick = {
                         showLogoutDialog = false
+                        perfilViewModel.cerrarSesion()
                         onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(

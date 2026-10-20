@@ -48,7 +48,8 @@ fun AdminProductsScreen(
     onAddProductClick: () -> Unit,
     onEditProductClick: (Int) -> Unit,
     onNotificationsClick: () -> Unit = {},
-    productos: List<ProductoEntity> = emptyList()
+    productos: List<ProductoEntity> = emptyList(),
+    onProfileClick: () -> Unit = {}
 ) {
     // Lista real desde SQLite (Room)
     val adminProductList = remember(productos) {
@@ -108,7 +109,8 @@ fun AdminProductsScreen(
                     Box(
                         modifier = Modifier
                             .size(34.dp)
-                            .background(productsGreen, CircleShape),
+                            .background(productsGreen, CircleShape)
+                            .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

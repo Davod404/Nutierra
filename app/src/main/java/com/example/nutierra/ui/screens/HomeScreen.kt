@@ -165,7 +165,8 @@ fun HomeScreen(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(colors.primary, CircleShape),
+                            .background(colors.primary, CircleShape)
+                            .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(

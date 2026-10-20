@@ -50,6 +50,20 @@ fun NutierraNavigation() {
         }
     }
 
+
+    // Cuentas personales (íconos de perfil de las barras superiores)
+    fun goToProfile() {
+        navController.navigate("profile") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToAdminProfile() {
+        navController.navigate("admin/profile") {
+            launchSingleTop = true
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = "splash"
@@ -194,6 +208,9 @@ fun NutierraNavigation() {
                 },
                 onCheckout = {
                     navController.navigate("checkout")
+                },
+                onProfileClick = {
+                    goToProfile()
                 }
             )
         }
@@ -294,6 +311,9 @@ fun NutierraNavigation() {
                     navController.navigate("admin/orders") {
                         launchSingleTop = true
                     }
+                },
+                onProfileClick = {
+                    goToAdminProfile()
                 }
             )
         }
@@ -320,6 +340,9 @@ fun NutierraNavigation() {
                     navController.navigate(
                         "admin/products/edit/$productId"
                     )
+                },
+                onProfileClick = {
+                    goToAdminProfile()
                 }
             )
         }
@@ -413,6 +436,9 @@ fun NutierraNavigation() {
                     navController.navigate("admin/orders") {
                         launchSingleTop = true
                     }
+                },
+                onProfileClick = {
+                    goToAdminProfile()
                 }
             )
         }
@@ -433,9 +459,42 @@ fun NutierraNavigation() {
                     navController.navigate("admin/inventory") {
                         launchSingleTop = true
                     }
+                },
+                onProfileClick = {
+                    goToAdminProfile()
                 }
             )
         }
+
+        // Cuenta personal del administrador
+        composable("admin/profile") {
+            AdminProfileScreen(
+                totalProductos = productos.size,
+                onBack = {
+                    navController.popBackStack()
+                },
+                onProductsClick = {
+                    goToAdminProducts()
+                },
+                onInventoryClick = {
+                    goToAdminInventory()
+                },
+                onOrdersClick = {
+                    navController.navigate("admin/orders") {
+                        launchSingleTop = true
+                    }
+                },
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo(navController.graph.id) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
         composable("store_map") {
             StoreMapScreen(
                 onBack = {

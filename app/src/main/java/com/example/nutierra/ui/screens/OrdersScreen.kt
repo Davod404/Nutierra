@@ -1,5 +1,6 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -123,7 +124,8 @@ fun OrdersScreen(
                 Box(
                     modifier = Modifier
                         .size(34.dp)
-                        .background(ordersGreen, CircleShape),
+                        .background(ordersGreen, CircleShape)
+                        .clickable(onClick = onProfileClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
