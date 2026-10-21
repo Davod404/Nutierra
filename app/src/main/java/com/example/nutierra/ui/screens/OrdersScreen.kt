@@ -1,5 +1,9 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.EstadosPedido
+import com.example.nutierra.data.local.entity.PedidoResumen
+import com.example.nutierra.ui.components.formatoFechaPedido
+import com.example.nutierra.ui.components.formatoPesos
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -41,38 +45,25 @@ private data class ClientOrder(
     val progressMessage: String
 )
 
-private val demoClientOrders = listOf(
-    ClientOrder(
-        id = "#PED-2024-00128",
-        date = "Hoy, 14:30 hrs",
-        status = "Pendiente de Validación",
-        products = "Almendras Naturales 250 g (x2), Semillas de Chía 250 g (x1)",
-        summary = "3 artículos en canasta",
-        total = "$12.970",
-        progress = 1,
-        progressMessage = "Validando comprobante y existencias en bodega"
-    ),
-    ClientOrder(
-        id = "#PED-2024-00115",
-        date = "Ayer, 18:15 hrs",
-        status = "Preparado",
-        products = "Nueces Mariposa 250 g (x1), Maní Tostado 500 g (x2)",
-        summary = "3 artículos en empaque ecológico",
-        total = "$12.070",
-        progress = 3,
-        progressMessage = "Listo para entrega / retiro en tienda"
-    ),
-    ClientOrder(
-        id = "#PED-2024-00098",
-        date = "12 de Octubre, 2024",
-        status = "Entregado",
-        products = "Castañas de Cajú 250 g, Arándano Deshidratado",
-        summary = "2 artículos entregados con éxito",
-        total = "$8.480",
-        progress = 4,
-        progressMessage = "Pedido entregado correctamente"
+// Convierte un pedido guardado en SQLite al formato de esta pantalla
+private fun PedidoResumen.aClientOrder(): ClientOrder {
+    val estado = pedido.estado
+    return ClientOrder(
+        id = pedido.codigo,
+        date = formatoFechaPedido(pedido.fecha),
+        status = if (estado == EstadosPedido.PENDIENTE) "Pendiente de Validación" else estado,
+        products = productos ?: "",
+        summary = "${pedido.cantidadUnidades} artículos • ${pedido.cantidadProductos} productos",
+        total = formatoPesos(pedido.total),
+        progress = EstadosPedido.paso(estado),
+        progressMessage = when (estado) {
+            EstadosPedido.PENDIENTE -> "Validando el pedido y las existencias en bodega"
+            EstadosPedido.CONFIRMADO -> "Pedido confirmado, pronto comenzará su preparación"
+            EstadosPedido.PREPARADO -> "Listo para entrega / retiro en tienda"
+            else -> "Pedido entregado correctamente"
+        }
     )
-)
+}
 
 @Composable
 fun OrdersScreen(
@@ -80,8 +71,13 @@ fun OrdersScreen(
     onCatalogClick: () -> Unit = {},
     onMapClick: () -> Unit = {},
     onScanClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    pedidos: List<PedidoResumen> = emptyList()
 ) {
+    // Pedidos reales del cliente en sesión (SQLite)
+    val demoClientOrders = remember(pedidos) { pedidos.map { it.aClientOrder() } }
+    val entregados = demoClientOrders.count { it.status == "Entregado" }
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -266,7 +262,7 @@ fun OrdersScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                "Mostrando pedidos de demostración.",
+                                "Los estados se actualizan automáticamente cuando la tienda avanza tu pedido.",
                                 modifier = Modifier.weight(1f),
                                 fontSize = 12.sp
                             )
@@ -291,9 +287,9 @@ fun OrdersScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     listOf(
-                        "Todos" to "Todos (3)",
-                        "En proceso" to "En proceso (2)",
-                        "Entregados" to "Entregados (1)"
+                        "Todos" to "Todos (${demoClientOrders.size})",
+                        "En proceso" to "En proceso (${demoClientOrders.size - entregados})",
+                        "Entregados" to "Entregados ($entregados)"
                     ).forEach { (value, label) ->
                         FilterChip(
                             selected = selectedFilter == value,
@@ -305,6 +301,21 @@ fun OrdersScreen(
                             )
                         )
                     }
+                }
+            }
+
+            if (filteredOrders.isEmpty()) {
+                item {
+                    Text(
+                        if (demoClientOrders.isEmpty()) {
+                            "Aún no tienes pedidos. Agrega productos al carrito y confirma tu compra."
+                        } else {
+                            "No hay pedidos en esta categoría."
+                        },
+                        fontSize = 14.sp,
+                        color = ordersMuted,
+                        modifier = Modifier.padding(vertical = 24.dp)
+                    )
                 }
             }
 
