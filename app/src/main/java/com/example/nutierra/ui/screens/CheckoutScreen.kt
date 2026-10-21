@@ -1,5 +1,7 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.ui.components.FilaError
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -24,12 +26,6 @@ private data class CheckoutProduct(
     val quantity: Int
 )
 
-private val checkoutProducts = listOf(
-    CheckoutProduct("Almendras Naturales", "250 g", 4990, 2),
-    CheckoutProduct("Nueces Mariposa", "250 g", 5490, 1),
-    CheckoutProduct("Semillas de Chía", "250 g", 2990, 1)
-)
-
 private fun checkoutPrice(value: Int): String {
     return "$" + java.text.NumberFormat.getIntegerInstance(
         java.util.Locale.forLanguageTag("es-CL")
@@ -39,10 +35,25 @@ private fun checkoutPrice(value: Int): String {
 @Composable
 fun CheckoutScreen(
     onBack: () -> Unit = {},
-    onOrderSuccess: () -> Unit = {}
+    onOrderSuccess: () -> Unit = {},
+    items: List<ItemCarrito> = emptyList(),
+    procesando: Boolean = false,
+    mensajeError: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+
+    // Productos reales del carrito (SQLite)
+    val checkoutProducts = remember(items) {
+        items.map {
+            CheckoutProduct(
+                name = it.nombre,
+                format = it.peso,
+                price = it.precio,
+                quantity = it.cantidad
+            )
+        }
+    }
 
     val total = checkoutProducts.sumOf { it.price * it.quantity }
     val totalUnits = checkoutProducts.sumOf { it.quantity }
@@ -126,10 +137,14 @@ fun CheckoutScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Error de la compra (por ejemplo, stock insuficiente)
+                    mensajeError?.let { FilaError(it) }
+
                     Button(
                         onClick = {
                             showConfirmation = true
                         },
+                        enabled = checkoutProducts.isNotEmpty() && !procesando,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -554,7 +569,7 @@ fun CheckoutScreen(
         }
     }
 
-    // CONFIRMACIÓN LOCAL DE DEMOSTRACIÓN
+    // CONFIRMACIÓN DE LA COMPRA
     if (showConfirmation) {
         AlertDialog(
             onDismissRequest = {
@@ -570,16 +585,15 @@ fun CheckoutScreen(
             },
             title = {
                 Text(
-                    "¡Solicitud generada!",
+                    "¿Confirmar tu pedido?",
                     textAlign = TextAlign.Center
                 )
             },
             text = {
                 Text(
-                    "Hemos registrado tu orden por " +
-                            "${checkoutPrice(total)} CLP. " +
-                            "Nuestro equipo verificará el inventario " +
-                            "y se comunicará a tu WhatsApp o teléfono.",
+                    "Se registrará tu orden por " +
+                            "${checkoutPrice(total)} CLP " +
+                            "($totalUnits unidades) y se descontará del inventario.",
                     textAlign = TextAlign.Center
                 )
             },
@@ -587,11 +601,20 @@ fun CheckoutScreen(
                 Button(
                     onClick = {
                         showConfirmation = false
+                        // El CarritoViewModel crea el pedido y navega si todo sale bien
                         onOrderSuccess()
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Entendido, continuar")
+                    Text("Sí, confirmar compra")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showConfirmation = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Cancelar")
                 }
             }
         )

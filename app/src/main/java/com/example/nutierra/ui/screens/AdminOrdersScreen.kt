@@ -1,5 +1,9 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.EstadosPedido
+import com.example.nutierra.data.local.entity.PedidoResumen
+import com.example.nutierra.ui.components.formatoFechaPedido
+import com.example.nutierra.ui.components.formatoPesos
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
@@ -42,76 +46,47 @@ private data class AdminOrder(
     val total: String,
     val urgent: Boolean = false,
     val note: String = "",
-    val status: String
+    val status: String,
+    val pedidoId: Int = 0
 )
 
-private fun initialAdminOrders() = listOf(
-    AdminOrder(
-        id = "#PED-2024-00129",
-        client = "Francisca Morales",
-        initials = "FM",
-        phone = "+56 9 8765 4321",
-        date = "Hoy, 15:42 hrs",
-        products = "Almendras Nat. (x2), Nueces (x1), Chía (x1)",
-        units = "4 unidades en total",
+// Convierte un pedido guardado en SQLite al formato de esta pantalla
+private fun PedidoResumen.aAdminOrder(): AdminOrder {
+    val nombre = listOfNotNull(clienteNombre, clienteApellido).joinToString(" ").ifBlank { "Cliente" }
+    val iniciales = listOfNotNull(clienteNombre, clienteApellido)
+        .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+        .joinToString("")
+        .ifEmpty { "?" }
+    return AdminOrder(
+        id = pedido.codigo,
+        client = nombre,
+        initials = iniciales,
+        phone = "",
+        date = formatoFechaPedido(pedido.fecha),
+        products = productos ?: "",
+        units = "${pedido.cantidadUnidades} unidades en total",
         delivery = "Retiro en tienda",
-        total = "$18.460",
-        urgent = true,
-        status = "Pendiente"
-    ),
-    AdminOrder(
-        id = "#PED-2024-00128",
-        client = "Carlos Mendoza",
-        initials = "CM",
-        phone = "",
-        date = "Hoy, 14:30 hrs",
-        products = "Almendras Nat. 250 g (x2), Semillas Linaza (x1)",
-        units = "3 unidades • Envase compostable",
-        delivery = "Despacho",
-        total = "$12.970",
-        status = "Pendiente"
-    ),
-    AdminOrder(
-        id = "#PED-2024-00115",
-        client = "Andrea Soto",
-        initials = "AS",
-        phone = "",
-        date = "Ayer, 18:15 hrs",
-        products = "Nueces Mariposa (x1), Maní (x2)",
-        units = "3 unidades • Pago verificado WebPay",
-        delivery = "Despacho",
-        total = "$12.070",
-        status = "Confirmado"
-    ),
-    AdminOrder(
-        id = "#PED-2024-00098",
-        client = "Matías Silva",
-        initials = "MS",
-        phone = "",
-        date = "12 de octubre",
-        products = "2 productos",
-        units = "Ubicación estante: B-04 (Empacado)",
-        delivery = "Retiro en tienda",
-        total = "$8.480",
-        status = "Preparado"
+        total = formatoPesos(pedido.total),
+        urgent = pedido.estado == EstadosPedido.PENDIENTE,
+        status = pedido.estado,
+        pedidoId = pedido.id
     )
-)
+}
 
 @Composable
 fun AdminOrdersScreen(
     onHomeClick: () -> Unit,
     onProductsClick: () -> Unit,
     onInventoryClick: () -> Unit,
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    pedidos: List<PedidoResumen> = emptyList(),
+    onAvanzarEstado: (Int, String) -> Unit = { _, _ -> }
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    val orders = remember {
-        mutableStateListOf<AdminOrder>().apply {
-            addAll(initialAdminOrders())
-        }
-    }
+    // Todos los pedidos reales (SQLite); se actualizan solos al cambiar de estado
+    val orders = remember(pedidos) { pedidos.map { it.aAdminOrder() } }
 
     var search by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Todos") }
@@ -146,13 +121,8 @@ fun AdminOrdersScreen(
         }
 
         if (nextStatus != null) {
-            val index = orders.indexOfFirst { it.id == order.id }
-
-            if (index >= 0) {
-                orders[index] = orders[index].copy(
-                    status = nextStatus
-                )
-            }
+            // El PedidoViewModel guarda el nuevo estado en SQLite
+            onAvanzarEstado(order.pedidoId, order.status)
         }
     }
 

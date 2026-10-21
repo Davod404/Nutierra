@@ -1,5 +1,7 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.ui.components.FilaError
 import androidx.compose.foundation.clickable
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -16,7 +18,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,7 +32,7 @@ import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
 
-// PRODUCTOS DE DEMOSTRACIÓN DE FIGMA
+// Línea del carrito tal como la muestra esta pantalla
 private data class CartProduct(
     val id: Int,
     val name: String,
@@ -40,36 +41,6 @@ private data class CartProduct(
     val stock: Int,
     val imageUrl: String,
     val quantity: Int
-)
-
-private val initialCart = listOf(
-    CartProduct(
-        id = 1,
-        name = "Almendras Naturales",
-        category = "Frutos secos • 250 g",
-        price = 4990,
-        stock = 24,
-        quantity = 2,
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBc9bJz_f6QRwpfdVMeL4QvwR5ys3lGHuL3RoiPHFzbxDw_5JYKbmYt7E7hi7GqtWPbQHTSzawH-UhMgQFBbVvNMzMcvdIuu1FIVxlcptlNLXFbuvftr4m3B0SPXtpB7prwIf54Fjt7V5PTIkB-Ochs_ipjCrL64IF1VIbYbMR2IhBgqH5wLXp6TKQx7X89mp6orUd_CChJ_Zz980ZQSv2p0tIxJqJrtuZzqpM6me0"
-    ),
-    CartProduct(
-        id = 2,
-        name = "Nueces Mariposa",
-        category = "Frutos secos • 250 g",
-        price = 5490,
-        stock = 18,
-        quantity = 1,
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBTIR-ryK6GVM-j-2YNJyj9Md88FOk7iFAn3uhWlQPf_FZXu4RIFb7_injcGb3DflksXd4oIAD4cnetPXn4ZO2MOF0sOpkjDLpwC0g5eyjo2IOd_MOC8Vm4oT-FQfgQyWCZAz3wdMvtks2bpfCu9h5ELbzRCWJth1bbQRB1cW_uiuTC_8oACLDlYpYcjPO3TP7FsVnOcXSZKb3ukUKjLXDv0jQNokxRuKE5lgxK0k8"
-    ),
-    CartProduct(
-        id = 4,
-        name = "Semillas de Chía",
-        category = "Semillas • 250 g",
-        price = 2990,
-        stock = 40,
-        quantity = 1,
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAO-DtTVW3VNZTuftOhZLXXCuNveDbiGl9vP59hSQWRfUZcjEv0B6X2mPb6Qrfk7ykhuZn9WBhoZM4ZRawjaZ4R0nzrQm2p_O_9jP6IS2fyuu3xZ92hHE0Q-9feJko8JWpQ1RpXQ74UwvV3QDep7SGIdAwYWz-RHtqZI9vr02mTJjqz0Hnj6MAzgxIXw0ZutTto2Y5z7tfJX4DMQQPriqdXX82kCZ_SJ5vRp8f8gfU"
-    )
 )
 
 private fun cartPrice(value: Int): String {
@@ -83,14 +54,27 @@ fun CartScreen(
     onBack: () -> Unit = {},
     onContinueShopping: () -> Unit = {},
     onCheckout: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    items: List<ItemCarrito> = emptyList(),
+    onCambiarCantidad: (Int, Int) -> Unit = { _, _ -> },
+    onEliminar: (Int) -> Unit = {},
+    mensajeError: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    val products = remember {
-        mutableStateListOf<CartProduct>().apply {
-            addAll(initialCart)
+    // Carrito real del usuario, leído desde SQLite por el CarritoViewModel
+    val products = remember(items) {
+        items.map {
+            CartProduct(
+                id = it.productoId,
+                name = it.nombre,
+                category = "${it.categoria} • ${it.peso}",
+                price = it.precio,
+                stock = it.stock,
+                imageUrl = it.imagenUri ?: "",
+                quantity = it.cantidad
+            )
         }
     }
 
@@ -328,6 +312,8 @@ fun CartScreen(
             }
 
             // PRODUCTOS
+            mensajeError?.let { FilaError(it) }
+
             if (products.isEmpty()) {
                 Column(
                     modifier = Modifier
@@ -369,21 +355,17 @@ fun CartScreen(
                         CartProductCard(
                             product = product,
                             onRemove = {
-                                products.removeAll { it.id == product.id }
+                                onEliminar(product.id)
                             },
                             onDecrease = {
-                                updateCartQuantity(
-                                    products,
-                                    product.id,
-                                    product.quantity - 1
-                                )
+                                if (product.quantity > 1) {
+                                    onCambiarCantidad(product.id, product.quantity - 1)
+                                }
                             },
                             onIncrease = {
-                                updateCartQuantity(
-                                    products,
-                                    product.id,
-                                    product.quantity + 1
-                                )
+                                if (product.quantity < product.stock) {
+                                    onCambiarCantidad(product.id, product.quantity + 1)
+                                }
                             }
                         )
                     }
@@ -519,22 +501,6 @@ fun CartScreen(
                 }
             }
         }
-    }
-}
-
-private fun updateCartQuantity(
-    products: SnapshotStateList<CartProduct>,
-    id: Int,
-    quantity: Int
-) {
-    val index = products.indexOfFirst { it.id == id }
-
-    if (index == -1) return
-
-    val product = products[index]
-
-    if (quantity in 1..product.stock) {
-        products[index] = product.copy(quantity = quantity)
     }
 }
 
