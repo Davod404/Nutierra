@@ -20,16 +20,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.nutierra.ui.screens.*
 
-// ===== TRANSICIONES ENTRE PANTALLAS =====
 private const val DURACION_TRANSICION = 350
 
-// Pantallas de las barras inferiores: entre ellas se usa un fundido (no deslizamiento)
 private val rutasDeBarra = setOf(
     "home", "catalog", "orders", "profile",
     "admin/home", "admin/products", "admin/inventory", "admin/orders", "admin/profile"
 )
 
-// true si es un cambio de pestaña o la salida del Splash (casos en que se usa fundido)
 private fun usaFundido(desde: String?, hacia: String?): Boolean =
     desde == "splash" || (desde in rutasDeBarra && hacia in rutasDeBarra)
 
@@ -40,14 +37,12 @@ fun NutierraNavigation() {
     val productoViewModel: ProductoViewModel = viewModel()
     val productos by productoViewModel.productos.collectAsStateWithLifecycle()
 
-    // Carrito del usuario en sesión (SQLite), compartido por detalle, carrito y checkout
     val carritoViewModel: CarritoViewModel = viewModel()
     val carrito by carritoViewModel.items.collectAsStateWithLifecycle()
     val errorCarrito by carritoViewModel.error.collectAsStateWithLifecycle()
     val procesandoCompra by carritoViewModel.procesando.collectAsStateWithLifecycle()
     val ultimoPedido by carritoViewModel.ultimoPedido.collectAsStateWithLifecycle()
 
-    // Pedidos guardados en SQLite (cliente en sesión y vista del administrador)
     val pedidoViewModel: PedidoViewModel = viewModel()
     val misPedidos by pedidoViewModel.misPedidos.collectAsStateWithLifecycle()
     val todosLosPedidos by pedidoViewModel.todosLosPedidos.collectAsStateWithLifecycle()
@@ -105,7 +100,6 @@ fun NutierraNavigation() {
                 ) + fadeIn(tween(DURACION_TRANSICION))
             }
         },
-        // Avanzar: la pantalla anterior se corre un poco a la izquierda
         exitTransition = {
             if (usaFundido(initialState.destination.route, targetState.destination.route)) {
                 fadeOut(tween(DURACION_TRANSICION))
@@ -117,7 +111,6 @@ fun NutierraNavigation() {
                 ) + fadeOut(tween(DURACION_TRANSICION))
             }
         },
-        // Volver: la pantalla anterior regresa desde la izquierda
         popEnterTransition = {
             if (usaFundido(initialState.destination.route, targetState.destination.route)) {
                 fadeIn(tween(DURACION_TRANSICION))
@@ -129,7 +122,6 @@ fun NutierraNavigation() {
                 ) + fadeIn(tween(DURACION_TRANSICION))
             }
         },
-        // Volver: la pantalla actual sale hacia la derecha
         popExitTransition = {
             if (usaFundido(initialState.destination.route, targetState.destination.route)) {
                 fadeOut(tween(DURACION_TRANSICION))
@@ -154,6 +146,7 @@ fun NutierraNavigation() {
                 }
             )
         }
+
         // =========================
         // CLIENTE
         // =========================
@@ -180,14 +173,14 @@ fun NutierraNavigation() {
                 onScanClick = {
                     navController.navigate("qr_scanner")
                 },
-                productos = productos,
+                /* productos = productos,
                 cantidadCarrito = carrito.sumOf { it.cantidad },
                 onAgregarAlCarrito = { productoId ->
                     carritoViewModel.agregar(productoId, 1)
                 },
                 onProductClick = { productoId ->
                     navController.navigate("product/$productoId")
-                }
+                } */
             )
         }
 
@@ -308,6 +301,7 @@ fun NutierraNavigation() {
                 onProfileClick = {
                     goToProfile()
                 },
+                /*
                 items = carrito,
                 onCambiarCantidad = { productoId, cantidad ->
                     carritoViewModel.cambiarCantidad(productoId, cantidad)
@@ -316,6 +310,7 @@ fun NutierraNavigation() {
                     carritoViewModel.eliminar(productoId)
                 },
                 mensajeError = errorCarrito
+                 */
             )
         }
 
