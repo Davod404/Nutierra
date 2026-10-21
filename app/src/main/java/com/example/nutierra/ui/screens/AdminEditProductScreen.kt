@@ -1,5 +1,7 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.ui.platform.LocalContext
+import com.example.nutierra.ui.components.copiarImagenALaApp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.ui.components.textoDeError
@@ -74,11 +76,14 @@ fun AdminEditProductScreen(
     val validName = estado.nombreValido
     val validPrice = estado.precioValido
 
+    val context = LocalContext.current
+
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            viewModel.cambiarImagen(uri.toString())
+            // Se copia a la app para que la imagen se pueda mostrar siempre
+            viewModel.cambiarImagen(copiarImagenALaApp(context, uri) ?: uri.toString())
         }
     }
 

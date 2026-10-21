@@ -1,5 +1,7 @@
 package com.example.nutierra.ui.screens
 
+import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.components.formatoPesos
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,6 +34,7 @@ import kotlinx.coroutines.withContext
 import java.net.URL
 
 private data class HomeProduct(
+    val id: Int,
     val name: String,
     val category: String,
     val price: String,
@@ -46,50 +49,39 @@ fun HomeScreen(
     onProfileClick: () -> Unit,
     onCartClick: () -> Unit,
     onMapClick: () -> Unit = {},
-    onScanClick: () -> Unit = {}
+    onScanClick: () -> Unit = {},
+    productos: List<ProductoEntity> = emptyList(),
+    cantidadCarrito: Int = 0,
+    onAgregarAlCarrito: (Int) -> Unit = {},
+    onProductClick: (Int) -> Unit = {}
 ) {
 
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
     var search by remember { mutableStateOf("") }
-    var cartCount by remember { mutableIntStateOf(2) }
+    // Unidades reales en el carrito del usuario (SQLite)
+    val cartCount = cantidadCarrito
     var selectedTab by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var showFilters by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
 
-    val products = remember {
-        listOf(
-            HomeProduct(
-                "Almendras Naturales 250 g",
-                "Frutos secos",
-                "$4.990",
-                24,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuAkEKB0nJbha6TZpfbWqnTcU431QzhKUaL6sIx6yLtkDV-RABRxHgAv_QzR1eJzxf8KyU8VHgyZ1eBYADg2zXfnoszLxqSl0sjUBy-xOAp0W0sv6-2tKuVzlYcE_M5NHM-vPHufKXpDRaTsVTYXgoyOKItu76BwsEtbaYwdPrRlJm1KiNGHMjKx424S7iXvrWbF0W5b1SYRothamN0QMfgk4MYSPEWBCb1vK_sdcqo"
-            ),
-            HomeProduct(
-                "Nueces Mariposa 250 g",
-                "Frutos secos",
-                "$5.490",
-                18,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCzn6hRR6IWBMfm8oHFD3K8new1R_P1Szg_SFt1I_auxdhxRLeGSr6HEVeBvrde7raeGn19Edhx4ZsG6GNXu759a6R5Z_CZHjKnR5zwiEjxPH5i01JIGe94uD2EphQYIepDAKXu7Po-g4Lt3jc8KGSoqsLuG6br79FCdl_ptXgRYVwIplpZ9788GRLosZlSrThHSqLDUFHZND5e8aUhWldnS-JixpTcbe1EzyM_wBY"
-            ),
-            HomeProduct(
-                "Semillas de Chía 250 g",
-                "Semillas",
-                "$2.990",
-                40,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuAgm8aDiM2iPwf1uXzqgqnxtanu2NS5bC2k1UjlLwyZMQ0h_ce_XmS7NPflU1CL2Es798YQ0u1Z8GvarLa1VLBh1YExBqYPOHUtWNlVWgLCsB_QeKytsVjrcLXQz5jq6ago77EtVJz7VfwvSYDWWruHuJch2EuhtRvsVT0I9ExDXGs-2NYO9Q1XSyojyKECe9z2RMhLTKrxB10Z_gcW9Q5svfHXLXlud4t8Y-XjN78"
-            ),
-            HomeProduct(
-                "Pasas Rubias 250 g",
-                "Deshidratados",
-                "$2.790",
-                21,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCwPy6NWUBlTyWFF-In9fKbr_v6jQ1A4iL_y19tTA-qilAZ11KDiipOVk2aHQTUqCch7hTbw6QJ5ED8l8EDzK2WP_5hKODTe3maHcWnOd-ha4fwl2pxA5Lngn7fWW1BmUDVf2YQkQPKdbL6U8eWzxrqmMhppEfI-Sszo12ms2_R2IspAKsj9kHUlkDkyMwDx3wzjCmpW0qc3odwO3AMbRyaiJoxv-aiV_iiQiLbMDI"
-            )
-        )
+    // Destacados: productos con stock leídos desde SQLite (los más recientes primero)
+    val products = remember(productos) {
+        productos
+            .filter { it.stock > 0 }
+            .take(6)
+            .map {
+                HomeProduct(
+                    id = it.id,
+                    name = it.nombre,
+                    category = it.categoria,
+                    price = formatoPesos(it.precio),
+                    stock = it.stock,
+                    imageUrl = it.imagenUri ?: ""
+                )
+            }
     }
 
     val visibleProducts = products.filter {
@@ -290,9 +282,7 @@ fun HomeScreen(
 
                         Box {
                             IconButton(
-                                onClick = {
-                                    message = "Carrito: $cartCount productos"
-                                },
+                                onClick = onCartClick,
                                 modifier = Modifier
                                     .size(48.dp)
                                     .background(
@@ -643,7 +633,9 @@ fun HomeScreen(
                         ) {
                             pair.forEach { product ->
                                 Surface(
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable { onProductClick(product.id) },
                                     color = colors.surfaceContainerLowest,
                                     shape = RoundedCornerShape(14.dp),
                                     shadowElevation = 2.dp
@@ -741,7 +733,7 @@ fun HomeScreen(
 
                                             IconButton(
                                                 onClick = {
-                                                    cartCount++
+                                                    onAgregarAlCarrito(product.id)
                                                     message = "Añadido: ${product.name}"
                                                 },
                                                 modifier = Modifier

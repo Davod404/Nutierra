@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.viewmodel.CarritoViewModel
+import com.example.nutierra.ui.viewmodel.PedidoViewModel
 import com.example.nutierra.ui.viewmodel.ProductoViewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -37,6 +39,18 @@ fun NutierraNavigation() {
 
     val productoViewModel: ProductoViewModel = viewModel()
     val productos by productoViewModel.productos.collectAsStateWithLifecycle()
+
+    // Carrito del usuario en sesión (SQLite), compartido por detalle, carrito y checkout
+    val carritoViewModel: CarritoViewModel = viewModel()
+    val carrito by carritoViewModel.items.collectAsStateWithLifecycle()
+    val errorCarrito by carritoViewModel.error.collectAsStateWithLifecycle()
+    val procesandoCompra by carritoViewModel.procesando.collectAsStateWithLifecycle()
+    val ultimoPedido by carritoViewModel.ultimoPedido.collectAsStateWithLifecycle()
+
+    // Pedidos guardados en SQLite (cliente en sesión y vista del administrador)
+    val pedidoViewModel: PedidoViewModel = viewModel()
+    val misPedidos by pedidoViewModel.misPedidos.collectAsStateWithLifecycle()
+    val todosLosPedidos by pedidoViewModel.todosLosPedidos.collectAsStateWithLifecycle()
 
     fun goToCatalog() {
         navController.navigate("catalog") {
@@ -165,6 +179,14 @@ fun NutierraNavigation() {
                 },
                 onScanClick = {
                     navController.navigate("qr_scanner")
+                },
+                productos = productos,
+                cantidadCarrito = carrito.sumOf { it.cantidad },
+                onAgregarAlCarrito = { productoId ->
+                    carritoViewModel.agregar(productoId, 1)
+                },
+                onProductClick = { productoId ->
+                    navController.navigate("product/$productoId")
                 }
             )
         }
@@ -264,7 +286,8 @@ fun NutierraNavigation() {
                 onBack = {
                     navController.popBackStack()
                 },
-                onAddToCart = { _, _ ->
+                onAddToCart = { productoId, cantidad ->
+                    carritoViewModel.agregar(productoId, cantidad)
                     navController.navigate("cart")
                 }
             )
@@ -279,11 +302,20 @@ fun NutierraNavigation() {
                     goToCatalog()
                 },
                 onCheckout = {
+                    carritoViewModel.limpiarError()
                     navController.navigate("checkout")
                 },
                 onProfileClick = {
                     goToProfile()
-                }
+                },
+                items = carrito,
+                onCambiarCantidad = { productoId, cantidad ->
+                    carritoViewModel.cambiarCantidad(productoId, cantidad)
+                },
+                onEliminar = { productoId ->
+                    carritoViewModel.eliminar(productoId)
+                },
+                mensajeError = errorCarrito
             )
         }
 
@@ -292,10 +324,16 @@ fun NutierraNavigation() {
                 onBack = {
                     navController.popBackStack()
                 },
+                items = carrito,
+                procesando = procesandoCompra,
+                mensajeError = errorCarrito,
                 onOrderSuccess = {
-                    navController.navigate("success") {
-                        popUpTo("checkout") {
-                            inclusive = true
+                    // Crea el pedido, descuenta stock y vacía el carrito (una transacción)
+                    carritoViewModel.confirmarCompra {
+                        navController.navigate("success") {
+                            popUpTo("checkout") {
+                                inclusive = true
+                            }
                         }
                     }
                 }
@@ -304,6 +342,10 @@ fun NutierraNavigation() {
 
         composable("success") {
             OrderSuccessScreen(
+                orderCode = ultimoPedido?.codigo ?: "",
+                total = ultimoPedido?.total ?: 0,
+                productCount = ultimoPedido?.cantidadProductos ?: 0,
+                unitCount = ultimoPedido?.cantidadUnidades ?: 0,
                 onBack = {
                     navController.popBackStack()
                 },
@@ -358,6 +400,7 @@ fun NutierraNavigation() {
 
         composable("orders") {
             OrdersScreen(
+                pedidos = misPedidos,
                 onHomeClick = {
                     navController.navigate("home") {
                         launchSingleTop = true
@@ -532,6 +575,10 @@ fun NutierraNavigation() {
 
         composable("admin/orders") {
             AdminOrdersScreen(
+                pedidos = todosLosPedidos,
+                onAvanzarEstado = { pedidoId, estadoActual ->
+                    pedidoViewModel.avanzarEstado(pedidoId, estadoActual)
+                },
                 onHomeClick = {
                     navController.navigate("admin/home") {
                         launchSingleTop = true
