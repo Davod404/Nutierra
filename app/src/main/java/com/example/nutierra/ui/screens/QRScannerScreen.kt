@@ -1,6 +1,11 @@
 
 package com.example.nutierra.ui.screens
 
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.components.formatoPesos
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -55,7 +60,11 @@ private sealed class QRResult {
 @Composable
 fun QRScannerScreen(
     onBack: () -> Unit,
-    onProductClick: (Int) -> Unit
+    onProductClick: (Int) -> Unit,
+    // Indica si el id leído corresponde a un producto guardado en SQLite
+    existeProducto: (Int) -> Boolean = { true },
+    // Devuelve el producto guardado en SQLite para mostrar sus datos reales
+    buscarProducto: (Int) -> ProductoEntity? = { null }
 ) {
     val context = LocalContext.current
 
@@ -67,6 +76,9 @@ fun QRScannerScreen(
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
+
+    // Vibración corta al reconocer un código nuevo
+    val haptic = LocalHapticFeedback.current
 
     var scanResult by remember {
         mutableStateOf<QRResult?>(null)
@@ -169,7 +181,8 @@ fun QRScannerScreen(
             ) {
                 if (cameraGranted) {
                     QRCameraPreview(
-                        enabled = scanResult == null,
+                        // Escaneo continuo: la cámara sigue leyendo aunque ya haya un resultado
+                        enabled = true,
                         onCameraReady = {
                             camera = it
                             cameraError = null
@@ -187,13 +200,13 @@ fun QRScannerScreen(
                                 ?.getOrNull(1)
                                 ?.toIntOrNull()
 
-                            scanResult = if (id == 1) {
+                            scanResult = if (id != null && existeProducto(id)) {
                                 QRResult.Product(id, code)
                             } else {
                                 QRResult.Unknown(code)
                             }
 
-                            torchEnabled = false
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                     )
                 } else {
@@ -366,6 +379,8 @@ fun QRScannerScreen(
 
             when (val result = scanResult) {
                 is QRResult.Product -> {
+                    val producto = buscarProducto(result.id)
+
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -412,19 +427,19 @@ fun QRScannerScreen(
 
                                 Column {
                                     Text(
-                                        "Frutos secos",
+                                        producto?.categoria ?: "Producto",
                                         fontSize = 12.sp,
                                         color = qrMuted
                                     )
 
                                     Text(
-                                        "Almendras Naturales 250 g",
+                                        producto?.nombre ?: "Producto #${result.id}",
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 17.sp
                                     )
 
                                     Text(
-                                        "$4.990 CLP",
+                                        producto?.let { formatoPesos(it.precio) + " CLP" } ?: "",
                                         fontWeight = FontWeight.Bold,
                                         color = qrGreen
                                     )
@@ -432,8 +447,11 @@ fun QRScannerScreen(
                             }
 
                             Text(
-                                "Producto de demostración. " +
-                                        "Disponibilidad pendiente de conectar al catálogo.",
+                                when {
+                                    producto == null -> "Producto registrado en el catálogo."
+                                    producto.stock > 0 -> "Disponible: ${producto.stock} unidades en stock."
+                                    else -> "Sin stock por ahora."
+                                },
                                 fontSize = 12.sp,
                                 color = qrMuted
                             )
@@ -457,19 +475,14 @@ fun QRScannerScreen(
                                 )
                             }
 
-                            OutlinedButton(
-                                onClick = {
-                                    scanResult = null
-                                },
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = null
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text("Escanear otro producto")
-                            }
+                            // Escaneo continuo: basta con apuntar a otro código
+                            Text(
+                                "Apunta la cámara a otro código para escanearlo.",
+                                fontSize = 12.sp,
+                                color = qrMuted,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
@@ -512,22 +525,13 @@ fun QRScannerScreen(
                                 color = qrMuted
                             )
 
-                            Button(
-                                onClick = {
-                                    scanResult = null
-                                },
+                            Text(
+                                "Apunta la cámara a un código de producto Nutierra.",
+                                fontSize = 12.sp,
+                                color = qrMuted,
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = qrGreen
-                                )
-                            ) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = null
-                                )
-                                Spacer(Modifier.width(8.dp))
-                                Text("Reintentar")
-                            }
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
@@ -579,6 +583,10 @@ private fun QRCameraPreview(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val currentOnQRCode by rememberUpdatedState(onQRCode)
+
+    // Tamaño del encuadre verde (260.dp, centrado sobre la cámara) en píxeles.
+    // Solo se aceptan códigos cuyo centro quede dentro de este cuadro.
+    val marcoPx = with(LocalDensity.current) { 260.dp.toPx() }
     val currentOnCameraReady by rememberUpdatedState(onCameraReady)
     val currentOnCameraError by rememberUpdatedState(onCameraError)
 
@@ -605,7 +613,8 @@ private fun QRCameraPreview(
         var provider: ProcessCameraProvider? = null
         var active = true
         var processing = false
-        var delivered = false
+        // Último código entregado: solo se avisa cuando se lee uno distinto
+        var ultimoCodigo: String? = null
 
         val listener = Runnable {
             if (!active) return@Runnable
@@ -632,7 +641,6 @@ private fun QRCameraPreview(
                 analysis.setAnalyzer(executor) { imageProxy ->
                     if (
                         !scanningEnabled.value ||
-                        delivered ||
                         processing
                     ) {
                         imageProxy.close()
@@ -644,6 +652,11 @@ private fun QRCameraPreview(
                         } else {
                             processing = true
 
+                            // Tamaño de la imagen "derecha" (ya rotada) que analiza ML Kit
+                            val rotacion = imageProxy.imageInfo.rotationDegrees
+                            val anchoImagen = if (rotacion == 90 || rotacion == 270) imageProxy.height else imageProxy.width
+                            val altoImagen = if (rotacion == 90 || rotacion == 270) imageProxy.width else imageProxy.height
+
                             val image = InputImage.fromMediaImage(
                                 mediaImage,
                                 imageProxy.imageInfo.rotationDegrees
@@ -651,17 +664,22 @@ private fun QRCameraPreview(
 
                             scanner.process(image)
                                 .addOnSuccessListener { barcodes ->
-                                    val value = barcodes
-                                        .firstOrNull()
-                                        ?.rawValue
+                                    val value = codigoDentroDelMarco(
+                                        barcodes = barcodes,
+                                        anchoImagen = anchoImagen,
+                                        altoImagen = altoImagen,
+                                        anchoVista = previewView.width,
+                                        altoVista = previewView.height,
+                                        marcoPx = marcoPx
+                                    )
 
                                     if (
                                         active &&
                                         scanningEnabled.value &&
-                                        !delivered &&
-                                        !value.isNullOrBlank()
+                                        !value.isNullOrBlank() &&
+                                        value != ultimoCodigo
                                     ) {
-                                        delivered = true
+                                        ultimoCodigo = value
                                         currentOnQRCode(value)
                                     }
                                 }
@@ -713,10 +731,54 @@ private fun QRCameraPreview(
         }
     }
 
-    key(enabled) {
-        AndroidView(
-            factory = { previewView },
-            modifier = Modifier.fillMaxSize()
-        )
-    }
+    // La vista de la cámara se crea una sola vez. Antes se recreaba con key(enabled)
+    // reutilizando la misma PreviewView, que seguía agregada a la vista anterior,
+    // y Android cerraba la app al detectar un QR.
+    AndroidView(
+        factory = { previewView },
+        modifier = Modifier.fillMaxSize()
+    )
+}
+
+/**
+ * Devuelve el código QR cuyo centro está dentro del encuadre verde (centrado en la vista),
+ * o null si ninguno lo está. Si hay varios dentro, elige el más cercano al centro.
+ * Convierte las coordenadas de la imagen de la cámara a la pantalla igual que la vista
+ * previa (escala FILL_CENTER: llena la vista y recorta los bordes).
+ */
+private fun codigoDentroDelMarco(
+    barcodes: List<Barcode>,
+    anchoImagen: Int,
+    altoImagen: Int,
+    anchoVista: Int,
+    altoVista: Int,
+    marcoPx: Float
+): String? {
+    if (anchoImagen <= 0 || altoImagen <= 0 || anchoVista <= 0 || altoVista <= 0) return null
+
+    val escala = maxOf(anchoVista.toFloat() / anchoImagen, altoVista.toFloat() / altoImagen)
+    val desplazamientoX = (anchoVista - anchoImagen * escala) / 2f
+    val desplazamientoY = (altoVista - altoImagen * escala) / 2f
+
+    val centroX = anchoVista / 2f
+    val centroY = altoVista / 2f
+    val mitadMarco = marcoPx / 2f
+
+    return barcodes
+        .mapNotNull { barcode ->
+            val caja = barcode.boundingBox ?: return@mapNotNull null
+            val valor = barcode.rawValue?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            val x = caja.exactCenterX() * escala + desplazamientoX
+            val y = caja.exactCenterY() * escala + desplazamientoY
+            val dentro = x in (centroX - mitadMarco)..(centroX + mitadMarco) &&
+                    y in (centroY - mitadMarco)..(centroY + mitadMarco)
+            if (dentro) {
+                val distancia = (x - centroX) * (x - centroX) + (y - centroY) * (y - centroY)
+                valor to distancia
+            } else {
+                null
+            }
+        }
+        .minByOrNull { it.second }
+        ?.first
 }

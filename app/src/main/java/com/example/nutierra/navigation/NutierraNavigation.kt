@@ -642,6 +642,12 @@ fun NutierraNavigation() {
                 },
                 onProductClick = { productId ->
                     navController.navigate("product/$productId")
+                },
+                existeProducto = { productId ->
+                    productos.any { it.id == productId }
+                },
+                buscarProducto = { productId ->
+                    productos.firstOrNull { it.id == productId }
                 }
             )
         }
