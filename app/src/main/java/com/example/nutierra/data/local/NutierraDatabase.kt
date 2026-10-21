@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.nutierra.data.local.dao.CarritoDao
 import com.example.nutierra.data.local.dao.PedidoDao
 import com.example.nutierra.data.local.dao.ProductoDao
@@ -14,6 +15,9 @@ import com.example.nutierra.data.local.entity.PedidoDetalleEntity
 import com.example.nutierra.data.local.entity.PedidoEntity
 import com.example.nutierra.data.local.entity.ProductoEntity
 import com.example.nutierra.data.local.entity.UsuarioEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Database(
     entities = [
@@ -28,39 +32,36 @@ import com.example.nutierra.data.local.entity.UsuarioEntity
 )
 abstract class NutierraDatabase : RoomDatabase() {
 
-    // Acceso a las operaciones de productos
     abstract fun productoDao(): ProductoDao
-
-    // Acceso a las operaciones de usuarios
     abstract fun usuarioDao(): UsuarioDao
-
-    // Acceso al carrito de compras
     abstract fun carritoDao(): CarritoDao
-
-    // Acceso a los pedidos y su detalle
     abstract fun pedidoDao(): PedidoDao
 
     companion object {
-
         @Volatile
         private var INSTANCE: NutierraDatabase? = null
 
         fun getDatabase(context: Context): NutierraDatabase {
-
             return INSTANCE ?: synchronized(this) {
-
-                val instance = Room.databaseBuilder(
+                INSTANCE ?: Room.databaseBuilder(
                     context.applicationContext,
                     NutierraDatabase::class.java,
                     "nutierra_database"
                 )
-                    // Proyecto académico: si cambia el esquema se recrea la base
-                    .fallbackToDestructiveMigration(dropAllTables = true)
-                    .build()
+                .addCallback(object : RoomDatabase.Callback() {
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        super.onCreate(db)
 
-                INSTANCE = instance
-
-                instance
+                        CoroutineScope(Dispatchers.IO).launch {
+                            INSTANCE?.productoDao()?.insertarProductos(
+                                DatosIniciales.productos
+                            )
+                        }
+                    }
+                })
+                .fallbackToDestructiveMigration(dropAllTables = true)
+                .build()
+                .also { INSTANCE = it }
             }
         }
     }

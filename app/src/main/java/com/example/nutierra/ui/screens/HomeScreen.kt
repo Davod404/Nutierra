@@ -27,20 +27,15 @@ import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import com.example.nutierra.data.local.DatosIniciales
+import com.example.nutierra.data.local.entity.ProductoEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
 
-private data class HomeProduct(
-    val name: String,
-    val category: String,
-    val price: String,
-    val stock: Int,
-    val imageUrl: String
-)
-
 @Composable
 fun HomeScreen(
+    productos: List<ProductoEntity> = emptyList(),
     onCatalogClick: () -> Unit,
     onOrdersClick: () -> Unit,
     onProfileClick: () -> Unit,
@@ -59,60 +54,14 @@ fun HomeScreen(
     var showFilters by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
 
-    val products = remember {
-        listOf(
-            HomeProduct(
-                "Almendras Naturales 250 g",
-                "Frutos secos",
-                "$4.990",
-                24,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuAkEKB0nJbha6TZpfbWqnTcU431QzhKUaL6sIx6yLtkDV-RABRxHgAv_QzR1eJzxf8KyU8VHgyZ1eBYADg2zXfnoszLxqSl0sjUBy-xOAp0W0sv6-2tKuVzlYcE_M5NHM-vPHufKXpDRaTsVTYXgoyOKItu76BwsEtbaYwdPrRlJm1KiNGHMjKx424S7iXvrWbF0W5b1SYRothamN0QMfgk4MYSPEWBCb1vK_sdcqo"
-            ),
-            HomeProduct(
-                "Nueces Mariposa 250 g",
-                "Frutos secos",
-                "$5.490",
-                18,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCzn6hRR6IWBMfm8oHFD3K8new1R_P1Szg_SFt1I_auxdhxRLeGSr6HEVeBvrde7raeGn19Edhx4ZsG6GNXu759a6R5Z_CZHjKnR5zwiEjxPH5i01JIGe94uD2EphQYIepDAKXu7Po-g4Lt3jc8KGSoqsLuG6br79FCdl_ptXgRYVwIplpZ9788GRLosZlSrThHSqLDUFHZND5e8aUhWldnS-JixpTcbe1EzyM_wBY"
-            ),
-            HomeProduct(
-                "Semillas de Chía 250 g",
-                "Semillas",
-                "$2.990",
-                40,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuAgm8aDiM2iPwf1uXzqgqnxtanu2NS5bC2k1UjlLwyZMQ0h_ce_XmS7NPflU1CL2Es798YQ0u1Z8GvarLa1VLBh1YExBqYPOHUtWNlVWgLCsB_QeKytsVjrcLXQz5jq6ago77EtVJz7VfwvSYDWWruHuJch2EuhtRvsVT0I9ExDXGs-2NYO9Q1XSyojyKECe9z2RMhLTKrxB10Z_gcW9Q5svfHXLXlud4t8Y-XjN78"
-            ),
-            HomeProduct(
-                "Pasas Rubias 250 g",
-                "Deshidratados",
-                "$2.790",
-                21,
-                "https://lh3.googleusercontent.com/aida-public/AB6AXuCwPy6NWUBlTyWFF-In9fKbr_v6jQ1A4iL_y19tTA-qilAZ11KDiipOVk2aHQTUqCch7hTbw6QJ5ED8l8EDzK2WP_5hKODTe3maHcWnOd-ha4fwl2pxA5Lngn7fWW1BmUDVf2YQkQPKdbL6U8eWzxrqmMhppEfI-Sszo12ms2_R2IspAKsj9kHUlkDkyMwDx3wzjCmpW0qc3odwO3AMbRyaiJoxv-aiV_iiQiLbMDI"
-            )
-        )
-    }
+    val products = productos
 
     val visibleProducts = products.filter {
-        (selectedCategory == null || it.category == selectedCategory) &&
-                (search.isBlank() || it.name.contains(search, ignoreCase = true))
+        (selectedCategory == null || it.categoria == selectedCategory) &&
+                (search.isBlank() || it.nombre.contains(search, ignoreCase = true))
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
-
-    LaunchedEffect(message) {
-        message?.let {
-            val result = snackbarHostState.showSnackbar(
-                message = it,
-                actionLabel = "Ver carrito",
-                duration = SnackbarDuration.Short
-            )
-            message = null
-
-            if (result == SnackbarResult.ActionPerformed) {
-                onCartClick() // o navController.navigate("cart")
-            }
-        }
-    }
 
     Scaffold(
         containerColor = colors.surface,
@@ -184,70 +133,50 @@ fun HomeScreen(
                 }
             }
         },
-
         bottomBar = {
             NavigationBar(
                 containerColor = colors.surface,
-                tonalElevation = 3.dp
+                tonalElevation = 2.dp
             ) {
-                val items = listOf(
-                    Triple("Inicio", Icons.Default.Home, 0),
-                    Triple("Catálogo", Icons.Default.Storefront, 1),
-                    Triple("Mapa", Icons.Default.Map, 2),
-                    Triple("Escanear", Icons.Default.QrCodeScanner, 3),
-                    Triple("Pedidos", Icons.AutoMirrored.Filled.ReceiptLong, 4),
-                    Triple("Perfil", Icons.Default.Person, 5)
+                NavigationBarItem(
+                    selected = true,
+                    onClick = {},
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") }
                 )
-
-                items.forEach { (label, icon, index) ->
-                    NavigationBarItem(
-                        selected = selectedTab == index,
-
-                        onClick = {
-                            when (index) {
-                                0 -> {
-                                    selectedTab = 0
-                                    selectedCategory = null
-                                    search = ""
-                                }
-
-                                1 -> onCatalogClick()
-
-                                2 -> onMapClick()
-
-                                3 -> onScanClick()
-
-                                4 -> onOrdersClick()
-
-                                5 -> onProfileClick()
-                            }
-                        },
-
-                        icon = {
-                            Icon(
-                                icon,
-                                contentDescription = label
-                            )
-                        },
-
-                        label = {
-                            Text(
-                                label,
-                                style = typography.labelMedium
-                            )
-                        },
-
-                        colors = NavigationBarItemDefaults.colors(
-                            selectedIconColor = colors.primary,
-                            selectedTextColor = colors.primary,
-                            indicatorColor = colors.surfaceContainerHigh
-                        )
-                    )
-                }
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onCatalogClick,
+                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
+                    label = { Text("Catálogo") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onMapClick,
+                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
+                    label = { Text("Mapa") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onScanClick,
+                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
+                    label = { Text("Escanear") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onOrdersClick,
+                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
+                    label = { Text("Pedidos") }
+                )
+                NavigationBarItem(
+                    selected = false,
+                    onClick = onProfileClick ,
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") }
+                )
             }
         }
     ) { innerPadding ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -260,13 +189,10 @@ fun HomeScreen(
             ),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-
-            // 1. BIENVENIDA Y BÚSQUEDA
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -291,7 +217,7 @@ fun HomeScreen(
                         Box {
                             IconButton(
                                 onClick = {
-                                    message = "Carrito: $cartCount productos"
+                                    onCartClick()
                                 },
                                 modifier = Modifier
                                     .size(48.dp)
@@ -301,7 +227,7 @@ fun HomeScreen(
                                     )
                             ) {
                                 Icon(
-                                    Icons.Default.ShoppingBag,
+                                    Icons.Default.ShoppingCart,
                                     contentDescription = "Carrito",
                                     tint = colors.primary
                                 )
@@ -593,7 +519,6 @@ fun HomeScreen(
                 }
             }
 
-            // 4. PRODUCTOS DISPONIBLES
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -659,9 +584,8 @@ fun HomeScreen(
                                                 .clip(RoundedCornerShape(8.dp))
                                                 .background(colors.surfaceContainerLow)
                                         ) {
-
                                             RemoteProductImage(
-                                                url = product.imageUrl,
+                                                url = product.imagenUri.toString(),
                                                 modifier = Modifier.fillMaxSize()
                                             )
 
@@ -690,7 +614,7 @@ fun HomeScreen(
                                                     )
 
                                                     Text(
-                                                        "Stock: ${product.stock} disp.",
+                                                        "Stock: ${product.stock}",
                                                         fontSize = 10.sp,
                                                         color = colors.primary,
                                                         maxLines = 1
@@ -702,13 +626,13 @@ fun HomeScreen(
                                         Spacer(Modifier.height(10.dp))
 
                                         Text(
-                                            product.category,
+                                            product.categoria,
                                             style = typography.labelMedium,
                                             color = colors.onSurfaceVariant
                                         )
 
                                         Text(
-                                            product.name,
+                                            product.nombre,
                                             style = typography.bodyLarge,
                                             fontWeight = FontWeight.SemiBold,
                                             maxLines = 2,
@@ -732,7 +656,7 @@ fun HomeScreen(
                                                 )
 
                                                 Text(
-                                                    product.price,
+                                                    "$"+product.precio.toString(),
                                                     style = typography.titleMedium,
                                                     fontWeight = FontWeight.Bold,
                                                     color = colors.primary
@@ -742,7 +666,7 @@ fun HomeScreen(
                                             IconButton(
                                                 onClick = {
                                                     cartCount++
-                                                    message = "Añadido: ${product.name}"
+                                                    message = "Añadido: ${product.nombre}"
                                                 },
                                                 modifier = Modifier
                                                     .size(48.dp)
@@ -754,7 +678,7 @@ fun HomeScreen(
                                                 Icon(
                                                     Icons.Default.Add,
                                                     contentDescription =
-                                                        "Agregar ${product.name}",
+                                                        "Agregar ${product.nombre}",
                                                     tint = colors.primary
                                                 )
                                             }
@@ -779,7 +703,6 @@ fun HomeScreen(
                 }
             }
 
-            // 5. MENSAJE DE CONFIANZA
             item {
                 Surface(
                     color = colors.surfaceContainer,
@@ -829,7 +752,6 @@ fun HomeScreen(
     }
 }
 
-// CARGA DE IMÁGENES REMOTAS SIN LIBRERÍAS ADICIONALES
 @Composable
 private fun RemoteProductImage(
     url: String,

@@ -89,7 +89,7 @@ fun NutierraNavigation() {
     NavHost(
         navController = navController,
         startDestination = "splash",
-        // Avanzar: la nueva pantalla entra desde la derecha
+
         enterTransition = {
             if (usaFundido(initialState.destination.route, targetState.destination.route)) {
                 fadeIn(tween(DURACION_TRANSICION))
@@ -153,6 +153,7 @@ fun NutierraNavigation() {
 
         composable("home") {
             HomeScreen(
+                productos = productos,
                 onCatalogClick = {
                     navController.navigate("catalog")
                 },
@@ -173,14 +174,6 @@ fun NutierraNavigation() {
                 onScanClick = {
                     navController.navigate("qr_scanner")
                 },
-                /* productos = productos,
-                cantidadCarrito = carrito.sumOf { it.cantidad },
-                onAgregarAlCarrito = { productoId ->
-                    carritoViewModel.agregar(productoId, 1)
-                },
-                onProductClick = { productoId ->
-                    navController.navigate("product/$productoId")
-                } */
             )
         }
 
@@ -260,10 +253,8 @@ fun NutierraNavigation() {
                 onProductClick = { id ->
                     navController.navigate("product/$id")
                 }
-
             )
         }
-
         composable(
             route = "product/{productId}",
             arguments = listOf(

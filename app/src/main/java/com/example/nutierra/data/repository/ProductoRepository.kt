@@ -59,4 +59,5 @@ class ProductoRepository(
     suspend fun contarProductos(): Int {
         return productoDao.contarProductos()
     }
+
 }

@@ -29,6 +29,9 @@ interface ProductoDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertarSiNoExisten(productos: List<ProductoEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertarProductos(productos: List<ProductoEntity>)
+
     // Actualizar un producto existente
     @Update
     suspend fun actualizarProducto(producto: ProductoEntity)

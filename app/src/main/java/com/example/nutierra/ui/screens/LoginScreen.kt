@@ -47,7 +47,6 @@ fun LoginScreen(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    // El estado vive en el ViewModel; la pantalla solo lo observa y envía eventos
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
 
     val email = estado.correo.valor
@@ -56,10 +55,8 @@ fun LoginScreen(
     val errorMessage = estado.errorGeneral
     val detectedRole = estado.rolDetectado
 
-    // Visibilidad de la contraseña: estado puramente visual, se queda en la UI
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // Cuando el ViewModel autentica, se navega según el rol guardado en SQLite
     LaunchedEffect(estado.rolAutenticado) {
         when (estado.rolAutenticado) {
             Roles.ADMIN -> {
@@ -74,27 +71,8 @@ fun LoginScreen(
     }
 
     Scaffold(
-        containerColor = colors.surface,
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .height(56.dp)
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = colors.onSurfaceVariant
-                    )
-                }
-            }
-        }
+        containerColor = colors.surface
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()

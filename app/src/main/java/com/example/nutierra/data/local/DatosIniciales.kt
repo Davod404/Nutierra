@@ -5,10 +5,6 @@ import com.example.nutierra.data.local.entity.Roles
 import com.example.nutierra.data.local.entity.UsuarioEntity
 import com.example.nutierra.data.repository.UsuarioRepository
 
-/**
- * Datos sintéticos con los que se puebla SQLite la primera vez que se abre la app.
- * Los id son fijos para que los códigos QR "NUTIERRA:<id>" apunten siempre al mismo producto.
- */
 object DatosIniciales {
 
     val productos = listOf(
@@ -94,7 +90,6 @@ object DatosIniciales {
         )
     )
 
-    // Cuentas de demostración (datos ficticios, solo para el MVP)
     val usuarios = listOf(
         UsuarioEntity(
             nombre = "Administrador",

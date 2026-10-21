@@ -51,7 +51,6 @@ class ProductoViewModel(application: Application) :
         _error.asStateFlow()
 
     init {
-        // Carga los productos iniciales si la base de datos está vacía
         viewModelScope.launch {
             try {
                 repository.poblarSiEstaVacia()

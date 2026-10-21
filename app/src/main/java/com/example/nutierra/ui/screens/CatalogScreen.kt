@@ -36,15 +36,6 @@ import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
 
-private data class CatalogProduct(
-    val id: Int,
-    val name: String,
-    val category: String,
-    val price: Int,
-    val stock: Int,
-    val imageUrl: String
-)
-
 private val catalogCategories = listOf(
     "Todos", "Frutos secos", "Semillas", "Deshidratados"
 )
@@ -57,29 +48,18 @@ private fun catalogPrice(value: Int): String {
 
 @Composable
 fun CatalogScreen(
+    productos: List<ProductoEntity> = emptyList(),
     onHomeClick: () -> Unit = {},
     onMapClick: () -> Unit = {},
     onScanClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onProductClick: (Int) -> Unit = {},
-    productos: List<ProductoEntity> = emptyList()
+    onProductClick: (Int) -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
-
-    val catalogProducts = remember(productos) {
-        productos.map {
-            CatalogProduct(
-                id = it.id,
-                name = it.nombre,
-                category = it.categoria,
-                price = it.precio,
-                stock = it.stock,
-                imageUrl = it.imagenUri ?: ""
-            )
-        }
-    }
     val typography = MaterialTheme.typography
+
+    val catalogProducts = productos
 
     var search by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Todos") }
@@ -88,13 +68,13 @@ fun CatalogScreen(
 
     val visibleProducts = remember(catalogProducts, search, category, sort) {
         val filtered = catalogProducts.filter { product ->
-            (category == "Todos" || product.category == category) &&
-                    product.name.contains(search.trim(), ignoreCase = true)
+            (category == "Todos" || product.categoria == category) &&
+                    product.nombre.contains(search.trim(), ignoreCase = true)
         }
 
         when (sort) {
-            "Menor precio" -> filtered.sortedBy { it.price }
-            "Mayor precio" -> filtered.sortedByDescending { it.price }
+            "Menor precio" -> filtered.sortedBy { it.precio }
+            "Mayor precio" -> filtered.sortedByDescending { it.precio }
             else -> filtered.sortedByDescending { it.stock }
         }
     }
@@ -344,7 +324,6 @@ fun CatalogScreen(
                 }
             }
 
-            // CONTADOR Y ORDENAMIENTO
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -437,7 +416,6 @@ fun CatalogScreen(
                 }
             }
 
-            // RESULTADOS
             if (visibleProducts.isEmpty()) {
                 item(span = { GridItemSpan(maxLineSpan) }) {
                     Column(
@@ -517,7 +495,7 @@ fun CatalogScreen(
 
 @Composable
 private fun CatalogProductCard(
-    product: CatalogProduct,
+    product: ProductoEntity,
     onProductClick: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
@@ -544,7 +522,7 @@ private fun CatalogProductCard(
                     .background(colors.surfaceContainerHigh)
             ) {
                 CatalogRemoteImage(
-                    url = product.imageUrl,
+                    url = product.imagenUri,
                     modifier = Modifier.fillMaxSize()
                 )
 
@@ -629,7 +607,7 @@ private fun CatalogProductCard(
                     .padding(8.dp)
             ) {
                 Text(
-                    product.category,
+                    product.categoria,
                     style = typography.labelMedium,
                     color = colors.onSurfaceVariant,
                     maxLines = 1,
@@ -639,7 +617,7 @@ private fun CatalogProductCard(
                 Spacer(Modifier.height(4.dp))
 
                 Text(
-                    product.name,
+                    product.nombre,
                     style = typography.titleMedium,
                     color = colors.onSurface,
                     maxLines = 2,
@@ -654,7 +632,7 @@ private fun CatalogProductCard(
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        catalogPrice(product.price),
+                        catalogPrice(product.precio),
                         style = typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = colors.onSurface
@@ -709,7 +687,7 @@ private fun CatalogProductCard(
 
 @Composable
 private fun CatalogRemoteImage(
-    url: String,
+    url: String?,
     modifier: Modifier = Modifier
 ) {
     var bitmap by remember(url) {
