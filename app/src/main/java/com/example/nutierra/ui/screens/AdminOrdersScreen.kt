@@ -20,6 +20,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,7 +51,6 @@ private data class AdminOrder(
     val pedidoId: Int = 0
 )
 
-// Convierte un pedido guardado en SQLite al formato de esta pantalla
 private fun PedidoResumen.aAdminOrder(): AdminOrder {
     val nombre = listOfNotNull(clienteNombre, clienteApellido).joinToString(" ").ifBlank { "Cliente" }
     val iniciales = listOfNotNull(clienteNombre, clienteApellido)
@@ -85,7 +85,6 @@ fun AdminOrdersScreen(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    // Todos los pedidos reales (SQLite); se actualizan solos al cambiar de estado
     val orders = remember(pedidos) { pedidos.map { it.aAdminOrder() } }
 
     var search by remember { mutableStateOf("") }
@@ -121,7 +120,6 @@ fun AdminOrdersScreen(
         }
 
         if (nextStatus != null) {
-            // El PedidoViewModel guarda el nuevo estado en SQLite
             onAvanzarEstado(order.pedidoId, order.status)
         }
     }
@@ -210,40 +208,150 @@ fun AdminOrdersScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = colors.surface,
-                tonalElevation = 2.dp
+            Surface(
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onHomeClick,
-                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProductsClick,
-                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
-                    label = { Text("Productos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onInventoryClick,
-                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
-                    label = { Text("Inventario") }
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
-                    label = { Text("Pedidos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProfileClick,
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
-                    label = { Text("Perfil") }
-                )
+                NavigationBar(
+                    containerColor = colors.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onHomeClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Dashboard,
+                                    contentDescription = "Inicio",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inicio") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProductsClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Inventory2,
+                                    contentDescription = "Productos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Productos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onInventoryClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Warehouse,
+                                    contentDescription = "Inventario",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inventario") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = {},
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Assignment,
+                                    contentDescription = "Pedidos",
+                                    tint = if (true) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Pedidos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProfileClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = "Perfil",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Perfil") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     ) { padding ->

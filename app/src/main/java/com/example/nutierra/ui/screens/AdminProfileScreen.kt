@@ -37,10 +37,7 @@ private val accountMuted = Color(0xFF404941)
 private val accountMint = Color(0xFFB1F1C1)
 private val accountRed = Color(0xFFBA1A1A)
 
-/**
- * Cuenta personal del administrador: muestra sus datos (desde la sesión iniciada),
- * accesos rápidos a la gestión y el cierre de sesión.
- */
+
 @Composable
 fun AdminProfileScreen(
     onBack: () -> Unit = {},
@@ -91,7 +88,6 @@ fun AdminProfileScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // TARJETA DE IDENTIDAD
             Surface(
                 color = accountSurface,
                 shape = RoundedCornerShape(20.dp),
@@ -148,8 +144,6 @@ fun AdminProfileScreen(
                     }
                 }
             }
-
-            // DATOS DE LA CUENTA
             Surface(
                 color = accountSurface,
                 shape = RoundedCornerShape(20.dp),
@@ -167,7 +161,6 @@ fun AdminProfileScreen(
                 }
             }
 
-            // ACCESOS RÁPIDOS
             Text(
                 "Gestión",
                 style = MaterialTheme.typography.titleMedium,
@@ -190,7 +183,6 @@ fun AdminProfileScreen(
                 }
             }
 
-            // CERRAR SESIÓN
             OutlinedButton(
                 onClick = { mostrarDialogoSalida = true },
                 modifier = Modifier

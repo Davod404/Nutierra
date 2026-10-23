@@ -23,6 +23,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -144,46 +145,177 @@ fun CatalogScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = colors.surface,
-                tonalElevation = 2.dp
+            Surface(
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onHomeClick,
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
-                    label = { Text("Catálogo") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onMapClick,
-                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
-                    label = { Text("Mapa") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onScanClick,
-                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
-                    label = { Text("Escanear") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onOrdersClick,
-                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
-                    label = { Text("Pedidos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProfileClick ,
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") }
-                )
+                NavigationBar(
+                    containerColor = colors.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onHomeClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Home,
+                                    contentDescription = "Inicio",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inicio") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = {},
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Storefront,
+                                    contentDescription = "Catálogo",
+                                    tint = if (true) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Catálogo") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onMapClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Map,
+                                    contentDescription = "Mapa",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Mapa") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onScanClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.QrCodeScanner,
+                                    contentDescription = "Escanear",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Escanear") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onOrdersClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ReceiptLong,
+                                    contentDescription = "Pedidos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Pedidos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProfileClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = "Perfil",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Perfil") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -274,7 +406,6 @@ fun CatalogScreen(
                 }
             }
 
-            // FILTROS DE CATEGORÍA
             item(span = { GridItemSpan(maxLineSpan) }) {
                 Row(
                     modifier = Modifier

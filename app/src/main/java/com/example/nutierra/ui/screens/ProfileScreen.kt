@@ -19,8 +19,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.nutierra.ui.viewmodel.PedidoViewModel
 
 @Composable
 fun ProfileScreen(
@@ -30,11 +33,14 @@ fun ProfileScreen(
     onScanClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
     onLogout: () -> Unit = {},
-    perfilViewModel: PerfilViewModel = viewModel()
+    perfilViewModel: PerfilViewModel = viewModel(),
+    pedidoViewModel: PedidoViewModel = viewModel()
 ) {
-
     val usuario by perfilViewModel.usuario.collectAsStateWithLifecycle()
     val perfil = usuario.aPerfilUi()
+
+    val misPedidos by pedidoViewModel.misPedidos.collectAsStateWithLifecycle()
+    val totalPedidos = misPedidos.size
 
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
@@ -103,48 +109,178 @@ fun ProfileScreen(
                 }
             }
         },
-
         bottomBar = {
-            NavigationBar(
-                containerColor = colors.surface,
-                tonalElevation = 2.dp
+            Surface(
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onHomeClick,
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onCatalogClick,
-                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
-                    label = { Text("Catálogo") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onMapClick,
-                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
-                    label = { Text("Mapa") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onScanClick,
-                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
-                    label = { Text("Escanear") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onOrdersClick,
-                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
-                    label = { Text("Pedidos") }
-                )
-                NavigationBarItem(
+                NavigationBar(
+                    containerColor = colors.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onHomeClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Home,
+                                    contentDescription = "Inicio",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inicio") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = {},
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Storefront,
+                                    contentDescription = "Catálogo",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Catálogo") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onMapClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Map,
+                                    contentDescription = "Mapa",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Mapa") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onScanClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.QrCodeScanner,
+                                    contentDescription = "Escanear",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Escanear") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onOrdersClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ReceiptLong,
+                                    contentDescription = "Pedidos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Pedidos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
                     selected = true,
                     onClick = {},
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") }
+                    icon = {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (true) MaterialTheme.colorScheme.tertiary
+                                    else Color.Transparent
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Perfil",
+                                tint = if (true) MaterialTheme.colorScheme.surface
+                                else MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    label = { Text("Perfil") },
+                    colors = NavigationBarItemDefaults.colors(
+                        indicatorColor = Color.Transparent
+                    )
                 )
+                }
             }
         }
     ) { innerPadding ->
@@ -386,7 +522,7 @@ fun ProfileScreen(
                         )
 
                         Text(
-                            "3 pedidos registrados",
+                            "$totalPedidos pedidos registrados",
                             style = typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold,
                             color = colors.onSurface
@@ -410,13 +546,6 @@ fun ProfileScreen(
                                 contentDescription = null,
                                 tint = colors.primary,
                                 modifier = Modifier.size(14.dp)
-                            )
-
-                            Text(
-                                "1 en ruta",
-                                style = typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.primary
                             )
                         }
                     }

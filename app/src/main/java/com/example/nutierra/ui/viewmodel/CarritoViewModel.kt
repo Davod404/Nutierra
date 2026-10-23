@@ -1,6 +1,7 @@
 package com.example.nutierra.ui.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nutierra.data.local.NutierraDatabase
@@ -18,24 +19,25 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * Carrito de compras del usuario que inició sesión, guardado en SQLite.
- * Se comparte entre Detalle, Carrito, Checkout y Pedido confirmado.
- */
 @OptIn(ExperimentalCoroutinesApi::class)
 class CarritoViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository =
         CarritoRepository(NutierraDatabase.getDatabase(application))
 
-    // Id del usuario actual (0 si no hay sesión)
     private fun usuarioId(): Int = SesionManager.usuarioActual.value?.id ?: 0
 
-    // Cada vez que cambia el usuario, se observa SU carrito
     val items: StateFlow<List<ItemCarrito>> =
         SesionManager.usuarioActual
-            .flatMapLatest { usuario -> repository.obtenerCarrito(usuario?.id ?: 0) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+            .flatMapLatest { usuario ->
+                Log.d("CarritoViewModel", "observando carrito de ${usuario?.id}")
+                repository.obtenerCarrito(usuario?.id ?: 0)
+            }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.Eagerly,
+                emptyList()
+            )
 
     private val _procesando = MutableStateFlow(false)
     val procesando: StateFlow<Boolean> = _procesando.asStateFlow()
@@ -43,9 +45,11 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    // Último pedido confirmado (lo muestra la pantalla de éxito)
     private val _ultimoPedido = MutableStateFlow<PedidoEntity?>(null)
     val ultimoPedido: StateFlow<PedidoEntity?> = _ultimoPedido.asStateFlow()
+
+    private val _ultimoPedidoItems = MutableStateFlow<List<ItemCarrito>>(emptyList())
+    val ultimoPedidoItems: StateFlow<List<ItemCarrito>> = _ultimoPedidoItems.asStateFlow()
 
     fun agregar(productoId: Int, cantidad: Int) {
         viewModelScope.launch {
@@ -55,6 +59,7 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
             } catch (e: CompraException) {
                 _error.value = e.message
             } catch (e: Exception) {
+                Log.e("CarritoViewModel", "Error agregando", e)
                 _error.value = "No se pudo agregar al carrito"
             }
         }
@@ -65,6 +70,7 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
             try {
                 repository.cambiarCantidad(usuarioId(), productoId, cantidad)
             } catch (e: Exception) {
+                Log.e("CarritoViewModel", "Error cambiando cantidad", e)
                 _error.value = "No se pudo actualizar la cantidad"
             }
         }
@@ -75,27 +81,41 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
             try {
                 repository.eliminar(usuarioId(), productoId)
             } catch (e: Exception) {
+                Log.e("CarritoViewModel", "Error eliminando", e)
                 _error.value = "No se pudo quitar el producto"
             }
         }
     }
 
-    /** Confirma la compra; si sale bien, llama a [onExito] con el pedido creado. */
     fun confirmarCompra(onExito: (PedidoEntity) -> Unit) {
         if (_procesando.value) return
         viewModelScope.launch {
             _procesando.value = true
             _error.value = null
-            try {
-                val pedido = repository.confirmarCompra(usuarioId())
-                _ultimoPedido.value = pedido
-                onExito(pedido)
+
+            val itemsAntes = items.value
+
+            val pedido = try {
+                repository.confirmarCompra(usuarioId())
             } catch (e: CompraException) {
                 _error.value = e.message
+                null
             } catch (e: Exception) {
+                Log.e("CarritoViewModel", "Error confirmando compra", e)
                 _error.value = "No se pudo confirmar la compra"
+                null
             } finally {
                 _procesando.value = false
+            }
+
+            if (pedido != null) {
+                _ultimoPedido.value = pedido
+                _ultimoPedidoItems.value = itemsAntes
+                try {
+                    onExito(pedido)
+                } catch (e: Exception) {
+                    Log.e("CarritoViewModel", "Error en onExito", e)
+                }
             }
         }
     }

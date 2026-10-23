@@ -1,4 +1,3 @@
-
 package com.example.nutierra.ui.screens
 
 import android.Manifest
@@ -20,19 +19,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
-import com.google.maps.android.compose.*
-import kotlinx.coroutines.launch
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 
 private val mapGreen = Color(0xFF13522F)
 private val mapBackground = Color(0xFFF5FBF3)
@@ -40,9 +43,7 @@ private val mapSoft = Color(0xFFEAF0E8)
 private val mapText = Color(0xFF171D18)
 private val mapMuted = Color(0xFF404941)
 
-// Coordenadas aproximadas de demostración.
-// Sustituir por las coordenadas reales de la tienda.
-private val storeLocation = LatLng(-33.4255, -70.6110)
+private val storeLocation = GeoPoint(-33.4246122, -70.6145784)
 
 private const val storeAddress =
     "Av. Providencia 1945, Local 4, Providencia, Santiago"
@@ -53,14 +54,8 @@ fun StoreMapScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
 
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            storeLocation,
-            16f
-        )
-    }
+    var mapViewRef by remember { mutableStateOf<MapView?>(null) }
 
     var satelliteMode by remember {
         mutableStateOf(false)
@@ -111,18 +106,14 @@ fun StoreMapScreen(
                 locationClient.lastLocation
                     .addOnSuccessListener { location ->
                         if (location != null) {
-                            scope.launch {
-                                cameraPositionState.animate(
-                                    com.google.android.gms.maps.CameraUpdateFactory
-                                        .newLatLngZoom(
-                                            LatLng(
-                                                location.latitude,
-                                                location.longitude
-                                            ),
-                                            16f
-                                        )
-                                )
-                            }
+                            mapViewRef?.controller?.animateTo(
+                                GeoPoint(
+                                    location.latitude,
+                                    location.longitude
+                                ),
+                                16.0,
+                                800L
+                            )
                         } else {
                             locationMessage =
                                 "No hay una ubicación reciente disponible. " +
@@ -179,6 +170,22 @@ fun StoreMapScreen(
         } catch (e: Exception) {
             locationMessage =
                 "No se encontró una aplicación para abrir el enlace."
+        }
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_RESUME -> mapViewRef?.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapViewRef?.onPause()
+                else -> {}
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            mapViewRef?.onDetach()
         }
     }
 
@@ -240,43 +247,63 @@ fun StoreMapScreen(
                 .verticalScroll(rememberScrollState())
         ) {
 
-            // MAPA REAL
+            // MAPA REAL (OpenStreetMap vía osmdroid)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(380.dp)
             ) {
-                GoogleMap(
+                AndroidView(
                     modifier = Modifier.fillMaxSize(),
-                    cameraPositionState = cameraPositionState,
-                    properties = MapProperties(
-                        mapType = if (satelliteMode) {
-                            MapType.SATELLITE
-                        } else {
-                            MapType.NORMAL
-                        },
-                        isMyLocationEnabled = locationGranted
-                    ),
-                    uiSettings = MapUiSettings(
-                        zoomControlsEnabled = false,
-                        myLocationButtonEnabled = false,
-                        compassEnabled = true
-                    )
-                ) {
-                    Marker(
-                        state = MarkerState(
-                            position = storeLocation
-                        ),
-                        title = "Tienda Nutierra",
-                        snippet = "Ubicación de demostración",
-                        icon = BitmapDescriptorFactory
-                            .defaultMarker(
-                                BitmapDescriptorFactory.HUE_GREEN
-                            )
-                    )
-                }
+                    factory = { ctx ->
+                        MapView(ctx).apply {
+                            setTileSource(TileSourceFactory.MAPNIK)
+                            setMultiTouchControls(true)
+                            setUseDataConnection(true)
+                            controller.setZoom(16.0)
+                            controller.setCenter(storeLocation)
 
-                // Controles superiores
+                            // Marcador de la tienda
+                            val marker = Marker(this).apply {
+                                position = storeLocation
+                                title = "Tienda Nutierra"
+                                snippet = "Ubicación de demostración"
+                                setAnchor(
+                                    Marker.ANCHOR_CENTER,
+                                    Marker.ANCHOR_BOTTOM
+                                )
+                                icon = ContextCompat.getDrawable(
+                                    ctx,
+                                    org.osmdroid.library.R.drawable.marker_default
+                                )
+                            }
+                            overlays.add(marker)
+
+                            if (locationGranted) {
+                                val myLocationOverlay = MyLocationNewOverlay(
+                                    GpsMyLocationProvider(ctx),
+                                    this
+                                ).apply {
+                                    enableMyLocation()
+                                }
+                                overlays.add(myLocationOverlay)
+                            }
+
+                            mapViewRef = this
+                        }
+                    },
+                    update = { mapView ->
+                        mapView.setTileSource(
+                            if (satelliteMode) {
+                                TileSourceFactory.USGS_SAT
+                            } else {
+                                TileSourceFactory.MAPNIK
+                            }
+                        )
+                        mapView.invalidate()
+                    }
+                )
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -317,24 +344,8 @@ fun StoreMapScreen(
                             )
                         }
                     }
-
-                    FilledIconButton(
-                        onClick = {
-                            satelliteMode = !satelliteMode
-                        },
-                        colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = Color.White,
-                            contentColor = mapGreen
-                        )
-                    ) {
-                        Icon(
-                            Icons.Default.Layers,
-                            contentDescription = "Cambiar tipo de mapa"
-                        )
-                    }
                 }
 
-                // Controles inferiores
                 Row(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -348,31 +359,6 @@ fun StoreMapScreen(
                         shape = RoundedCornerShape(12.dp),
                         shadowElevation = 3.dp
                     ) {
-                        Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.Storefront,
-                                contentDescription = null,
-                                tint = mapGreen
-                            )
-
-                            Spacer(Modifier.width(8.dp))
-
-                            Column {
-                                Text(
-                                    "Tienda Nutierra",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Text(
-                                    "Ubicación de ejemplo",
-                                    fontSize = 10.sp,
-                                    color = mapMuted
-                                )
-                            }
-                        }
                     }
 
                     FilledIconButton(
@@ -526,11 +512,12 @@ fun StoreMapScreen(
 
                 Button(
                     onClick = {
-                        val destination = Uri.encode(storeAddress)
-
+                        val lat = storeLocation.latitude
+                        val lon = storeLocation.longitude
                         openExternalUrl(
-                            "https://www.google.com/maps/dir/?api=1" +
-                                    "&destination=$destination"
+                            "https://www.openstreetmap.org/" +
+                                    "?mlat=$lat&mlon=$lon" +
+                                    "#map=17/$lat/$lon"
                         )
                     },
                     modifier = Modifier
@@ -549,7 +536,7 @@ fun StoreMapScreen(
                     Spacer(Modifier.width(8.dp))
 
                     Text(
-                        "Cómo llegar con Google Maps",
+                        "Cómo llegar en OpenStreetMap",
                         fontWeight = FontWeight.SemiBold
                     )
                 }

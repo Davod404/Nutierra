@@ -1,10 +1,10 @@
 package com.example.nutierra.ui.screens
 
-import androidx.compose.foundation.clickable
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -16,7 +16,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,52 +24,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
-
-// PRODUCTOS DE DEMOSTRACIÓN DE FIGMA
-private data class CartProduct(
-    val id: Int,
-    val name: String,
-    val category: String,
-    val price: Int,
-    val stock: Int,
-    val imageUrl: String,
-    val quantity: Int
-)
-
-private val initialCart = listOf(
-    CartProduct(
-        id = 1,
-        name = "Almendras Naturales",
-        category = "Frutos secos • 250 g",
-        price = 4990,
-        stock = 24,
-        quantity = 2,
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBc9bJz_f6QRwpfdVMeL4QvwR5ys3lGHuL3RoiPHFzbxDw_5JYKbmYt7E7hi7GqtWPbQHTSzawH-UhMgQFBbVvNMzMcvdIuu1FIVxlcptlNLXFbuvftr4m3B0SPXtpB7prwIf54Fjt7V5PTIkB-Ochs_ipjCrL64IF1VIbYbMR2IhBgqH5wLXp6TKQx7X89mp6orUd_CChJ_Zz980ZQSv2p0tIxJqJrtuZzqpM6me0"
-    ),
-    CartProduct(
-        id = 2,
-        name = "Nueces Mariposa",
-        category = "Frutos secos • 250 g",
-        price = 5490,
-        stock = 18,
-        quantity = 1,
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBTIR-ryK6GVM-j-2YNJyj9Md88FOk7iFAn3uhWlQPf_FZXu4RIFb7_injcGb3DflksXd4oIAD4cnetPXn4ZO2MOF0sOpkjDLpwC0g5eyjo2IOd_MOC8Vm4oT-FQfgQyWCZAz3wdMvtks2bpfCu9h5ELbzRCWJth1bbQRB1cW_uiuTC_8oACLDlYpYcjPO3TP7FsVnOcXSZKb3ukUKjLXDv0jQNokxRuKE5lgxK0k8"
-    ),
-    CartProduct(
-        id = 4,
-        name = "Semillas de Chía",
-        category = "Semillas • 250 g",
-        price = 2990,
-        stock = 40,
-        quantity = 1,
-        imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuAO-DtTVW3VNZTuftOhZLXXCuNveDbiGl9vP59hSQWRfUZcjEv0B6X2mPb6Qrfk7ykhuZn9WBhoZM4ZRawjaZ4R0nzrQm2p_O_9jP6IS2fyuu3xZ92hHE0Q-9feJko8JWpQ1RpXQ74UwvV3QDep7SGIdAwYWz-RHtqZI9vr02mTJjqz0Hnj6MAzgxIXw0ZutTto2Y5z7tfJX4DMQQPriqdXX82kCZ_SJ5vRp8f8gfU"
-    )
-)
 
 private fun cartPrice(value: Int): String {
     return "$" + NumberFormat.getIntegerInstance(
@@ -80,6 +42,7 @@ private fun cartPrice(value: Int): String {
 
 @Composable
 fun CartScreen(
+    viewModel: CarritoViewModel = viewModel(),
     onBack: () -> Unit = {},
     onContinueShopping: () -> Unit = {},
     onCheckout: () -> Unit = {},
@@ -88,17 +51,25 @@ fun CartScreen(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    val products = remember {
-        mutableStateListOf<CartProduct>().apply {
-            addAll(initialCart)
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val procesando by viewModel.procesando.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
+
+    val totalUnits = items.sumOf { it.cantidad }
+    val total = items.sumOf { it.subtotal }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(error) {
+        error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.limpiarError()
         }
     }
 
-    val totalUnits = products.sumOf { it.quantity }
-    val total = products.sumOf { it.price * it.quantity }
-
     Scaffold(
         containerColor = colors.surface,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -121,17 +92,14 @@ fun CartScreen(
 
                     Box(
                         modifier = Modifier
-                            .size(34.dp)
-                            .background(
-                                colors.primaryFixed,
-                                RoundedCornerShape(10.dp)
-                            ),
+                            .size(36.dp)
+                            .background(colors.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Eco,
-                            contentDescription = null,
-                            tint = colors.primary
+                            contentDescription = "Nutierra",
+                            tint = colors.onPrimary
                         )
                     }
 
@@ -173,7 +141,7 @@ fun CartScreen(
                 ) {
                     Button(
                         onClick = onCheckout,
-                        enabled = products.isNotEmpty(),
+                        enabled = items.isNotEmpty() && !procesando,
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp),
@@ -182,26 +150,34 @@ fun CartScreen(
                             containerColor = colors.primary
                         )
                     ) {
-                        Icon(
-                            Icons.Default.ShoppingBag,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        if (procesando) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = colors.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.ShoppingBag,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
 
-                        Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(8.dp))
 
-                        Text(
-                            "Continuar a confirmación",
-                            style = typography.labelLarge
-                        )
+                            Text(
+                                "Continuar a confirmación",
+                                style = typography.labelLarge
+                            )
 
-                        Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(8.dp))
 
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
 
                     TextButton(
@@ -229,7 +205,6 @@ fun CartScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // TÍTULO Y CONTADOR
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -280,7 +255,6 @@ fun CartScreen(
                 }
             }
 
-            // EXISTENCIAS VERIFICADAS
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp),
@@ -298,16 +272,11 @@ fun CartScreen(
                     )
 
                     Column {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Text(
-                                "Existencias verificadas",
-                                style = typography.labelLarge,
-                                color = colors.primary
-                            )
-                        }
+                        Text(
+                            "Existencias verificadas",
+                            style = typography.labelLarge,
+                            color = colors.primary
+                        )
 
                         Text(
                             "Bodega Central",
@@ -327,8 +296,7 @@ fun CartScreen(
                 }
             }
 
-            // PRODUCTOS
-            if (products.isEmpty()) {
+            if (items.isEmpty()) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -364,25 +332,21 @@ fun CartScreen(
                     }
                 }
             } else {
-                products.forEach { product ->
-                    key(product.id) {
-                        CartProductCard(
-                            product = product,
-                            onRemove = {
-                                products.removeAll { it.id == product.id }
-                            },
+                items.forEach { item ->
+                    key(item.productoId) {
+                        CartItemCard(
+                            item = item,
+                            onRemove = { viewModel.eliminar(item.productoId) },
                             onDecrease = {
-                                updateCartQuantity(
-                                    products,
-                                    product.id,
-                                    product.quantity - 1
+                                viewModel.cambiarCantidad(
+                                    item.productoId,
+                                    item.cantidad - 1
                                 )
                             },
                             onIncrease = {
-                                updateCartQuantity(
-                                    products,
-                                    product.id,
-                                    product.quantity + 1
+                                viewModel.cambiarCantidad(
+                                    item.productoId,
+                                    item.cantidad + 1
                                 )
                             }
                         )
@@ -390,7 +354,6 @@ fun CartScreen(
                 }
             }
 
-            // NOTA DE CONFIANZA
             Surface(
                 color = colors.secondaryFixed.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(16.dp)
@@ -425,7 +388,6 @@ fun CartScreen(
                 }
             }
 
-            // RESUMEN
             Text(
                 "Resumen del pedido",
                 style = typography.titleMedium
@@ -522,25 +484,9 @@ fun CartScreen(
     }
 }
 
-private fun updateCartQuantity(
-    products: SnapshotStateList<CartProduct>,
-    id: Int,
-    quantity: Int
-) {
-    val index = products.indexOfFirst { it.id == id }
-
-    if (index == -1) return
-
-    val product = products[index]
-
-    if (quantity in 1..product.stock) {
-        products[index] = product.copy(quantity = quantity)
-    }
-}
-
 @Composable
-private fun CartProductCard(
-    product: CartProduct,
+private fun CartItemCard(
+    item: ItemCarrito,
     onRemove: () -> Unit,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit
@@ -569,7 +515,7 @@ private fun CartProductCard(
                         .background(colors.surfaceContainer)
                 ) {
                     CartRemoteImage(
-                        url = product.imageUrl,
+                        url = item.imagenUri.orEmpty(),
                         modifier = Modifier.fillMaxSize()
                     )
                 }
@@ -578,13 +524,13 @@ private fun CartProductCard(
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        product.category,
+                        "${item.categoria} • ${item.peso}",
                         style = typography.labelMedium,
                         color = colors.secondary
                     )
 
                     Text(
-                        product.name,
+                        item.nombre,
                         style = typography.titleMedium,
                         color = colors.onSurface
                     )
@@ -596,7 +542,7 @@ private fun CartProductCard(
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            cartPrice(product.price),
+                            cartPrice(item.precio),
                             style = typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -615,7 +561,7 @@ private fun CartProductCard(
                 ) {
                     Icon(
                         Icons.Default.DeleteOutline,
-                        contentDescription = "Eliminar ${product.name}",
+                        contentDescription = "Eliminar ${item.nombre}",
                         tint = colors.outline
                     )
                 }
@@ -642,7 +588,7 @@ private fun CartProductCard(
                             ) {
                                 IconButton(
                                     onClick = onDecrease,
-                                    enabled = product.quantity > 1,
+                                    enabled = item.cantidad > 1,
                                     modifier = Modifier.size(34.dp)
                                 ) {
                                     Icon(
@@ -653,7 +599,7 @@ private fun CartProductCard(
                                 }
 
                                 Text(
-                                    product.quantity.toString(),
+                                    item.cantidad.toString(),
                                     style = typography.titleMedium,
                                     textAlign = TextAlign.Center,
                                     modifier = Modifier.width(28.dp)
@@ -661,7 +607,7 @@ private fun CartProductCard(
 
                                 IconButton(
                                     onClick = onIncrease,
-                                    enabled = product.quantity < product.stock,
+                                    enabled = item.cantidad < item.stock,
                                     modifier = Modifier.size(34.dp)
                                 ) {
                                     Icon(
@@ -677,10 +623,7 @@ private fun CartProductCard(
                         Spacer(Modifier.height(4.dp))
 
                         Text(
-                            if (product.id == 1)
-                                "Máx. ${product.stock} disp."
-                            else
-                                "En stock",
+                            "Máx. ${item.stock} disp.",
                             style = typography.labelMedium,
                             color = colors.onSurfaceVariant
                         )
@@ -696,7 +639,7 @@ private fun CartProductCard(
                         )
 
                         Text(
-                            "${cartPrice(product.price * product.quantity)} CLP",
+                            "${cartPrice(item.subtotal)} CLP",
                             style = typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             color = colors.primary
@@ -741,6 +684,7 @@ private fun CartRemoteImage(
     }
 
     LaunchedEffect(url) {
+        if (url.isBlank()) return@LaunchedEffect
         bitmap = withContext(Dispatchers.IO) {
             try {
                 val connection = URL(url).openConnection()

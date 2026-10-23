@@ -11,14 +11,26 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.data.local.entity.EstadosPedido
+import com.example.nutierra.data.local.entity.PedidoResumen
+import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.data.session.SesionManager
+import com.example.nutierra.ui.viewmodel.PedidoViewModel
+import com.example.nutierra.ui.viewmodel.ProductoViewModel
+import java.text.NumberFormat
+import java.util.Calendar
+import java.util.Locale
 
 private val adminGreen = Color(0xFF13522F)
 private val adminBackground = Color(0xFFF5FBF3)
@@ -27,15 +39,62 @@ private val adminMuted = Color(0xFF404941)
 private val adminSoft = Color(0xFFEAF0E8)
 private val adminMint = Color(0xFFB1F1C1)
 
+private fun adminPrice(value: Int): String {
+    return "$" + NumberFormat.getIntegerInstance(
+        Locale.forLanguageTag("es-CL")
+    ).format(value)
+}
+
+private fun initialsOf(nombre: String?, apellido: String?): String {
+    val a = nombre?.trim()?.firstOrNull()?.uppercaseChar()
+    val b = apellido?.trim()?.firstOrNull()?.uppercaseChar()
+    return listOfNotNull(a, b).joinToString("").ifEmpty { "?" }
+}
+
+private fun inicioDelDia(): Long {
+    val cal = Calendar.getInstance()
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    return cal.timeInMillis
+}
+
 @Composable
 fun AdminHomeScreen(
     onProductsClick: () -> Unit,
     onInventoryClick: () -> Unit,
     onOrdersClick: () -> Unit,
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    productoViewModel: ProductoViewModel = viewModel(),
+    pedidoViewModel: PedidoViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+
+    val productos by productoViewModel.productos.collectAsStateWithLifecycle()
+    val pedidos by pedidoViewModel.todosLosPedidos.collectAsStateWithLifecycle()
+    val usuario by SesionManager.usuarioActual.collectAsStateWithLifecycle()
+
+    val nombreAdmin = usuario?.nombre?.takeIf { it.isNotBlank() } ?: "Administrador"
+
+    val productosActivos = productos.count { it.stock > 0 }
+    val bajoStock = productos.filter { it.stock in 1..5 }
+    val criticos = productos.filter { it.stock == 0 }
+    val pendientes = pedidos.filter { it.pedido.estado == EstadosPedido.PENDIENTE }
+
+    val inicioHoy = inicioDelDia()
+    val pedidosHoy = pedidos.filter { it.pedido.fecha >= inicioHoy }
+    val recaudadoHoy = pedidosHoy.sumOf { it.pedido.total }
+
+    val prioridad = pendientes
+        .sortedByDescending { it.pedido.fecha }
+        .take(2)
+
+    val inventarioCritico = productos
+        .filter { it.stock <= 5 }
+        .sortedBy { it.stock }
+        .take(3)
 
     Scaffold(
         containerColor = adminBackground,
@@ -54,7 +113,6 @@ fun AdminHomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Column {
-
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -100,8 +158,6 @@ fun AdminHomeScreen(
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
-
-
                         }
                     }
 
@@ -125,40 +181,150 @@ fun AdminHomeScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = colors.surface,
-                tonalElevation = 2.dp
+            Surface(
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProductsClick,
-                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
-                    label = { Text("Productos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onInventoryClick,
-                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
-                    label = { Text("Inventario") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onOrdersClick,
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
-                    label = { Text("Pedidos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProfileClick,
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
-                    label = { Text("Perfil") }
-                )
+                NavigationBar(
+                    containerColor = colors.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = {},
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Dashboard,
+                                    contentDescription = "Inicio",
+                                    tint = if (true) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inicio") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProductsClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Inventory2,
+                                    contentDescription = "Productos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Productos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onInventoryClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Warehouse,
+                                    contentDescription = "Inventario",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inventario") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onOrdersClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Assignment,
+                                    contentDescription = "Pedidos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Pedidos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProfileClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = "Perfil",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Perfil") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     ) { padding ->
@@ -199,7 +365,7 @@ fun AdminHomeScreen(
                     ) {
                         Column {
                             Text(
-                                "¡Hola, Rodrigo!",
+                                "¡Hola, $nombreAdmin!",
                                 fontSize = 24.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -219,17 +385,17 @@ fun AdminHomeScreen(
                         AdminMetric(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Inventory2,
-                            value = "8",
+                            value = productosActivos.toString(),
                             description = "Productos activos",
-                            status = "Al día",
+                            status = if (productosActivos == productos.size) "Al día" else "${productos.size - productosActivos} sin stock",
                             background = Color.White
                         )
                         AdminMetric(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Warning,
-                            value = "≤ 5",
+                            value = bajoStock.size.toString(),
                             description = "Bajo stock físico",
-                            status = "2 críticos",
+                            status = if (criticos.isEmpty()) "Sin críticos" else "${criticos.size} críticos",
                             background = Color(0xFFFFDCC5)
                         )
                     }
@@ -237,17 +403,17 @@ fun AdminHomeScreen(
                         AdminMetric(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.PendingActions,
-                            value = "4",
+                            value = pendientes.size.toString(),
                             description = "Por validar",
-                            status = "Requiere acción",
+                            status = if (pendientes.isEmpty()) "Todo al día" else "Requiere acción",
                             background = Color(0xFFFFDDB6)
                         )
                         AdminMetric(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.PointOfSale,
-                            value = "$118.420",
+                            value = adminPrice(recaudadoHoy),
                             description = "Total recaudado hoy",
-                            status = "9 pedidos",
+                            status = "${pedidosHoy.size} pedidos",
                             background = adminGreen,
                             dark = true
                         )
@@ -292,7 +458,7 @@ fun AdminHomeScreen(
                         Column {
                             AdminSectionTitle("Validación prioritaria")
                             Text(
-                                "4 nuevos",
+                                "${pendientes.size} nuevos",
                                 color = adminGreen,
                                 fontSize = 12.sp
                             )
@@ -306,23 +472,37 @@ fun AdminHomeScreen(
                         }
                     }
 
-                    AdminOrderCard(
-                        initials = "FM",
-                        customer = "Francisca Morales",
-                        detail = "#PED-2024-00129 • 4 variedades",
-                        amount = "$18.460 CLP",
-                        onDetail = onOrdersClick,
-                        onValidate = onOrdersClick
-                    )
-
-                    AdminOrderCard(
-                        initials = "CM",
-                        customer = "Carlos Mendoza",
-                        detail = "#PED-2024-00128 • 3 variedades",
-                        amount = "$12.970 CLP",
-                        onDetail = onOrdersClick,
-                        onValidate = onOrdersClick
-                    )
+                    if (prioridad.isEmpty()) {
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = Color.White,
+                            shadowElevation = 2.dp
+                        ) {
+                            Text(
+                                "No hay pedidos pendientes de validación.",
+                                modifier = Modifier.padding(16.dp),
+                                fontSize = 13.sp,
+                                color = adminMuted
+                            )
+                        }
+                    } else {
+                        prioridad.forEach { pedido ->
+                            AdminOrderCard(
+                                initials = initialsOf(
+                                    pedido.clienteNombre,
+                                    pedido.clienteApellido
+                                ),
+                                customer = listOfNotNull(
+                                    pedido.clienteNombre,
+                                    pedido.clienteApellido
+                                ).joinToString(" ").ifBlank { "Cliente #${pedido.pedido.usuarioId}" },
+                                detail = "${pedido.pedido.codigo} • ${pedido.pedido.cantidadProductos} variedades",
+                                amount = "${adminPrice(pedido.pedido.total)} CLP",
+                                onDetail = onOrdersClick,
+                                onValidate = onOrdersClick
+                            )
+                        }
+                    }
                 }
             }
 
@@ -349,27 +529,33 @@ fun AdminHomeScreen(
                         }
                     }
 
-                    AdminStockCard(
-                        name = "Cranberries Rojos",
-                        detail = "Bolsa 250 g • Tostaduría",
-                        stock = "0 unidades disponibles",
-                        action = "Reponer",
-                        onClick = onInventoryClick
-                    )
-                    AdminStockCard(
-                        name = "Damascos Turcos",
-                        detail = "Bolsa 250 g • Importado",
-                        stock = "4 unidades restantes",
-                        action = "Ajustar",
-                        onClick = onInventoryClick
-                    )
-                    AdminStockCard(
-                        name = "Linaza Dorada",
-                        detail = "Granel 500 g • Cosecha Sur",
-                        stock = "5 unidades restantes",
-                        action = "Ajustar",
-                        onClick = onInventoryClick
-                    )
+                    if (inventarioCritico.isEmpty()) {
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color.White,
+                            shadowElevation = 1.dp
+                        ) {
+                            Text(
+                                "Inventario al día. No hay productos con stock crítico.",
+                                modifier = Modifier.padding(16.dp),
+                                fontSize = 13.sp,
+                                color = adminMuted
+                            )
+                        }
+                    } else {
+                        inventarioCritico.forEach { producto ->
+                            AdminStockCard(
+                                name = producto.nombre,
+                                detail = "${producto.peso} • ${producto.categoria}",
+                                stock = if (producto.stock == 0)
+                                    "0 unidades disponibles"
+                                else
+                                    "${producto.stock} unidades restantes",
+                                action = if (producto.stock == 0) "Reponer" else "Ajustar",
+                                onClick = onInventoryClick
+                            )
+                        }
+                    }
                 }
             }
         }

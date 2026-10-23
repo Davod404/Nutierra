@@ -1,7 +1,5 @@
 package com.example.nutierra.ui.screens
 
-import com.example.nutierra.data.local.entity.ItemCarrito
-import com.example.nutierra.ui.components.FilaError
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,6 +16,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.components.FilaError
+import com.example.nutierra.ui.viewmodel.CarritoViewModel
 
 private data class CheckoutProduct(
     val name: String,
@@ -34,16 +36,17 @@ private fun checkoutPrice(value: Int): String {
 
 @Composable
 fun CheckoutScreen(
+    viewModel: CarritoViewModel = viewModel(),
     onBack: () -> Unit = {},
-    onOrderSuccess: () -> Unit = {},
-    items: List<ItemCarrito> = emptyList(),
-    procesando: Boolean = false,
-    mensajeError: String? = null
+    onOrderSuccess: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    // Productos reales del carrito (SQLite)
+    val items by viewModel.items.collectAsStateWithLifecycle()
+    val procesando by viewModel.procesando.collectAsStateWithLifecycle()
+    val mensajeError by viewModel.error.collectAsStateWithLifecycle()
+
     val checkoutProducts = remember(items) {
         items.map {
             CheckoutProduct(
@@ -87,17 +90,14 @@ fun CheckoutScreen(
 
                     Box(
                         modifier = Modifier
-                            .size(34.dp)
-                            .background(
-                                colors.primaryFixed,
-                                RoundedCornerShape(10.dp)
-                            ),
+                            .size(36.dp)
+                            .background(colors.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Eco,
-                            contentDescription = null,
-                            tint = colors.primary
+                            contentDescription = "Nutierra",
+                            tint = colors.onPrimary
                         )
                     }
 
@@ -137,7 +137,6 @@ fun CheckoutScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Error de la compra (por ejemplo, stock insuficiente)
                     mensajeError?.let { FilaError(it) }
 
                     Button(
@@ -153,18 +152,26 @@ fun CheckoutScreen(
                             containerColor = colors.primary
                         )
                     ) {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
+                        if (procesando) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = colors.onPrimary,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = null,
+                                modifier = Modifier.size(20.dp)
+                            )
 
-                        Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(8.dp))
 
-                        Text(
-                            "Enviar solicitud de compra",
-                            style = typography.labelLarge
-                        )
+                            Text(
+                                "Enviar solicitud de compra",
+                                style = typography.labelLarge
+                            )
+                        }
                     }
 
                     TextButton(
@@ -202,7 +209,6 @@ fun CheckoutScreen(
 
             Spacer(Modifier.height(4.dp))
 
-            // INDICADOR DE PROGRESO
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp),
@@ -290,7 +296,6 @@ fun CheckoutScreen(
                 }
             }
 
-            // AVISO IMPORTANTE
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp),
@@ -354,7 +359,6 @@ fun CheckoutScreen(
                 }
             }
 
-            // RESUMEN DE ARTÍCULOS
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -413,7 +417,6 @@ fun CheckoutScreen(
                 }
             }
 
-            // TOTAL CONSOLIDADO
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp)
@@ -467,7 +470,6 @@ fun CheckoutScreen(
                 }
             }
 
-            // DATOS DE COORDINACIÓN
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -535,7 +537,6 @@ fun CheckoutScreen(
                 }
             }
 
-            // SOPORTE
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp)
@@ -569,7 +570,6 @@ fun CheckoutScreen(
         }
     }
 
-    // CONFIRMACIÓN DE LA COMPRA
     if (showConfirmation) {
         AlertDialog(
             onDismissRequest = {
@@ -601,8 +601,9 @@ fun CheckoutScreen(
                 Button(
                     onClick = {
                         showConfirmation = false
-                        // El CarritoViewModel crea el pedido y navega si todo sale bien
-                        onOrderSuccess()
+                        viewModel.confirmarCompra { pedido ->
+                            onOrderSuccess()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {

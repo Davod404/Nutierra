@@ -53,8 +53,6 @@ fun AdminEditProductScreen(
     producto: ProductoEntity? = null,
     viewModel: ProductoFormViewModel = viewModel()
 ) {
-    // Estado y validaciones viven en ProductoFormViewModel.
-    // Cuando el producto llega desde SQLite, el formulario se rellena con sus datos.
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(producto) {
@@ -64,15 +62,12 @@ fun AdminEditProductScreen(
     val productName = estado.nombre.valor
     val category = estado.categoria
     val price = estado.precio.valor
-    // Solo se muestra como "nueva" si es distinta de la imagen guardada
     val imageUri = estado.imagenUri?.takeIf { it != producto?.imagenUri }
 
     var showSaveBanner by remember(productId) {
         mutableStateOf(false)
     }
 
-
-    // Validez en vivo para el resumen inferior
     val validName = estado.nombreValido
     val validPrice = estado.precioValido
 
@@ -82,13 +77,11 @@ fun AdminEditProductScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            // Se copia a la app para que la imagen se pueda mostrar siempre
             viewModel.cambiarImagen(copiarImagenALaApp(context, uri) ?: uri.toString())
         }
     }
 
     fun saveChanges() {
-        // El ViewModel revalida todo; al editar se conserva la imagen anterior si no hay nueva
         if (viewModel.validar(exigirImagen = false)) {
             onSaveProduct(
                 EditedAdminProduct(
@@ -200,7 +193,6 @@ fun AdminEditProductScreen(
                 }
             }
 
-            // SKU y estado
             Surface(
                 color = Color.White,
                 shape = RoundedCornerShape(14.dp),
@@ -219,13 +211,13 @@ fun AdminEditProductScreen(
                     ) {
                         Column {
                             Text(
-                                "SKU: ALM-250",
+                                "ID: #${producto?.id ?: productId}",
                                 fontSize = 12.sp,
                                 color = editMuted,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                "Creado el 14 Oct, 2024",
+                                "Producto del catálogo",
                                 fontSize = 11.sp,
                                 color = editMuted
                             )
@@ -458,7 +450,6 @@ fun AdminEditProductScreen(
                 }
             }
 
-            // Precio unitario
             Surface(
                 color = Color.White,
                 shape = RoundedCornerShape(14.dp),
@@ -504,12 +495,7 @@ fun AdminEditProductScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            "IVA incluido (19%)",
-                            fontSize = 12.sp,
-                            color = editMuted
-                        )
-                        Text(
-                            "Margen aprox: 42%",
+                            "Precio final",
                             fontSize = 12.sp,
                             color = editGreen,
                             fontWeight = FontWeight.SemiBold
@@ -519,7 +505,6 @@ fun AdminEditProductScreen(
                 }
             }
 
-            // Control de inventario
             Surface(
                 color = editSoft,
                 shape = RoundedCornerShape(14.dp)
@@ -546,13 +531,13 @@ fun AdminEditProductScreen(
                     }
 
                     Text(
-                        "Stock disponible: 24 unidades",
+                        "Stock disponible: ${producto?.stock ?: 0} unidades",
                         fontWeight = FontWeight.Bold,
                         color = editGreen
                     )
 
                     Text(
-                        "El inventario físico (24 unidades actuales) se gestiona de forma centralizada desde el módulo Inventario para mantener trazabilidad con la base de datos de lotes y vencimientos.",
+                        "El inventario físico (${producto?.stock ?: 0} unidades actuales) se gestiona de forma centralizada desde el módulo Inventario para mantener trazabilidad con la base de datos de lotes y vencimientos.",
                         fontSize = 13.sp,
                         color = editMuted,
                         lineHeight = 19.sp

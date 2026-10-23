@@ -27,8 +27,12 @@ import androidx.compose.ui.graphics.asImageBitmap
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-import com.example.nutierra.data.local.DatosIniciales
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -41,15 +45,16 @@ fun HomeScreen(
     onProfileClick: () -> Unit,
     onCartClick: () -> Unit,
     onMapClick: () -> Unit = {},
-    onScanClick: () -> Unit = {}
+    onScanClick: () -> Unit = {},
+    viewModel: CarritoViewModel = viewModel()
 ) {
-
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
+    val cartItems by viewModel.items.collectAsStateWithLifecycle()
+    val cartCount = cartItems.sumOf { it.cantidad }
+
     var search by remember { mutableStateOf("") }
-    var cartCount by remember { mutableIntStateOf(2) }
-    var selectedTab by remember { mutableIntStateOf(0) }
     var selectedCategory by remember { mutableStateOf<String?>(null) }
     var showFilters by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
@@ -63,13 +68,16 @@ fun HomeScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(message) {
+        message?.let {
+            snackbarHostState.showSnackbar(it)
+            message = null
+        }
+    }
+
     Scaffold(
         containerColor = colors.surface,
-
-        snackbarHost = {
-            SnackbarHost(hostState = snackbarHostState)
-        },
-
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -134,46 +142,177 @@ fun HomeScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = colors.surface,
-                tonalElevation = 2.dp
+            Surface(
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onCatalogClick,
-                    icon = { Icon(Icons.Default.Storefront, contentDescription = "Catálogo") },
-                    label = { Text("Catálogo") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onMapClick,
-                    icon = { Icon(Icons.Default.Map, contentDescription = "Mapa") },
-                    label = { Text("Mapa") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onScanClick,
-                    icon = { Icon(Icons.Default.QrCodeScanner, contentDescription = "Escanear") },
-                    label = { Text("Escanear") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onOrdersClick,
-                    icon = { Icon(Icons.AutoMirrored.Filled.ReceiptLong, contentDescription = "Pedidos") },
-                    label = { Text("Pedidos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProfileClick ,
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") }
-                )
+                NavigationBar(
+                    containerColor = colors.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = {},
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Home,
+                                    contentDescription = "Inicio",
+                                    tint = if (true) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inicio") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onCatalogClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Storefront,
+                                    contentDescription = "Catálogo",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Catálogo") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onMapClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Map,
+                                    contentDescription = "Mapa",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Mapa") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onScanClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.QrCodeScanner,
+                                    contentDescription = "Escanear",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Escanear") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onOrdersClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.ReceiptLong,
+                                    contentDescription = "Pedidos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Pedidos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProfileClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = "Perfil",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Perfil") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -216,9 +355,7 @@ fun HomeScreen(
 
                         Box {
                             IconButton(
-                                onClick = {
-                                    onCartClick()
-                                },
+                                onClick = { onCartClick() },
                                 modifier = Modifier
                                     .size(48.dp)
                                     .background(
@@ -262,7 +399,6 @@ fun HomeScreen(
                             .padding(horizontal = 12.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-
                         Icon(
                             Icons.Default.Search,
                             contentDescription = null,
@@ -272,7 +408,8 @@ fun HomeScreen(
                         Spacer(Modifier.width(8.dp))
 
                         Box(
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier
+                                .weight(1f)
                                 .fillMaxWidth()
                         ) {
                             if (search.isEmpty()) {
@@ -311,7 +448,7 @@ fun HomeScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .horizontalScroll(rememberScrollState()),   // 👈 clave
+                                .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             listOf(
@@ -337,7 +474,6 @@ fun HomeScreen(
                 }
             }
 
-            // 2. BANNER
             item {
                 Box(
                     modifier = Modifier
@@ -346,12 +482,10 @@ fun HomeScreen(
                         .background(colors.primary)
                         .padding(20.dp)
                 ) {
-
                     Column(
                         modifier = Modifier.fillMaxWidth(0.85f),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-
                         Surface(
                             color = colors.primaryFixed,
                             shape = CircleShape
@@ -416,12 +550,10 @@ fun HomeScreen(
                 }
             }
 
-            // 3. CATEGORÍAS
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -449,7 +581,6 @@ fun HomeScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-
                         val categories = listOf(
                             Triple("Frutos secos", "+18 prod.", Icons.Default.Eco),
                             Triple("Semillas", "+12 prod.", Icons.Default.Grain),
@@ -473,7 +604,6 @@ fun HomeScreen(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.SpaceBetween
                                 ) {
-
                                     Box(
                                         modifier = Modifier
                                             .size(48.dp)
@@ -523,14 +653,12 @@ fun HomeScreen(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-
                             Text(
                                 "Productos disponibles",
                                 style = typography.titleMedium
@@ -576,7 +704,6 @@ fun HomeScreen(
                                     Column(
                                         modifier = Modifier.padding(12.dp)
                                     ) {
-
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -647,7 +774,6 @@ fun HomeScreen(
                                             verticalAlignment = Alignment.CenterVertically,
                                             horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-
                                             Column {
                                                 Text(
                                                     "Precio",
@@ -665,8 +791,7 @@ fun HomeScreen(
 
                                             IconButton(
                                                 onClick = {
-                                                    cartCount++
-                                                    message = "Añadido: ${product.nombre}"
+                                                    viewModel.agregar(product.id, 1)
                                                 },
                                                 modifier = Modifier
                                                     .size(48.dp)
@@ -715,7 +840,6 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-
                         Box(
                             modifier = Modifier
                                 .size(40.dp)

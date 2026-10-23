@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.nutierra.data.local.entity.ItemCarrito
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -33,10 +34,11 @@ private fun successPrice(value: Int): String {
 
 @Composable
 fun OrderSuccessScreen(
-    orderCode: String = "#PED-2024-00129",
-    total: Int = 18460,
-    productCount: Int = 3,
-    unitCount: Int = 4,
+    orderCode: String = "",
+    total: Int = 0,
+    productCount: Int = 0,
+    unitCount: Int = 0,
+    items: List<ItemCarrito> = emptyList(),
     onBack: () -> Unit = {},
     onViewOrder: () -> Unit = {},
     onCatalogClick: () -> Unit = {}
@@ -79,17 +81,14 @@ fun OrderSuccessScreen(
 
                     Box(
                         modifier = Modifier
-                            .size(34.dp)
-                            .background(
-                                colors.primaryFixed,
-                                RoundedCornerShape(10.dp)
-                            ),
+                            .size(36.dp)
+                            .background(colors.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Eco,
-                            contentDescription = null,
-                            tint = colors.primary
+                            contentDescription = "Nutierra",
+                            tint = colors.onPrimary
                         )
                     }
 
@@ -129,7 +128,6 @@ fun OrderSuccessScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // CONFIRMACIÓN PRINCIPAL
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -215,7 +213,6 @@ fun OrderSuccessScreen(
                 )
             }
 
-            // TARJETA PRINCIPAL DE SOLICITUD
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = colors.surfaceContainerLowest,
@@ -242,42 +239,43 @@ fun OrderSuccessScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                orderCode,
+                                if (orderCode.isBlank()) "—" else orderCode,
                                 style = typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.primary
                             )
 
-                            IconButton(
-                                onClick = {
-                                    val clipboard = context.getSystemService(
-                                        Context.CLIPBOARD_SERVICE
-                                    ) as ClipboardManager
+                            if (orderCode.isNotBlank()) {
+                                IconButton(
+                                    onClick = {
+                                        val clipboard = context.getSystemService(
+                                            Context.CLIPBOARD_SERVICE
+                                        ) as ClipboardManager
 
-                                    clipboard.setPrimaryClip(
-                                        ClipData.newPlainText(
-                                            "Código de pedido",
-                                            orderCode
+                                        clipboard.setPrimaryClip(
+                                            ClipData.newPlainText(
+                                                "Código de pedido",
+                                                orderCode
+                                            )
                                         )
-                                    )
 
-                                    codeCopied = true
+                                        codeCopied = true
+                                    }
+                                ) {
+                                    Icon(
+                                        if (codeCopied)
+                                            Icons.Default.Check
+                                        else
+                                            Icons.Default.ContentCopy,
+                                        contentDescription = "Copiar código",
+                                        tint = colors.primary,
+                                        modifier = Modifier.size(19.dp)
+                                    )
                                 }
-                            ) {
-                                Icon(
-                                    if (codeCopied)
-                                        Icons.Default.Check
-                                    else
-                                        Icons.Default.ContentCopy,
-                                    contentDescription = "Copiar código",
-                                    tint = colors.primary,
-                                    modifier = Modifier.size(19.dp)
-                                )
                             }
                         }
                     }
 
-                    // ESTADO DEL PEDIDO
                     Surface(
                         color = colors.surfaceContainer,
                         shape = CircleShape
@@ -309,7 +307,6 @@ fun OrderSuccessScreen(
                         color = colors.surfaceContainer
                     )
 
-                    // DATOS DEL PEDIDO
                     SuccessDetailRow(
                         icon = Icons.Default.CalendarToday,
                         label = "Fecha y hora",
@@ -329,7 +326,6 @@ fun OrderSuccessScreen(
                         isHighlighted = true
                     )
 
-                    // TIEMPO DE REVISIÓN
                     Surface(
                         color = colors.surfaceContainerLow,
                         shape = RoundedCornerShape(10.dp)
@@ -373,7 +369,6 @@ fun OrderSuccessScreen(
                 }
             }
 
-            // ARTÍCULOS DE DEMOSTRACIÓN
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = colors.surfaceContainerLowest,
@@ -401,32 +396,29 @@ fun OrderSuccessScreen(
                         )
                     }
 
-                    SuccessProductRow(
-                        name = "Almendras Naturales",
-                        detail = "250 g · x2"
-                    )
+                    if (items.isEmpty()) {
+                        Text(
+                            "No hay ítems para mostrar.",
+                            style = typography.bodyMedium,
+                            color = colors.onSurfaceVariant
+                        )
+                    } else {
+                        items.forEachIndexed { index, item ->
+                            SuccessProductRow(
+                                name = item.nombre,
+                                detail = "${item.peso} · x${item.cantidad}"
+                            )
 
-                    HorizontalDivider(
-                        color = colors.surfaceContainer
-                    )
-
-                    SuccessProductRow(
-                        name = "Nueces Mariposa",
-                        detail = "250 g · x1"
-                    )
-
-                    HorizontalDivider(
-                        color = colors.surfaceContainer
-                    )
-
-                    SuccessProductRow(
-                        name = "Semillas de Chía",
-                        detail = "250 g · x1"
-                    )
+                            if (index < items.lastIndex) {
+                                HorizontalDivider(
+                                    color = colors.surfaceContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
-            // TARJETA DE ASISTENCIA
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(16.dp)
@@ -473,7 +465,6 @@ fun OrderSuccessScreen(
                 }
             }
 
-            // ACCIONES FINALES
             Button(
                 onClick = onViewOrder,
                 modifier = Modifier

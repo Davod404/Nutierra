@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
+import androidx.compose.ui.draw.clip
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 private val productsGreen = Color(0xFF13522F)
@@ -49,9 +50,13 @@ fun AdminProductsScreen(
     onOrdersClick: () -> Unit,
     onAddProductClick: () -> Unit,
     onEditProductClick: (Int) -> Unit,
+    onDeleteProductClick: (Int) -> Unit,
     productos: List<ProductoEntity> = emptyList(),
     onProfileClick: () -> Unit = {}
 ) {
+
+    var productoAEliminar by remember { mutableStateOf<AdminProduct?>(null) }
+
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
@@ -173,40 +178,150 @@ fun AdminProductsScreen(
             }
         },
         bottomBar = {
-            NavigationBar(
-                containerColor = colors.surface,
-                tonalElevation = 2.dp
+            Surface(
+                color = colors.surface,
+                shadowElevation = 2.dp
             ) {
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onHomeClick,
-                    icon = { Icon(Icons.Default.Dashboard, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
-                )
-                NavigationBarItem(
-                    selected = true,
-                    onClick = {},
-                    icon = { Icon(Icons.Default.Inventory2, contentDescription = "Productos") },
-                    label = { Text("Productos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onInventoryClick,
-                    icon = { Icon(Icons.Default.Warehouse, contentDescription = "Inventario") },
-                    label = { Text("Inventario") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onOrdersClick,
-                    icon = { Icon(Icons.Default.Assignment, contentDescription = "Pedidos") },
-                    label = { Text("Pedidos") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = onProfileClick,
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Pedidos") },
-                    label = { Text("Perfil") }
-                )
+                NavigationBar(
+                    containerColor = colors.surface,
+                    tonalElevation = 0.dp
+                ) {
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onHomeClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Dashboard,
+                                    contentDescription = "Inicio",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inicio") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = true,
+                        onClick = {},
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Inventory2,
+                                    contentDescription = "Productos",
+                                    tint = if (true) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Productos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onInventoryClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Warehouse,
+                                    contentDescription = "Inventario",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Inventario") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onOrdersClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Assignment,
+                                    contentDescription = "Pedidos",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Pedidos") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = onProfileClick,
+                        icon = {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        else Color.Transparent
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Person,
+                                    contentDescription = "Perfil",
+                                    tint = if (false) MaterialTheme.colorScheme.surface
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        },
+                        label = { Text("Perfil") },
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color.Transparent
+                        )
+                    )
+                }
             }
         }
     ) { padding ->
@@ -455,9 +570,8 @@ fun AdminProductsScreen(
                 items(filteredProducts, key = { it.id }) { product ->
                     AdminProductRow(
                         product = product,
-                        onEditClick = {
-                            onEditProductClick(product.id)
-                        }
+                        onEditClick = { onEditProductClick(product.id) },
+                        onDeleteClick = { productoAEliminar = product }
                     )
                 }
             }
@@ -486,7 +600,7 @@ fun AdminProductsScreen(
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
-                                "Sincronización activa • Último sync hace 2 min",
+                                "Sincronización activa • Room local",
                                 fontSize = 11.sp,
                                 color = productsMuted
                             )
@@ -496,12 +610,51 @@ fun AdminProductsScreen(
             }
         }
     }
+    if (productoAEliminar != null) {
+        val producto = productoAEliminar!!
+        AlertDialog(
+            onDismissRequest = { productoAEliminar = null },
+            icon = {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = productsError
+                )
+            },
+            title = { Text("¿Eliminar producto?") },
+            text = {
+                Text(
+                    "Se eliminará \"${producto.name}\" del catálogo. " +
+                            "Esta acción no se puede deshacer."
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteProductClick(producto.id)
+                        productoAEliminar = null
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = productsError
+                    )
+                ) {
+                    Text("Sí, eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { productoAEliminar = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 }
 
 @Composable
 private fun AdminProductRow(
     product: AdminProduct,
-    onEditClick: () -> Unit
+    onEditClick: () -> Unit,
+    onDeleteClick: () -> Unit
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -518,10 +671,7 @@ private fun AdminProductRow(
             Box(
                 modifier = Modifier
                     .size(64.dp)
-                    .background(
-                        productsSoft,
-                        RoundedCornerShape(12.dp)
-                    ),
+                    .background(productsSoft, RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -536,12 +686,7 @@ private fun AdminProductRow(
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Text(
-                    product.category,
-                    fontSize = 11.sp,
-                    color = productsMuted
-                )
-
+                Text(product.category, fontSize = 11.sp, color = productsMuted)
                 Text(
                     product.name,
                     fontSize = 14.sp,
@@ -549,7 +694,6 @@ private fun AdminProductRow(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-
                 Text(
                     product.price + " CLP",
                     fontSize = 16.sp,
@@ -567,28 +711,36 @@ private fun AdminProductRow(
                     stockText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = if (product.stock <= 5) {
-                        productsError
-                    } else {
-                        productsMuted
-                    }
+                    color = if (product.stock <= 5) productsError else productsMuted
                 )
             }
 
-            IconButton(
-                onClick = onEditClick,
-                modifier = Modifier
-                    .size(42.dp)
-                    .background(
-                        productsSoft,
-                        RoundedCornerShape(12.dp)
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                IconButton(
+                    onClick = onEditClick,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(productsSoft, RoundedCornerShape(12.dp))
+                ) {
+                    Icon(
+                        Icons.Default.Edit,
+                        contentDescription = "Editar ${product.name}",
+                        tint = productsGreen
                     )
-            ) {
-                Icon(
-                    Icons.Default.Edit,
-                    contentDescription = "Editar ${product.name}",
-                    tint = productsGreen
-                )
+                }
+
+                IconButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier
+                        .size(42.dp)
+                        .background(productsSoft, RoundedCornerShape(12.dp))
+                ) {
+                    Icon(
+                        Icons.Default.Delete,
+                        contentDescription = "Eliminar ${product.name}",
+                        tint = productsError
+                    )
+                }
             }
         }
     }
