@@ -1,44 +1,42 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.data.local.entity.Roles
-import com.example.nutierra.ui.components.textoDeError
 import com.example.nutierra.ui.viewmodel.LoginViewModel
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.data.local.entity.Roles
 
 @Composable
 fun LoginScreen(
-    onBack: () -> Unit = {},
     onRegisterClick: () -> Unit = {},
     onClientLogin: () -> Unit = {},
     onAdminLogin: () -> Unit = {},
@@ -82,8 +80,6 @@ fun LoginScreen(
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            // LOGOTIPO
             Box(
                 modifier = Modifier
                     .padding(top = 8.dp)
@@ -126,7 +122,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // DISTINTIVO DE MARCA
             Surface(
                 color = colors.surfaceContainerHigh,
                 shape = CircleShape
@@ -174,7 +169,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // BANNER PROMOCIONAL
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,7 +207,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // INFORMACIÓN DE ACCESO DE DEMOSTRACIÓN
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = colors.surfaceContainerLow,
@@ -305,7 +298,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // CORREO ELECTRÓNICO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -368,7 +360,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // CONTRASEÑA
             Text(
                 text = "Contraseña",
                 style = typography.labelMedium,
@@ -423,7 +414,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // MENSAJE DE ERROR
             AnimatedVisibility(
                 visible = errorMessage != null,
                 enter = fadeIn() + expandVertically(),
@@ -459,7 +449,6 @@ fun LoginScreen(
               }
             }
 
-            // INFORMACIÓN DEL ROL
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -482,7 +471,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // INICIAR SESIÓN
             Button(
                 onClick = viewModel::iniciarSesion,
                 enabled = !isLoading,
@@ -523,7 +511,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // REGISTRO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -546,7 +533,6 @@ fun LoginScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // SELLO DE ORIGEN
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp)

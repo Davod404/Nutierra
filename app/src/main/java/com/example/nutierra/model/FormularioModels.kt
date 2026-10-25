@@ -1,9 +1,5 @@
 package com.example.nutierra.model
 
-/**
- * Un campo de formulario: el texto ingresado y su mensaje de error.
- * Si error es null, el campo es válido.
- */
 data class CampoFormulario(
     val valor: String = "",
     val error: String? = null
@@ -11,12 +7,7 @@ data class CampoFormulario(
     val esValido: Boolean get() = error == null
 }
 
-/**
- * Reglas de validación centralizadas (no dependen de la interfaz ni de Android),
- * por eso se pueden probar con pruebas unitarias simples.
- */
 object Validaciones {
-
     private val regexCorreo = Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")
 
     fun texto(valor: String, campo: String): String? = when {
@@ -42,8 +33,6 @@ object Validaciones {
         else -> null
     }
 
-    // ===== Formulario de productos (administrador) =====
-
     fun nombreProducto(valor: String): String? = when {
         valor.isBlank() -> "El nombre del producto es obligatorio"
         valor.trim().length < 3 -> "Escribe al menos 3 caracteres"
@@ -57,7 +46,7 @@ object Validaciones {
             valor.isBlank() -> "El precio es obligatorio"
             numero == null -> "Ingresa solo números"
             numero <= 0 -> "El precio debe ser mayor a 0"
-            numero > 1_000_000 -> "El precio no puede superar \$1.000.000"
+            numero > 1_000_000 -> $$"El precio no puede superar $1.000.000"
             else -> null
         }
     }

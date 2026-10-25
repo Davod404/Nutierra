@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-/** Estado completo del formulario de registro. */
 data class RegistroUiState(
     val nombre: CampoFormulario = CampoFormulario(),
     val apellido: CampoFormulario = CampoFormulario(),
@@ -59,7 +58,6 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
     fun cambiarContrasena(valor: String) = _uiState.update {
         it.copy(
             contrasena = CampoFormulario(valor, Validaciones.contrasenaNueva(valor)),
-            // Si ya escribió la confirmación, se vuelve a comparar
             confirmacion = if (it.confirmacion.valor.isEmpty()) it.confirmacion
             else it.confirmacion.copy(
                 error = Validaciones.confirmacion(valor, it.confirmacion.valor)
@@ -84,7 +82,6 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
         val a = _uiState.value
         if (a.guardando) return
 
-        // Revalida todo el formulario al presionar el botón
         val validado = a.copy(
             nombre = a.nombre.copy(error = Validaciones.texto(a.nombre.valor, "El nombre")),
             apellido = a.apellido.copy(error = Validaciones.texto(a.apellido.valor, "El apellido")),
@@ -120,7 +117,7 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                     )
                     _uiState.update { it.copy(guardando = false, registroExitoso = true) }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _uiState.update {
                     it.copy(guardando = false, errorGeneral = "No se pudo guardar la cuenta")
                 }
@@ -128,6 +125,5 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // La pantalla avisa que ya navegó tras el registro exitoso
     fun registroConsumido() = _uiState.update { RegistroUiState() }
 }

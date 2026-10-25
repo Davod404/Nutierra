@@ -1,4 +1,3 @@
-
 package com.example.nutierra.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
@@ -7,18 +6,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
+import androidx.navigation.NavType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.viewmodel.ProductoViewModel
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import com.example.nutierra.ui.viewmodel.PedidoViewModel
-import com.example.nutierra.ui.viewmodel.ProductoViewModel
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import com.example.nutierra.ui.screens.*
+import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
 
 private const val DURACION_TRANSICION = 350
 
@@ -33,22 +33,46 @@ private fun usaFundido(desde: String?, hacia: String?): Boolean =
 @Composable
 fun NutierraNavigation() {
     val navController = rememberNavController()
-
     val productoViewModel: ProductoViewModel = viewModel()
     val productos by productoViewModel.productos.collectAsStateWithLifecycle()
-
     val carritoViewModel: CarritoViewModel = viewModel()
-    val carrito by carritoViewModel.items.collectAsStateWithLifecycle()
-    val errorCarrito by carritoViewModel.error.collectAsStateWithLifecycle()
-    val procesandoCompra by carritoViewModel.procesando.collectAsStateWithLifecycle()
     val ultimoPedido by carritoViewModel.ultimoPedido.collectAsStateWithLifecycle()
-
     val pedidoViewModel: PedidoViewModel = viewModel()
     val misPedidos by pedidoViewModel.misPedidos.collectAsStateWithLifecycle()
     val todosLosPedidos by pedidoViewModel.todosLosPedidos.collectAsStateWithLifecycle()
 
+    fun goToHome() {
+        navController.navigate("home") {
+            launchSingleTop = true
+        }
+    }
+
     fun goToCatalog() {
         navController.navigate("catalog") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToOrders() {
+        navController.navigate("orders") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToProfile() {
+        navController.navigate("profile") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToStoreMap() {
+        navController.navigate("store_map") {
+            launchSingleTop = true
+        }
+    }
+
+    fun goToQrScanner() {
+        navController.navigate("qr_scanner") {
             launchSingleTop = true
         }
     }
@@ -74,8 +98,8 @@ fun NutierraNavigation() {
         }
     }
 
-    fun goToProfile() {
-        navController.navigate("profile") {
+    fun goToAdminOrders() {
+        navController.navigate("admin/orders") {
             launchSingleTop = true
         }
     }
@@ -133,7 +157,6 @@ fun NutierraNavigation() {
             }
         }
     ) {
-
         composable("splash") {
             SplashScreen(
                 onFinished = {
@@ -147,43 +170,22 @@ fun NutierraNavigation() {
             )
         }
 
-        // =========================
-        // CLIENTE
-        // =========================
-
         composable("home") {
             HomeScreen(
                 productos = productos,
-                onCatalogClick = {
-                    navController.navigate("catalog")
-                },
-                onOrdersClick = {
-                    navController.navigate("orders") { launchSingleTop = true }
-                },
-                onProfileClick = {
-                    navController.navigate("profile")
-                },
-                onCartClick = {
-                    navController.navigate("cart")
-                },
-                onMapClick = {
-                    navController.navigate("store_map")
-                },
-                onScanClick = {
-                    navController.navigate("qr_scanner")
-                },
+                onCatalogClick = { goToCatalog() },
+                onOrdersClick = { goToOrders() },
+                onProfileClick = { goToProfile() },
+                onCartClick = { navController.navigate("cart") },
+                onMapClick = { goToStoreMap() },
+                onScanClick = { goToQrScanner() },
                 viewModel = carritoViewModel
             )
         }
 
         composable("login") {
             LoginScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-                onRegisterClick = {
-                    navController.navigate("register")
-                },
+                onRegisterClick = { navController.navigate("register") },
                 onClientLogin = {
                     navController.navigate("home") {
                         popUpTo("login") {
@@ -205,12 +207,8 @@ fun NutierraNavigation() {
 
         composable("register") {
             RegisterScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
-                onLoginClick = {
-                    navController.navigate("login")
-                },
+                onBack = { navController.popBackStack() },
+                onLoginClick = { navController.navigate("login") },
                 onRegisterSuccess = {
                     navController.navigate("login") {
                         popUpTo("register") {
@@ -224,34 +222,14 @@ fun NutierraNavigation() {
         composable("catalog") {
             CatalogScreen(
                 productos = productos,
-                onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
-                },
-                onMapClick = {
-                    navController.navigate("store_map") {
-                        launchSingleTop = true
-                    }
-                },
-                onScanClick = {
-                    navController.navigate("qr_scanner") {
-                        launchSingleTop = true
-                    }
-                },
-                onOrdersClick = {
-                    navController.navigate("orders") {
-                        launchSingleTop = true
-                    }
-                },
-                onProfileClick = {
-                    navController.navigate("profile") {
-                        launchSingleTop = true
-                    }
-                },
-                onProductClick = { id ->
-                    navController.navigate("product/$id")
-                }
+                onHomeClick = { goToHome() },
+                onMapClick = { goToStoreMap() },
+                onScanClick = { goToQrScanner() },
+                onOrdersClick = { goToOrders() },
+                onProfileClick = { goToProfile() },
+                onCartClick = { navController.navigate("cart") },
+                onProductClick = { id -> navController.navigate("product/$id") },
+                viewModel = carritoViewModel
             )
         }
         composable(
@@ -265,10 +243,10 @@ fun NutierraNavigation() {
             val productId = backStackEntry.arguments?.getInt("productId") ?: 0
 
             ProductDetailScreen(
-                producto = productos.firstOrNull { it.id == productId },
-                onBack = {
-                    navController.popBackStack()
+                producto = productos.firstOrNull {
+                    it.id == productId
                 },
+                onBack = { navController.popBackStack() },
                 onAddToCart = { productoId, cantidad ->
                     carritoViewModel.agregar(productoId, cantidad)
                     navController.navigate("cart")
@@ -279,27 +257,17 @@ fun NutierraNavigation() {
         composable("cart") {
             CartScreen(
                 viewModel = carritoViewModel,
-                onBack = {
-                    navController.popBackStack()
-                },
-                onContinueShopping = {
-                    navController.navigate("catalog")
-                },
-                onCheckout = {
-                    navController.navigate("checkout")
-                },
-                onProfileClick = {
-                    navController.navigate("profile")
-                }
+                onBack = { navController.popBackStack() },
+                onContinueShopping = { goToCatalog() },
+                onCheckout = { navController.navigate("checkout") },
+                onProfileClick = { goToProfile() }
             )
         }
 
         composable("checkout") {
             CheckoutScreen(
                 viewModel = carritoViewModel,
-                onBack = {
-                    navController.popBackStack()
-                },
+                onBack = { navController.popBackStack() },
                 onOrderSuccess = {
                     navController.navigate("success") {
                         popUpTo("checkout") {
@@ -319,46 +287,21 @@ fun NutierraNavigation() {
                 productCount = ultimoPedido?.cantidadProductos ?: 0,
                 unitCount = ultimoPedido?.cantidadUnidades ?: 0,
                 items = ultimoPedidoItems,
-                onBack = {
-                    navController.popBackStack()
-                },
-                onViewOrder = {
-                    navController.navigate("orders") {
-                        launchSingleTop = true
-                    }
-                },
-                onCatalogClick = {
-                    navController.navigate("catalog") {
-                        launchSingleTop = true
-                    }
-                }
+                onBack = { navController.popBackStack() },
+                onViewOrder = { goToOrders() },
+                onCatalogClick = { goToCatalog() }
             )
         }
 
         composable("profile") {
             ProfileScreen(
-                onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
-                },
-                onCatalogClick = {
-                    goToCatalog()
-                },
-                onMapClick = {
-                    navController.navigate("store_map") {
-                        launchSingleTop = true
-                    }
-                },
-                onScanClick = {
-                    navController.navigate("qr_scanner") {
-                        launchSingleTop = true
-                    }
-                },
-                onOrdersClick = {
-                    navController.navigate("orders") {
-                        launchSingleTop = true
-                    }
+                onHomeClick = { goToHome() },
+                onCatalogClick = { goToCatalog() },
+                onMapClick = { goToStoreMap() },
+                onScanClick = { goToQrScanner() },
+                onOrdersClick = { goToOrders() },
+                onEditProfileClick = {
+                    navController.navigate("profile/edit")
                 },
                 onLogout = {
                     navController.navigate("login") {
@@ -371,76 +314,40 @@ fun NutierraNavigation() {
             )
         }
 
-        composable("orders") {
-            OrdersScreen(
-                pedidos = misPedidos,
-                onHomeClick = {
-                    navController.navigate("home") {
-                        launchSingleTop = true
-                    }
-                },
-                onCatalogClick = {
-                    navController.navigate("catalog") {
-                        launchSingleTop = true
-                    }
-                },
-                onMapClick = {
-                    navController.navigate("store_map") {
-                        launchSingleTop = true
-                    }
-                },
-                onScanClick = {
-                    navController.navigate("qr_scanner") {
-                        launchSingleTop = true
-                    }
-                },
-                onProfileClick = {
-                    navController.navigate("profile") {
-                        launchSingleTop = true
-                    }
-                }
+        composable("profile/edit") {
+            EditProfileScreen(
+                onBack = { navController.popBackStack() },
+                onSaved = { navController.popBackStack() }
             )
         }
 
-        // =========================
-        // ADMINISTRADOR
-        // =========================
+        composable("orders") {
+            OrdersScreen(
+                pedidos = misPedidos,
+                onHomeClick = { goToHome() },
+                onCatalogClick = { goToCatalog() },
+                onMapClick = { goToStoreMap() },
+                onScanClick = { goToQrScanner() },
+                onProfileClick = { goToProfile() }
+            )
+        }
+
         composable("admin/home") {
             AdminHomeScreen(
-                onProductsClick = {
-                    goToAdminProducts()
-                },
-                onInventoryClick = {
-                    goToAdminInventory()
-                },
-                onOrdersClick = {
-                    navController.navigate("admin/orders") {
-                        launchSingleTop = true
-                    }
-                },
-                onProfileClick = {
-                    goToAdminProfile()
-                }
+                onProductsClick = { goToAdminProducts() },
+                onInventoryClick = { goToAdminInventory() },
+                onOrdersClick = { goToAdminOrders() },
+                onProfileClick = { goToAdminProfile() }
             )
         }
 
         composable("admin/products") {
             AdminProductsScreen(
                 productos = productos,
-                onHomeClick = {
-                    goToAdminHome()
-                },
-                onInventoryClick = {
-                    goToAdminInventory()
-                },
-                onOrdersClick = {
-                    navController.navigate("admin/orders") {
-                        launchSingleTop = true
-                    }
-                },
-                onAddProductClick = {
-                    navController.navigate("admin/products/create")
-                },
+                onHomeClick = { goToAdminHome() },
+                onInventoryClick = { goToAdminInventory() },
+                onOrdersClick = { goToAdminOrders() },
+                onAddProductClick = { navController.navigate("admin/products/create") },
                 onEditProductClick = { productId ->
                     navController.navigate("admin/products/edit/$productId")
                 },
@@ -451,9 +358,7 @@ fun NutierraNavigation() {
                         productoViewModel.eliminarProducto(producto)
                     }
                 },
-                onProfileClick = {
-                    goToAdminProfile()
-                }
+                onProfileClick = { goToAdminProfile() }
             )
         }
 
@@ -463,9 +368,7 @@ fun NutierraNavigation() {
                 .collectAsStateWithLifecycle()
 
             AdminCreateProductScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
+                onBack = { navController.popBackStack() },
                 onSaveProduct = { newProduct ->
                     productoViewModel.insertarProducto(
                         ProductoEntity(
@@ -479,9 +382,7 @@ fun NutierraNavigation() {
                     )
                     navController.popBackStack()
                 },
-                onTakePhotoClick = {
-                    navController.navigate("admin/product-camera")
-                },
+                onTakePhotoClick = { navController.navigate("admin/product-camera") },
                 fotoTomada = fotoTomada
             )
         }
@@ -494,23 +395,20 @@ fun NutierraNavigation() {
                 }
             )
         ) { backStackEntry ->
-
+            val viewModel: ProductoFormViewModel = viewModel(
+                viewModelStoreOwner = backStackEntry
+            )
             val productId = backStackEntry.arguments
                 ?.getInt("productId") ?: 1
-
             val producto = productos.firstOrNull { it.id == productId }
 
             AdminEditProductScreen(
+                viewModel = viewModel,
                 productId = productId,
                 producto = producto,
-                onBack = {
-                    navController.popBackStack()
-                },
-                onInventoryClick = {
-                    goToAdminInventory()
-                },
+                onBack = { navController.popBackStack() },
+                onInventoryClick = { goToAdminInventory() },
                 onSaveProduct = { editedProduct ->
-                    // Se conservan los campos que el formulario no edita (stock, peso, etc.)
                     producto?.let {
                         productoViewModel.actualizarProducto(
                             it.copy(
@@ -526,27 +424,16 @@ fun NutierraNavigation() {
             )
         }
 
-        // 5. Inventario
         composable("admin/inventory") {
             AdminInventoryScreen(
                 productos = productos,
                 onActualizarStock = { id, nuevoStock ->
                     productoViewModel.actualizarStock(id, nuevoStock)
                 },
-                onHomeClick = {
-                    goToAdminHome()
-                },
-                onProductsClick = {
-                    goToAdminProducts()
-                },
-                onOrdersClick = {
-                    navController.navigate("admin/orders") {
-                        launchSingleTop = true
-                    }
-                },
-                onProfileClick = {
-                    goToAdminProfile()
-                }
+                onHomeClick = { goToAdminHome() },
+                onProductsClick = { goToAdminProducts() },
+                onOrdersClick = { goToAdminOrders() },
+                onProfileClick = { goToAdminProfile() }
             )
         }
 
@@ -556,83 +443,49 @@ fun NutierraNavigation() {
                 onAvanzarEstado = { pedidoId, estadoActual ->
                     pedidoViewModel.avanzarEstado(pedidoId, estadoActual)
                 },
-                onHomeClick = {
-                    navController.navigate("admin/home") {
-                        launchSingleTop = true
-                    }
-                },
-                onProductsClick = {
-                    navController.navigate("admin/products") {
-                        launchSingleTop = true
-                    }
-                },
-                onInventoryClick = {
-                    navController.navigate("admin/inventory") {
-                        launchSingleTop = true
-                    }
-                },
-                onProfileClick = {
-                    goToAdminProfile()
-                }
+                onHomeClick = { goToAdminHome() },
+                onProductsClick = { goToAdminProducts() },
+                onInventoryClick = { goToAdminInventory() },
+                onProfileClick = { goToAdminProfile() }
             )
         }
 
         composable("admin/profile") {
             AdminProfileScreen(
-                totalProductos = productos.size,
-                onBack = {
-                    navController.popBackStack()
-                },
-                onProductsClick = {
-                    goToAdminProducts()
-                },
-                onInventoryClick = {
-                    goToAdminInventory()
-                },
-                onOrdersClick = {
-                    navController.navigate("admin/orders") {
-                        launchSingleTop = true
-                    }
+                onBack = { navController.popBackStack() },
+                onEditProfileClick = {
+                    navController.navigate("profile/edit")
                 },
                 onLogout = {
                     navController.navigate("login") {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
+                        popUpTo(navController.graph.id) { inclusive = true }
                         launchSingleTop = true
                     }
-                }
+                },
+                totalProductos = productos.size,
+                totalPedidos = todosLosPedidos.size
             )
         }
 
         composable("store_map") {
             StoreMapScreen(
-                onBack = {
-                    navController.popBackStack()
-                }
+                onBack = { navController.popBackStack() }
             )
         }
         composable("qr_scanner") {
             QRScannerScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
+                onBack = { navController.popBackStack() },
                 onProductClick = { productId ->
                     navController.navigate("product/$productId")
                 },
                 existeProducto = { productId ->
                     productos.any { it.id == productId }
                 },
-                buscarProducto = { productId ->
-                    productos.firstOrNull { it.id == productId }
-                }
             )
         }
         composable("admin/product-camera") {
             ProductCameraScreen(
-                onBack = {
-                    navController.popBackStack()
-                },
+                onBack = { navController.popBackStack() },
                 onPhotoSelected = { imageUri ->
                     navController.previousBackStackEntry
                         ?.savedStateHandle

@@ -1,23 +1,23 @@
 package com.example.nutierra.ui.viewmodel
 
-import android.app.Application
-import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.nutierra.data.local.NutierraDatabase
-import com.example.nutierra.data.local.entity.ItemCarrito
-import com.example.nutierra.data.local.entity.PedidoEntity
-import com.example.nutierra.data.repository.CarritoRepository
-import com.example.nutierra.data.repository.CompraException
-import com.example.nutierra.data.session.SesionManager
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import com.example.nutierra.data.local.entity.PedidoEntity
+import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.NutierraDatabase
+import com.example.nutierra.data.repository.CarritoRepository
+import com.example.nutierra.data.repository.CompraException
+import com.example.nutierra.data.session.SesionManager
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import android.app.Application
+import android.util.Log
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CarritoViewModel(application: Application) : AndroidViewModel(application) {

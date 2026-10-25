@@ -1,39 +1,31 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import com.example.nutierra.data.local.entity.EstadosPedido
 import com.example.nutierra.data.local.entity.PedidoResumen
 import com.example.nutierra.ui.components.formatoFechaPedido
 import com.example.nutierra.ui.components.formatoPesos
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-private val adminOrdersGreen = Color(0xFF13522F)
-private val adminOrdersBackground = Color(0xFFF5FBF3)
-private val adminOrdersMuted = Color(0xFF404941)
-private val adminOrdersSoft = Color(0xFFEAF0E8)
-
-private val adminOrdersMint = Color(0xFFB1F1C1)
-private val adminOrdersAmber = Color(0xFF855500)
 
 private data class AdminOrder(
     val id: String,
@@ -86,7 +78,6 @@ fun AdminOrdersScreen(
     val typography = MaterialTheme.typography
 
     val orders = remember(pedidos) { pedidos.map { it.aAdminOrder() } }
-
     var search by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("Todos") }
     var selectedOrder by remember { mutableStateOf<AdminOrder?>(null) }
@@ -125,13 +116,13 @@ fun AdminOrdersScreen(
     }
 
     Scaffold(
-        containerColor = adminOrdersBackground,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
                 color = colors.surface,
                 shadowElevation = 2.dp
-            ){
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -166,7 +157,7 @@ fun AdminOrdersScreen(
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Surface(
-                                        color = adminOrdersMint,
+                                        color = colors.primaryFixed,
                                         shape = RoundedCornerShape(12.dp)
                                     ) {
                                         Text(
@@ -176,14 +167,16 @@ fun AdminOrdersScreen(
                                                 vertical = 3.dp
                                             ),
                                             fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.onPrimaryFixed
                                         )
                                     }
                                 }
                                 Text(
                                     "Pedidos",
                                     fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.onSurface
                                 )
                             }
                         }
@@ -192,14 +185,14 @@ fun AdminOrdersScreen(
                         Box(
                             modifier = Modifier
                                 .size(34.dp)
-                                .background(adminOrdersGreen, CircleShape)
+                                .background(colors.primary, CircleShape)
                                 .clickable(onClick = onProfileClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = "Administrador",
-                                tint = Color.White,
+                                tint = colors.onPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -225,7 +218,7 @@ fun AdminOrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -233,8 +226,8 @@ fun AdminOrdersScreen(
                                 Icon(
                                     Icons.Default.Dashboard,
                                     contentDescription = "Inicio",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -252,7 +245,7 @@ fun AdminOrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -260,8 +253,8 @@ fun AdminOrdersScreen(
                                 Icon(
                                     Icons.Default.Inventory2,
                                     contentDescription = "Productos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -279,7 +272,7 @@ fun AdminOrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -287,8 +280,8 @@ fun AdminOrdersScreen(
                                 Icon(
                                     Icons.Default.Warehouse,
                                     contentDescription = "Inventario",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -306,16 +299,16 @@ fun AdminOrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        if (true) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.Assignment,
+                                    Icons.AutoMirrored.Filled.Assignment,
                                     contentDescription = "Pedidos",
-                                    tint = if (true) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (true) colors.onTertiary
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -333,7 +326,7 @@ fun AdminOrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -341,8 +334,8 @@ fun AdminOrdersScreen(
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -377,17 +370,18 @@ fun AdminOrdersScreen(
                             Text(
                                 "Gestión de pedidos",
                                 fontSize = 22.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                color = colors.onSurface
                             )
 
                             Text(
                                 "Revisión y avance de solicitudes de compra",
                                 fontSize = 13.sp,
-                                color = adminOrdersMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                         Surface(
-                            color = adminOrdersSoft,
+                            color = colors.surfaceContainer,
                             shape = RoundedCornerShape(50.dp)
                         ) {
                             Row(
@@ -400,16 +394,13 @@ fun AdminOrdersScreen(
                                 Box(
                                     modifier = Modifier
                                         .size(7.dp)
-                                        .background(
-                                            adminOrdersGreen,
-                                            CircleShape
-                                        )
+                                        .background(colors.primary, CircleShape)
                                 )
                                 Spacer(Modifier.width(6.dp))
                                 Text(
                                     "Demo",
                                     fontSize = 11.sp,
-                                    color = adminOrdersGreen,
+                                    color = colors.primary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             }
@@ -450,19 +441,17 @@ fun AdminOrdersScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = adminOrdersGreen,
+                        focusedBorderColor = colors.primary,
                         unfocusedBorderColor = Color.Transparent,
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White
+                        focusedContainerColor = colors.surfaceContainerLowest,
+                        unfocusedContainerColor = colors.surfaceContainerLowest
                     )
                 )
             }
 
             item {
                 Row(
-                    modifier = Modifier.horizontalScroll(
-                        rememberScrollState()
-                    ),
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     filters.forEach { filter ->
@@ -479,8 +468,8 @@ fun AdminOrdersScreen(
                                 Text("$filter $count")
                             },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = adminOrdersGreen,
-                                selectedLabelColor = Color.White
+                                selectedContainerColor = colors.primary,
+                                selectedLabelColor = colors.onPrimary
                             )
                         )
                     }
@@ -499,20 +488,21 @@ fun AdminOrdersScreen(
                             Icons.Default.SearchOff,
                             contentDescription = null,
                             modifier = Modifier.size(48.dp),
-                            tint = adminOrdersMuted
+                            tint = colors.onSurfaceVariant
                         )
 
                         Spacer(Modifier.height(12.dp))
 
                         Text(
                             "No se encontraron pedidos",
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
 
                         Text(
                             "Prueba con otra búsqueda o filtro",
                             fontSize = 13.sp,
-                            color = adminOrdersMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -535,7 +525,6 @@ fun AdminOrdersScreen(
         }
     }
 
-    // Detalle del pedido
     selectedOrder?.let { order ->
         AlertDialog(
             onDismissRequest = {
@@ -578,7 +567,7 @@ fun AdminOrdersScreen(
                         "Total: ${order.total} CLP",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = adminOrdersGreen
+                        color = colors.primary
                     )
                 }
             },
@@ -596,7 +585,7 @@ fun AdminOrdersScreen(
                             } else {
                                 "Avanzar estado"
                             },
-                            color = adminOrdersGreen
+                            color = colors.primary
                         )
                     }
                 }
@@ -611,7 +600,6 @@ fun AdminOrdersScreen(
         )
     }
 
-    // Confirmación antes de cambiar estado
     orderToAdvance?.let { order ->
         val nextStatus = when (order.status) {
             "Pendiente" -> "Confirmado"
@@ -640,7 +628,7 @@ fun AdminOrdersScreen(
                         orderToAdvance = null
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = adminOrdersGreen
+                        containerColor = colors.primary
                     )
                 ) {
                     Text("Confirmar")
@@ -665,13 +653,20 @@ private fun AdminOrderCard(
     onDetailClick: () -> Unit,
     onAdvanceClick: () -> Unit
 ) {
-    val isPending = order.status == "Pendiente"
+    val colors = MaterialTheme.colorScheme
 
     val statusBackground = when (order.status) {
-        "Pendiente" -> Color(0xFFFDDCC5)
-        "Confirmado" -> Color(0xFFB1F1C1)
-        "Preparado" -> Color(0xFFB1F1C1)
-        else -> Color(0xFFEAF0E8)
+        "Pendiente" -> colors.secondaryFixed
+        "Confirmado" -> colors.primaryFixed
+        "Preparado" -> colors.primaryFixed
+        else -> colors.surfaceContainer
+    }
+
+    val statusTextColor = when (order.status) {
+        "Pendiente" -> colors.onSecondaryFixed
+        "Confirmado" -> colors.onPrimaryFixed
+        "Preparado" -> colors.onPrimaryFixed
+        else -> colors.onSurfaceVariant
     }
 
     val statusText = when (order.status) {
@@ -688,7 +683,7 @@ private fun AdminOrderCard(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color.White,
+        color = colors.surfaceContainerLowest,
         shape = RoundedCornerShape(16.dp),
         shadowElevation = 3.dp
     ) {
@@ -706,6 +701,7 @@ private fun AdminOrderCard(
                     order.id,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
+                    color = colors.onSurface,
                     modifier = Modifier.weight(1f)
                 )
 
@@ -721,17 +717,13 @@ private fun AdminOrderCard(
                         ),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (isPending) {
-                            adminOrdersAmber
-                        } else {
-                            adminOrdersGreen
-                        }
+                        color = statusTextColor
                     )
                 }
             }
 
             Surface(
-                color = Color(0xFFEFF5ED),
+                color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Row(
@@ -744,7 +736,7 @@ private fun AdminOrderCard(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
-                                Color(0xFFFDDCC5),
+                                colors.secondaryFixed,
                                 CircleShape
                             ),
                         contentAlignment = Alignment.Center
@@ -752,7 +744,7 @@ private fun AdminOrderCard(
                         Text(
                             order.initials,
                             fontWeight = FontWeight.Bold,
-                            color = adminOrdersAmber
+                            color = colors.onSecondaryFixed
                         )
                     }
 
@@ -764,14 +756,15 @@ private fun AdminOrderCard(
                         Text(
                             order.client,
                             fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
 
                         if (order.phone.isNotBlank()) {
                             Text(
                                 order.phone,
                                 fontSize = 12.sp,
-                                color = adminOrdersGreen
+                                color = colors.primary
                             )
                         }
                     }
@@ -779,7 +772,7 @@ private fun AdminOrderCard(
                     Text(
                         order.date,
                         fontSize = 10.sp,
-                        color = adminOrdersMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
             }
@@ -792,7 +785,7 @@ private fun AdminOrderCard(
                     modifier = Modifier
                         .size(48.dp)
                         .background(
-                            adminOrdersSoft,
+                            colors.surfaceContainer,
                             RoundedCornerShape(10.dp)
                         ),
                     contentAlignment = Alignment.Center
@@ -800,7 +793,7 @@ private fun AdminOrderCard(
                     Icon(
                         Icons.Default.ShoppingBasket,
                         contentDescription = null,
-                        tint = adminOrdersGreen
+                        tint = colors.primary
                     )
                 }
 
@@ -808,6 +801,7 @@ private fun AdminOrderCard(
                     Text(
                         order.products,
                         fontSize = 13.sp,
+                        color = colors.onSurface,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -817,7 +811,7 @@ private fun AdminOrderCard(
                     Text(
                         order.units,
                         fontSize = 11.sp,
-                        color = adminOrdersMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
             }
@@ -839,7 +833,7 @@ private fun AdminOrderCard(
                             },
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
-                            tint = adminOrdersAmber
+                            tint = colors.tertiary
                         )
 
                         Spacer(Modifier.width(5.dp))
@@ -847,7 +841,7 @@ private fun AdminOrderCard(
                         Text(
                             order.delivery,
                             fontSize = 12.sp,
-                            color = adminOrdersMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
 
@@ -857,13 +851,13 @@ private fun AdminOrderCard(
                         "${order.total} CLP",
                         fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = adminOrdersGreen
+                        color = colors.primary
                     )
                 }
 
                 if (order.urgent) {
                     Surface(
-                        color = Color(0xFFFFDDB6),
+                        color = colors.tertiaryFixed,
                         shape = RoundedCornerShape(50.dp)
                     ) {
                         Text(
@@ -874,14 +868,14 @@ private fun AdminOrderCard(
                             ),
                             fontSize = 11.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = adminOrdersAmber
+                            color = colors.onTertiaryFixed
                         )
                     }
                 }
             }
 
             HorizontalDivider(
-                color = adminOrdersSoft
+                color = colors.surfaceContainer
             )
 
             Row(
@@ -922,7 +916,7 @@ private fun AdminOrderCard(
                             vertical = 10.dp
                         ),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = adminOrdersGreen
+                            containerColor = colors.primary
                         )
                     ) {
                         Text(

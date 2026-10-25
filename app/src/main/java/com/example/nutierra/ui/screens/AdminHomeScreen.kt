@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material3.*
@@ -23,21 +24,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.local.entity.EstadosPedido
-import com.example.nutierra.data.local.entity.PedidoResumen
-import com.example.nutierra.data.local.entity.ProductoEntity
 import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.ui.viewmodel.PedidoViewModel
 import com.example.nutierra.ui.viewmodel.ProductoViewModel
 import java.text.NumberFormat
 import java.util.Calendar
 import java.util.Locale
-
-private val adminGreen = Color(0xFF13522F)
-private val adminBackground = Color(0xFFF5FBF3)
-private val adminSurface = Color.White
-private val adminMuted = Color(0xFF404941)
-private val adminSoft = Color(0xFFEAF0E8)
-private val adminMint = Color(0xFFB1F1C1)
 
 private fun adminPrice(value: Int): String {
     return "$" + NumberFormat.getIntegerInstance(
@@ -97,7 +89,7 @@ fun AdminHomeScreen(
         .take(3)
 
     Scaffold(
-        containerColor = adminBackground,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -138,7 +130,7 @@ fun AdminHomeScreen(
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Surface(
-                                        color = adminMint,
+                                        color = colors.primaryFixed,
                                         shape = RoundedCornerShape(12.dp)
                                     ) {
                                         Text(
@@ -165,7 +157,7 @@ fun AdminHomeScreen(
                         Box(
                             modifier = Modifier
                                 .size(34.dp)
-                                .background(adminGreen, CircleShape)
+                                .background(colors.primary, CircleShape)
                                 .clickable(onClick = onProfileClick),
                             contentAlignment = Alignment.Center
                         ) {
@@ -285,7 +277,7 @@ fun AdminHomeScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.Assignment,
+                                    Icons.AutoMirrored.Filled.Assignment,
                                     contentDescription = "Pedidos",
                                     tint = if (false) MaterialTheme.colorScheme.surface
                                     else MaterialTheme.colorScheme.onSurfaceVariant
@@ -352,7 +344,7 @@ fun AdminHomeScreen(
                                 horizontal = 12.dp,
                                 vertical = 7.dp
                             ),
-                            color = adminGreen,
+                            color = colors.primary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Medium
                         )
@@ -372,7 +364,7 @@ fun AdminHomeScreen(
                             Text(
                                 "Control operativo y balance de hoy",
                                 fontSize = 14.sp,
-                                color = adminMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                     }
@@ -414,7 +406,7 @@ fun AdminHomeScreen(
                             value = adminPrice(recaudadoHoy),
                             description = "Total recaudado hoy",
                             status = "${pedidosHoy.size} pedidos",
-                            background = adminGreen,
+                            background = colors.primary,
                             dark = true
                         )
                     }
@@ -459,12 +451,12 @@ fun AdminHomeScreen(
                             AdminSectionTitle("Validación prioritaria")
                             Text(
                                 "${pendientes.size} nuevos",
-                                color = adminGreen,
+                                color = colors.primary,
                                 fontSize = 12.sp
                             )
                         }
                         TextButton(onClick = onOrdersClick) {
-                            Text("Ver todos", color = adminGreen)
+                            Text("Ver todos", color = colors.primary)
                             Icon(
                                 Icons.Default.ChevronRight,
                                 contentDescription = null
@@ -482,7 +474,7 @@ fun AdminHomeScreen(
                                 "No hay pedidos pendientes de validación.",
                                 modifier = Modifier.padding(16.dp),
                                 fontSize = 13.sp,
-                                color = adminMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                     } else {
@@ -518,7 +510,7 @@ fun AdminHomeScreen(
                             Text(
                                 "Bodega central",
                                 fontSize = 12.sp,
-                                color = adminMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                         IconButton(onClick = onInventoryClick) {
@@ -539,7 +531,7 @@ fun AdminHomeScreen(
                                 "Inventario al día. No hay productos con stock crítico.",
                                 modifier = Modifier.padding(16.dp),
                                 fontSize = 13.sp,
-                                color = adminMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                     } else {
@@ -581,6 +573,8 @@ private fun AdminMetric(
     background: Color,
     dark: Boolean = false
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Surface(
         modifier = modifier.height(150.dp),
         shape = RoundedCornerShape(16.dp),
@@ -599,14 +593,14 @@ private fun AdminMetric(
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = if (dark) Color.White else adminGreen,
+                    tint = if (dark) Color.White else colors.primary,
                     modifier = Modifier.size(25.dp)
                 )
                 Text(
                     status,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (dark) adminMint else adminGreen,
+                    color = if (dark) colors.primaryFixed else colors.primary,
                     maxLines = 2
                 )
             }
@@ -621,7 +615,7 @@ private fun AdminMetric(
                 Text(
                     description,
                     fontSize = 12.sp,
-                    color = if (dark) adminMint else adminMuted
+                    color = if (dark) colors.primaryFixed else colors.onSurfaceVariant
                 )
             }
         }
@@ -635,6 +629,8 @@ private fun AdminQuickAction(
     icon: ImageVector,
     onClick: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Surface(
         modifier = modifier
             .height(116.dp)
@@ -651,13 +647,13 @@ private fun AdminQuickAction(
             Box(
                 modifier = Modifier
                     .size(44.dp)
-                    .background(adminSoft, CircleShape),
+                    .background(colors.surfaceContainer, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = adminGreen
+                    tint = colors.primary
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -681,6 +677,8 @@ private fun AdminOrderCard(
     onDetail: () -> Unit,
     onValidate: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Surface(
         shape = RoundedCornerShape(16.dp),
         color = Color.White,
@@ -699,13 +697,13 @@ private fun AdminOrderCard(
                 Box(
                     modifier = Modifier
                         .size(42.dp)
-                        .background(adminSoft, CircleShape),
+                        .background(colors.surfaceContainer, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         initials,
                         fontWeight = FontWeight.Bold,
-                        color = adminGreen
+                        color = colors.primary
                     )
                 }
                 Column {
@@ -716,7 +714,7 @@ private fun AdminOrderCard(
                     Text(
                         detail,
                         fontSize = 12.sp,
-                        color = adminMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
             }
@@ -737,7 +735,7 @@ private fun AdminOrderCard(
                     Text(
                         "Monto a cobrar",
                         fontSize = 12.sp,
-                        color = adminMuted
+                        color = colors.onSurfaceVariant
                     )
                     Text(
                         amount,
@@ -747,12 +745,12 @@ private fun AdminOrderCard(
                 }
                 Row {
                     TextButton(onClick = onDetail) {
-                        Text("Detalle", color = adminGreen)
+                        Text("Detalle", color = colors.primary)
                     }
                     Button(
                         onClick = onValidate,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = adminGreen
+                            containerColor = colors.primary
                         )
                     ) {
                         Text("Validar")
@@ -771,6 +769,8 @@ private fun AdminStockCard(
     action: String,
     onClick: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Surface(
         shape = RoundedCornerShape(14.dp),
         color = Color.White,
@@ -791,7 +791,7 @@ private fun AdminStockCard(
                 Text(
                     detail,
                     fontSize = 12.sp,
-                    color = adminMuted
+                    color = colors.onSurfaceVariant
                 )
                 Text(
                     stock,
@@ -811,7 +811,7 @@ private fun AdminStockCard(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(Modifier.width(4.dp))
-                Text(action, color = adminGreen)
+                Text(action, color = colors.primary)
             }
         }
     }

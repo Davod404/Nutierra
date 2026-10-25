@@ -1,29 +1,30 @@
 package com.example.nutierra.ui.screens
 
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.ui.viewmodel.PerfilViewModel
-import com.example.nutierra.ui.viewmodel.aPerfilUi
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.ui.viewmodel.PedidoViewModel
+import com.example.nutierra.ui.viewmodel.PerfilViewModel
+import com.example.nutierra.ui.viewmodel.aPerfilUi
 
 @Composable
 fun ProfileScreen(
@@ -32,6 +33,7 @@ fun ProfileScreen(
     onMapClick: () -> Unit = {},
     onScanClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     perfilViewModel: PerfilViewModel = viewModel(),
     pedidoViewModel: PedidoViewModel = viewModel()
@@ -115,6 +117,7 @@ fun ProfileScreen(
                 shadowElevation = 2.dp
             ) {
                 NavigationBar(
+                    modifier = Modifier.navigationBarsPadding(),
                     containerColor = colors.surface,
                     tonalElevation = 0.dp
                 ) {
@@ -147,7 +150,7 @@ fun ProfileScreen(
                     )
                     NavigationBarItem(
                         selected = false,
-                        onClick = {},
+                        onClick = onCatalogClick,
                         icon = {
                             Box(
                                 modifier = Modifier
@@ -262,7 +265,7 @@ fun ProfileScreen(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (true) MaterialTheme.colorScheme.tertiary
+                                    if (true) colors.tertiary
                                     else Color.Transparent
                                 ),
                             contentAlignment = Alignment.Center
@@ -270,8 +273,8 @@ fun ProfileScreen(
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = "Perfil",
-                                tint = if (true) MaterialTheme.colorScheme.surface
-                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                tint = if (true) colors.onTertiary
+                                else colors.onSurfaceVariant
                             )
                         }
                     },
@@ -284,7 +287,6 @@ fun ProfileScreen(
             }
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -407,10 +409,10 @@ fun ProfileScreen(
                         color = colors.surfaceContainerLow
                     ) {
                         Row(
-                            modifier = Modifier.padding(
-                                horizontal = 12.dp,
-                                vertical = 10.dp
-                            ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(onClick = onEditProfileClick)
+                                .padding(horizontal = 12.dp, vertical = 10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -419,24 +421,24 @@ fun ProfileScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Eco,
+                                    Icons.Default.Edit,
                                     contentDescription = null,
                                     tint = colors.primary,
                                     modifier = Modifier.size(20.dp)
                                 )
 
                                 Text(
-                                    "Cliente Verificado Valle Central",
+                                    "Editar datos de la cuenta",
                                     style = typography.labelMedium,
                                     color = colors.onSurfaceVariant
                                 )
                             }
 
-                            Text(
-                                "Activo",
-                                style = typography.labelMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = colors.primary
+                            Icon(
+                                Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = colors.outlineVariant,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
@@ -467,8 +469,9 @@ fun ProfileScreen(
             ProfileInfoCard(
                 icon = Icons.Default.Phone,
                 label = "Teléfono móvil",
-                value = "+56 9 8765 4321",
-                trailingIcon = Icons.Default.Lock
+                value = usuario?.telefono?.takeIf { it.isNotBlank() } ?: "No registrado",
+                trailingIcon = Icons.Default.ChevronRight,
+                onClick = onEditProfileClick
             )
 
             Spacer(Modifier.height(8.dp))
@@ -476,8 +479,9 @@ fun ProfileScreen(
             ProfileInfoCard(
                 icon = Icons.Default.LocationOn,
                 label = "Dirección de entrega",
-                value = "Providencia, Santiago",
-                trailingIcon = Icons.Default.ChevronRight
+                value = usuario?.direccion?.takeIf { it.isNotBlank() } ?: "No registrada",
+                trailingIcon = Icons.Default.ChevronRight,
+                onClick = onEditProfileClick
             )
 
             Spacer(Modifier.height(8.dp))
@@ -689,7 +693,7 @@ fun ProfileScreen(
                 )
             ) {
                 Icon(
-                    Icons.Default.Logout,
+                    Icons.AutoMirrored.Filled.Logout,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )
@@ -744,7 +748,7 @@ fun ProfileScreen(
                     )
                 ) {
                     Icon(
-                        Icons.Default.Logout,
+                        Icons.AutoMirrored.Filled.Logout,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -774,13 +778,19 @@ private fun ProfileInfoCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     value: String,
-    trailingIcon: androidx.compose.ui.graphics.vector.ImageVector
+    trailingIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    onClick: (() -> Unit)? = null
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick != null) Modifier.clickable(onClick = onClick)
+                else Modifier
+            ),
         shape = RoundedCornerShape(12.dp),
         color = colors.surfaceContainerLowest,
         shadowElevation = 2.dp
@@ -793,10 +803,7 @@ private fun ProfileInfoCard(
             Box(
                 modifier = Modifier
                     .size(40.dp)
-                    .background(
-                        colors.surfaceContainer,
-                        RoundedCornerShape(8.dp)
-                    ),
+                    .background(colors.surfaceContainer, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -807,15 +814,12 @@ private fun ProfileInfoCard(
                 )
             }
 
-            Column(
-                modifier = Modifier.weight(1f)
-            ) {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     label,
                     style = typography.labelMedium,
                     color = colors.onSurfaceVariant
                 )
-
                 Text(
                     value,
                     style = typography.bodyMedium,

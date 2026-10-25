@@ -1,38 +1,31 @@
 package com.example.nutierra.ui.screens
 
-import com.example.nutierra.data.local.entity.ProductoEntity
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.nutierra.ui.theme.Surface
-
-private val inventoryGreen = Color(0xFF13522F)
-private val inventoryBackground = Color(0xFFF5FBF3)
-private val inventorySoft = Color(0xFFEAF0E8)
-private val inventoryMuted = Color(0xFF404941)
-
-private val inventoryMint = Color(0xFFB1F1C1)
-private val inventoryRed = Color(0xFFBA1A1A)
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import coil.compose.AsyncImage
+import com.example.nutierra.data.local.entity.ProductoEntity
 
 private data class InventoryProduct(
     val id: Int,
@@ -41,7 +34,8 @@ private data class InventoryProduct(
     val category: String,
     val format: String,
     val price: Int,
-    val stock: Int
+    val stock: Int,
+    val imagenUri: String?
 )
 
 @Composable
@@ -54,7 +48,6 @@ fun AdminInventoryScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
 
     val products = remember(productos) {
         productos.map {
@@ -65,7 +58,8 @@ fun AdminInventoryScreen(
                 category = it.categoria,
                 format = it.peso,
                 price = it.precio,
-                stock = it.stock
+                stock = it.stock,
+                imagenUri = it.imagenUri
             )
         }
     }
@@ -93,13 +87,13 @@ fun AdminInventoryScreen(
     val criticalCount = products.count { it.stock <= 5 }
 
     Scaffold(
-        containerColor = inventoryBackground,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
                 color = colors.surface,
                 shadowElevation = 2.dp
-            ){
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -129,12 +123,12 @@ fun AdminInventoryScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
                                         text = "Nutierra",
-                                        style = typography.labelMedium,
+                                        style = MaterialTheme.typography.labelMedium,
                                         color = colors.onSurfaceVariant
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Surface(
-                                        color = inventoryMint,
+                                        color = colors.primaryFixed,
                                         shape = RoundedCornerShape(12.dp)
                                     ) {
                                         Text(
@@ -144,14 +138,16 @@ fun AdminInventoryScreen(
                                                 vertical = 3.dp
                                             ),
                                             fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.onPrimaryFixed
                                         )
                                     }
                                 }
                                 Text(
                                     "Inventario",
                                     fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.onSurface
                                 )
                             }
                         }
@@ -160,14 +156,14 @@ fun AdminInventoryScreen(
                         Box(
                             modifier = Modifier
                                 .size(34.dp)
-                                .background(inventoryGreen, CircleShape)
+                                .background(colors.primary, CircleShape)
                                 .clickable(onClick = onProfileClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = "Administrador",
-                                tint = Color.White,
+                                tint = colors.onPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }
@@ -193,7 +189,7 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -201,8 +197,8 @@ fun AdminInventoryScreen(
                                 Icon(
                                     Icons.Default.Dashboard,
                                     contentDescription = "Inicio",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -220,7 +216,7 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -228,8 +224,8 @@ fun AdminInventoryScreen(
                                 Icon(
                                     Icons.Default.Inventory2,
                                     contentDescription = "Productos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -247,7 +243,7 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        if (true) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -255,8 +251,8 @@ fun AdminInventoryScreen(
                                 Icon(
                                     Icons.Default.Warehouse,
                                     contentDescription = "Inventario",
-                                    tint = if (true) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (true) colors.onTertiary
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -274,16 +270,16 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    Icons.Default.Assignment,
+                                    Icons.AutoMirrored.Filled.Assignment,
                                     contentDescription = "Pedidos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -301,7 +297,7 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -309,8 +305,8 @@ fun AdminInventoryScreen(
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -323,7 +319,6 @@ fun AdminInventoryScreen(
             }
         }
     ) { padding ->
-
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -346,12 +341,13 @@ fun AdminInventoryScreen(
                         Text(
                             "Control de inventario",
                             fontSize = 24.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
                         Text(
                             "Gestión centralizada de stock en bodega",
                             fontSize = 14.sp,
-                            color = inventoryMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -384,9 +380,9 @@ fun AdminInventoryScreen(
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = inventorySoft,
-                        unfocusedContainerColor = inventorySoft,
-                        focusedBorderColor = inventoryGreen,
+                        focusedContainerColor = colors.surfaceContainer,
+                        unfocusedContainerColor = colors.surfaceContainer,
+                        focusedBorderColor = colors.primary,
                         unfocusedBorderColor = Color.Transparent
                     )
                 )
@@ -398,29 +394,29 @@ fun AdminInventoryScreen(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     (
-                        listOf("Todos" to productos.size) +
-                            categoryCounts.toList()
-                    ).forEach { (value, count) ->
-                        FilterChip(
-                            selected = category == value,
-                            onClick = { category = value },
-                            label = {
-                                Text("$value ($count)", fontSize = 12.sp)
-                            },
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = inventoryGreen,
-                                selectedLabelColor = Color.White,
-                                containerColor = inventorySoft
-                            ),
-                            border = null
-                        )
-                    }
+                            listOf("Todos" to productos.size) +
+                                    categoryCounts.toList()
+                            ).forEach { (value, count) ->
+                            FilterChip(
+                                selected = category == value,
+                                onClick = { category = value },
+                                label = {
+                                    Text("$value ($count)", fontSize = 12.sp)
+                                },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = colors.primary,
+                                    selectedLabelColor = colors.onPrimary,
+                                    containerColor = colors.surfaceContainer
+                                ),
+                                border = null
+                            )
+                        }
                 }
             }
 
             item {
                 Surface(
-                    color = inventorySoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -434,23 +430,24 @@ fun AdminInventoryScreen(
                             Text(
                                 "Datos de inventario de demostración",
                                 fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                color = colors.onSurface
                             )
                             Text(
                                 "Umbral de alerta: ≤ 5 unidades",
                                 fontSize = 11.sp,
-                                color = inventoryMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                         Surface(
-                            color = Color(0xFFFFDAD6),
+                            color = colors.errorContainer,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
                                 "$criticalCount críticos",
                                 modifier = Modifier.padding(8.dp),
                                 fontSize = 11.sp,
-                                color = inventoryRed,
+                                color = colors.onErrorContainer,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -461,7 +458,7 @@ fun AdminInventoryScreen(
             if (showSuccess) {
                 item {
                     Surface(
-                        color = Color(0xFFB1F1C1),
+                        color = colors.primaryFixed,
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Row(
@@ -473,13 +470,13 @@ fun AdminInventoryScreen(
                             Icon(
                                 Icons.Default.CheckCircle,
                                 contentDescription = null,
-                                tint = inventoryGreen
+                                tint = colors.onPrimaryFixed
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 "Stock actualizado correctamente",
                                 modifier = Modifier.weight(1f),
-                                color = inventoryGreen,
+                                color = colors.onPrimaryFixed,
                                 fontSize = 13.sp
                             )
                             IconButton(
@@ -487,7 +484,8 @@ fun AdminInventoryScreen(
                             ) {
                                 Icon(
                                     Icons.Default.Close,
-                                    contentDescription = "Cerrar"
+                                    contentDescription = "Cerrar",
+                                    tint = colors.onPrimaryFixed
                                 )
                             }
                         }
@@ -507,17 +505,18 @@ fun AdminInventoryScreen(
                         Icon(
                             Icons.Default.Inventory2,
                             contentDescription = null,
-                            tint = inventoryMuted,
+                            tint = colors.onSurfaceVariant,
                             modifier = Modifier.size(44.dp)
                         )
                         Text(
                             "No se encontraron productos",
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
                         Text(
                             "Intenta con otro término de búsqueda o selecciona una categoría diferente.",
                             fontSize = 12.sp,
-                            color = inventoryMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -578,7 +577,7 @@ fun AdminInventoryScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showReport = false }) {
-                    Text("Cerrar", color = inventoryGreen)
+                    Text("Cerrar", color = colors.primary)
                 }
             }
         )
@@ -597,7 +596,7 @@ fun AdminInventoryScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showBulkAdjust = false }) {
-                    Text("Entendido", color = inventoryGreen)
+                    Text("Entendido", color = colors.primary)
                 }
             }
         )
@@ -609,10 +608,11 @@ private fun InventoryProductCard(
     product: InventoryProduct,
     onAdjust: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     val critical = product.stock <= 5
 
     Surface(
-        color = Color.White,
+        color = colors.surfaceContainerLowest,
         shape = RoundedCornerShape(14.dp),
         shadowElevation = 2.dp
     ) {
@@ -628,26 +628,33 @@ private fun InventoryProductCard(
                 Box(
                     modifier = Modifier
                         .size(80.dp)
-                        .background(
-                            inventorySoft,
-                            RoundedCornerShape(10.dp)
-                        ),
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(colors.surfaceContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Icon(
-                            Icons.Default.Inventory2,
-                            contentDescription = null,
-                            tint = inventoryGreen,
-                            modifier = Modifier.size(28.dp)
+                    if (!product.imagenUri.isNullOrBlank()) {
+                        AsyncImage(
+                            model = product.imagenUri,
+                            contentDescription = product.name,
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
                         )
-                        Text(
-                            product.format,
-                            fontSize = 11.sp,
-                            color = inventoryMuted
-                        )
+                    } else {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(
+                                Icons.Default.Inventory2,
+                                contentDescription = null,
+                                tint = colors.primary,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Text(
+                                product.format,
+                                fontSize = 11.sp,
+                                color = colors.onSurfaceVariant
+                            )
+                        }
                     }
                 }
 
@@ -658,30 +665,31 @@ private fun InventoryProductCard(
                     Text(
                         product.category,
                         fontSize = 11.sp,
-                        color = inventoryMuted
+                        color = colors.onSurfaceVariant
                     )
                     Text(
                         "SKU: ${product.sku}",
                         fontSize = 11.sp,
-                        color = inventoryMuted
+                        color = colors.onSurfaceVariant
                     )
                     Text(
                         product.name,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        color = colors.onSurface
                     )
                     Text(
                         "$${"%,d".format(product.price).replace(',', '.')} CLP",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
-                        color = inventoryGreen
+                        color = colors.primary
                     )
                 }
             }
 
-            HorizontalDivider(color = inventorySoft)
+            HorizontalDivider(color = colors.surfaceContainer)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -696,7 +704,7 @@ private fun InventoryProductCard(
                         Icon(
                             Icons.Default.Warning,
                             contentDescription = null,
-                            tint = inventoryRed,
+                            tint = colors.error,
                             modifier = Modifier.size(17.dp)
                         )
                         Spacer(Modifier.width(5.dp))
@@ -713,7 +721,7 @@ private fun InventoryProductCard(
                         },
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = if (critical) inventoryRed else inventoryMuted
+                        color = if (critical) colors.error else colors.onSurfaceVariant
                     )
                 }
 
@@ -723,7 +731,7 @@ private fun InventoryProductCard(
                         else Icons.Default.Edit,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp),
-                        tint = inventoryGreen
+                        tint = colors.primary
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
@@ -733,7 +741,7 @@ private fun InventoryProductCard(
                             else -> "Ajustar"
                         },
                         fontSize = 12.sp,
-                        color = inventoryGreen
+                        color = colors.primary
                     )
                 }
             }
@@ -747,6 +755,8 @@ private fun InventoryAdjustDialog(
     onDismiss: () -> Unit,
     onSave: (Int) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     var quantity by remember(product.id) {
         mutableIntStateOf(product.stock)
     }
@@ -761,12 +771,13 @@ private fun InventoryAdjustDialog(
                 Text(
                     "SKU: ${product.sku}",
                     fontSize = 12.sp,
-                    color = inventoryMuted
+                    color = colors.onSurfaceVariant
                 )
                 Text(
                     "${product.name} ${product.format}",
                     fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
                 )
             }
         },
@@ -777,11 +788,11 @@ private fun InventoryAdjustDialog(
                 Text(
                     "Existencias actuales en bodega: ${product.stock}",
                     fontSize = 13.sp,
-                    color = inventoryMuted
+                    color = colors.onSurfaceVariant
                 )
 
                 Surface(
-                    color = inventorySoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -805,14 +816,15 @@ private fun InventoryAdjustDialog(
                         Text(
                             quantity.toString(),
                             fontSize = 26.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onSurface
                         )
 
                         IconButton(onClick = { quantity++ }) {
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = "Aumentar",
-                                tint = inventoryGreen
+                                tint = colors.primary
                             )
                         }
                     }
@@ -821,12 +833,13 @@ private fun InventoryAdjustDialog(
                 Text(
                     "Unidades físicas verificadas",
                     fontSize = 12.sp,
-                    color = inventoryMuted
+                    color = colors.onSurfaceVariant
                 )
 
                 Text(
                     "Motivo del ajuste",
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
                 )
 
                 listOf(
@@ -844,10 +857,14 @@ private fun InventoryAdjustDialog(
                             selected = reason == option,
                             onClick = { reason = option },
                             colors = RadioButtonDefaults.colors(
-                                selectedColor = inventoryGreen
+                                selectedColor = colors.primary
                             )
                         )
-                        Text(option, fontSize = 14.sp)
+                        Text(
+                            option,
+                            fontSize = 14.sp,
+                            color = colors.onSurface
+                        )
                     }
                 }
             }
@@ -856,7 +873,7 @@ private fun InventoryAdjustDialog(
             Button(
                 onClick = { onSave(quantity) },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = inventoryGreen
+                    containerColor = colors.primary
                 )
             ) {
                 Icon(
@@ -870,10 +887,10 @@ private fun InventoryAdjustDialog(
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar", color = inventoryMuted)
+                Text("Cancelar", color = colors.onSurfaceVariant)
             }
         },
-        containerColor = inventoryBackground,
+        containerColor = colors.surfaceContainerLowest,
         shape = RoundedCornerShape(20.dp)
     )
 }

@@ -1,42 +1,41 @@
 package com.example.nutierra.ui.screens
 
-import com.example.nutierra.data.local.entity.ProductoEntity
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import android.graphics.BitmapFactory
+import android.graphics.Bitmap
+import android.content.Intent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
+import java.net.URL
+import com.example.nutierra.data.local.entity.ProductoEntity
 
 private const val DETAIL_PRICE = 4990
 private const val DETAIL_STOCK = 24
-
 private const val DETAIL_IMAGE =
     "https://lh3.googleusercontent.com/aida-public/AB6AXuD3OnlEyc_FEvk9heuwg6t0hpJestFndzMrPOjRkx5PFTQ_wL4Db9XfcGR15owYfGY9IJn3Z47v-45KgynewOBYxIlTTJahkNrA2EFV7-XUl9Ysi7yW8AvBLFzXgted016LGt2Ucqw7gfaRUJG7Cb2UlWQw6ADsS1U6ZrNaEX46V88-lxxtkBYnYjfNEQB6i6XELpyuO4Dlm1Uv0oiob8dYTvimm3RQT4TnAq6tnVg"
 
@@ -53,7 +52,10 @@ fun ProductDetailScreen(
     onAddToCart: (Int, Int) -> Unit = { _, _ -> },
     producto: ProductoEntity? = null
 ) {
-    // Datos del producto leído desde SQLite (si aún no carga, se muestran los de ejemplo)
+    val colors = MaterialTheme.colorScheme
+    val typography = MaterialTheme.typography
+    val context = LocalContext.current
+
     val precio = producto?.precio ?: DETAIL_PRICE
     val stock = producto?.stock ?: DETAIL_STOCK
     val nombre = producto?.nombre ?: "Almendras Naturales 250 g"
@@ -65,9 +67,7 @@ fun ProductDetailScreen(
                 "calidad, cosechadas en valles centrales chilenos. " +
                 "Sin sal añadida, ideales para colaciones y recetas saludables.")
 
-    val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
-    val context = LocalContext.current
+
 
     var quantity by remember(producto?.id) { mutableIntStateOf(1) }
     var isFavorite by remember { mutableStateOf(false) }
@@ -77,7 +77,6 @@ fun ProductDetailScreen(
     Scaffold(
         containerColor = colors.surface,
 
-        // ENCABEZADO
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -88,9 +87,9 @@ fun ProductDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(64.dp)
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 6.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -101,18 +100,14 @@ fun ProductDetailScreen(
 
                     Box(
                         modifier = Modifier
-                            .size(32.dp)
-                            .background(
-                                colors.primaryFixed,
-                                RoundedCornerShape(8.dp)
-                            ),
+                            .size(36.dp)
+                            .background(colors.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Eco,
                             contentDescription = "Nutierra",
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
+                            tint = colors.onPrimary
                         )
                     }
 
@@ -140,7 +135,6 @@ fun ProductDetailScreen(
             }
         },
 
-        // BARRA INFERIOR FIJA
         bottomBar = {
             Surface(
                 color = colors.surface,
@@ -217,8 +211,6 @@ fun ProductDetailScreen(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 24.dp)
         ) {
-
-            // ACCIONES SUPERIORES
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -296,7 +288,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // FOTOGRAFÍA PRINCIPAL
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -363,7 +354,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // NOMBRE Y PRECIO
             Text(
                 nombre,
                 style = typography.headlineMedium,
@@ -410,7 +400,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // DISPONIBILIDAD
             Surface(
                 color = colors.primaryFixed.copy(alpha = 0.35f),
                 shape = RoundedCornerShape(12.dp)
@@ -441,7 +430,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // DESCRIPCIÓN
             Text(
                 "Descripción",
                 style = typography.labelLarge,
@@ -458,7 +446,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // ESPECIFICACIONES
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = colors.surfaceContainerLow,
@@ -490,7 +477,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // APORTE NUTRICIONAL
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 color = colors.surfaceContainerLowest,
@@ -544,7 +530,6 @@ fun ProductDetailScreen(
 
             Spacer(Modifier.height(24.dp))
 
-            // SELECTOR DE CANTIDAD
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -632,7 +617,6 @@ fun ProductDetailScreen(
     }
 }
 
-// BOTONES CIRCULARES
 @Composable
 private fun DetailCircleButton(
     icon: ImageVector,
@@ -658,7 +642,6 @@ private fun DetailCircleButton(
     }
 }
 
-// ETIQUETAS DE LA IMAGEN
 @Composable
 private fun DetailImageBadge(
     text: String,
@@ -667,7 +650,7 @@ private fun DetailImageBadge(
     textColor: Color
 ) {
     Surface(
-        color = backgroundColor.copy(alpha = 0.92f),
+        color = backgroundColor,
         shape = CircleShape
     ) {
         Row(
@@ -694,7 +677,6 @@ private fun DetailImageBadge(
     }
 }
 
-// FILAS DE ESPECIFICACIONES
 @Composable
 private fun DetailSpecification(
     icon: ImageVector,
@@ -738,7 +720,6 @@ private fun DetailSpecification(
     }
 }
 
-// CARGA DE IMAGEN REMOTA
 @Composable
 private fun DetailRemoteImage(
     url: String,
@@ -758,7 +739,7 @@ private fun DetailRemoteImage(
                 connection.getInputStream().use { stream ->
                     BitmapFactory.decodeStream(stream)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }

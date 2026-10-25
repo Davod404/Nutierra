@@ -1,34 +1,29 @@
 package com.example.nutierra.ui.theme
 
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 
 private val NutierraColorScheme = lightColorScheme(
-    // Primary
     primary = Primary,
     onPrimary = OnPrimary,
     primaryContainer = PrimaryContainer,
     onPrimaryContainer = OnPrimaryContainer,
     inversePrimary = InversePrimary,
 
-    // Secondary
     secondary = Secondary,
     onSecondary = OnSecondary,
     secondaryContainer = SecondaryContainer,
     onSecondaryContainer = OnSecondaryContainer,
 
-    // Tertiary
     tertiary = Tertiary,
     onTertiary = OnTertiary,
     tertiaryContainer = TertiaryContainer,
     onTertiaryContainer = OnTertiaryContainer,
 
-    // Background
     background = Background,
     onBackground = OnBackground,
 
-    // Surface
     surface = Surface,
     onSurface = OnSurface,
     surfaceVariant = SurfaceVariant,
@@ -42,21 +37,17 @@ private val NutierraColorScheme = lightColorScheme(
     surfaceContainerHighest = SurfaceContainerHighest,
     surfaceTint = SurfaceTint,
 
-    // Inverse
     inverseSurface = InverseSurface,
     inverseOnSurface = InverseOnSurface,
 
-    // Outline
     outline = Outline,
     outlineVariant = OutlineVariant,
 
-    // Error
     error = Error,
     onError = OnError,
     errorContainer = ErrorContainer,
     onErrorContainer = OnErrorContainer,
 
-    // Fixed
     primaryFixed = PrimaryFixed,
     primaryFixedDim = PrimaryFixedDim,
     onPrimaryFixed = OnPrimaryFixed,

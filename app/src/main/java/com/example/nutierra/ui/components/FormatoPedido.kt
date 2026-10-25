@@ -1,18 +1,16 @@
 package com.example.nutierra.ui.components
 
-import java.text.NumberFormat
-import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.text.NumberFormat
 
 private val localeChile = Locale.forLanguageTag("es-CL")
 
-/** $12.970 */
 fun formatoPesos(valor: Int): String =
     "$" + NumberFormat.getIntegerInstance(localeChile).format(valor)
 
-/** "Hoy, 14:30 hrs", "Ayer, 18:15 hrs" o "12/10/2026, 09:05 hrs". */
 fun formatoFechaPedido(millis: Long): String {
     val fecha = Calendar.getInstance().apply { timeInMillis = millis }
     val hoy = Calendar.getInstance()

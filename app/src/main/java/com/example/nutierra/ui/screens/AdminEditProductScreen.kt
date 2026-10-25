@@ -1,39 +1,35 @@
 package com.example.nutierra.ui.screens
 
-import androidx.compose.ui.platform.LocalContext
-import com.example.nutierra.ui.components.copiarImagenALaApp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.ui.components.textoDeError
-import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
-import com.example.nutierra.data.local.entity.ProductoEntity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val editGreen = Color(0xFF13522F)
-private val editBackground = Color(0xFFF5FBF3)
-private val editSoft = Color(0xFFEAF0E8)
-private val editMuted = Color(0xFF404941)
-private val editError = Color(0xFFBA1A1A)
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import com.example.nutierra.ui.components.copiarImagenALaApp
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
+import com.example.nutierra.data.local.entity.ProductoEntity
 
 data class EditedAdminProduct(
     val id: Int,
@@ -53,25 +49,23 @@ fun AdminEditProductScreen(
     producto: ProductoEntity? = null,
     viewModel: ProductoFormViewModel = viewModel()
 ) {
-    val estado by viewModel.uiState.collectAsStateWithLifecycle()
-
-    LaunchedEffect(producto) {
+    LaunchedEffect(producto?.id) {
         producto?.let { viewModel.cargarProducto(it) }
     }
 
+    val colors = MaterialTheme.colorScheme
+    val estado by viewModel.uiState.collectAsStateWithLifecycle()
     val productName = estado.nombre.valor
     val category = estado.categoria
     val price = estado.precio.valor
     val imageUri = estado.imagenUri?.takeIf { it != producto?.imagenUri }
+    val validName = estado.nombreValido
+    val validPrice = estado.precioValido
+    val context = LocalContext.current
 
     var showSaveBanner by remember(productId) {
         mutableStateOf(false)
     }
-
-    val validName = estado.nombreValido
-    val validPrice = estado.precioValido
-
-    val context = LocalContext.current
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -96,7 +90,7 @@ fun AdminEditProductScreen(
     }
 
     Scaffold(
-        containerColor = editBackground,
+        containerColor = colors.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -109,37 +103,51 @@ fun AdminEditProductScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
                         )
                     }
-                },
-                actions = {
-                    Button(
-                        onClick = { saveChanges() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = editGreen
-                        ),
-                        contentPadding = PaddingValues(horizontal = 12.dp)
+                }
+            )
+        },
+        bottomBar = {
+            Surface(
+                color = colors.surface,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text("Guardar")
+                        Text("Cancelar")
                     }
 
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = editBackground
-                )
-            )
+                    Button(
+                        onClick = { saveChanges() },
+                        modifier = Modifier
+                            .weight(2f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    ) {
+                        Icon(Icons.Default.Save, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Guardar")
+                    }
+                }
+            }
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -148,11 +156,9 @@ fun AdminEditProductScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-
-            // Aviso de guardado
             if (showSaveBanner) {
                 Surface(
-                    color = editSoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Row(
@@ -165,18 +171,18 @@ fun AdminEditProductScreen(
                         Icon(
                             Icons.Default.CheckCircle,
                             contentDescription = null,
-                            tint = editGreen
+                            tint = colors.primary
                         )
 
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
                                 "Modificaciones registradas",
-                                color = editGreen,
+                                color = colors.primary,
                                 fontWeight = FontWeight.SemiBold
                             )
                             Text(
                                 "Los cambios se enviaron al gestor de productos.",
-                                color = editMuted,
+                                color = colors.onSurfaceVariant,
                                 fontSize = 12.sp
                             )
                         }
@@ -194,7 +200,7 @@ fun AdminEditProductScreen(
             }
 
             Surface(
-                color = Color.White,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(14.dp),
                 shadowElevation = 2.dp
             ) {
@@ -213,18 +219,18 @@ fun AdminEditProductScreen(
                             Text(
                                 "ID: #${producto?.id ?: productId}",
                                 fontSize = 12.sp,
-                                color = editMuted,
+                                color = colors.onSurfaceVariant,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
                                 "Producto del catálogo",
                                 fontSize = 11.sp,
-                                color = editMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
 
                         Surface(
-                            color = editSoft,
+                            color = colors.surfaceContainer,
                             shape = RoundedCornerShape(10.dp)
                         ) {
                             Text(
@@ -233,7 +239,7 @@ fun AdminEditProductScreen(
                                     horizontal = 9.dp,
                                     vertical = 6.dp
                                 ),
-                                color = editGreen,
+                                color = colors.primary,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
@@ -243,14 +249,14 @@ fun AdminEditProductScreen(
                     Text(
                         "Ficha Maestra del Artículo",
                         fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.onSurface
                     )
                 }
             }
 
-            // Imagen del producto
             Surface(
-                color = Color.White,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(14.dp),
                 shadowElevation = 2.dp
             ) {
@@ -265,12 +271,13 @@ fun AdminEditProductScreen(
                         Text(
                             "Imagen del producto",
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
                         Text(
                             "Resolución óptima 1:1",
                             fontSize = 11.sp,
-                            color = editMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
 
@@ -282,17 +289,23 @@ fun AdminEditProductScreen(
                             modifier = Modifier
                                 .size(96.dp)
                                 .background(
-                                    editSoft,
+                                    colors.surfaceContainer,
                                     RoundedCornerShape(12.dp)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.Image,
-                                contentDescription = "Imagen del producto",
-                                tint = editGreen,
-                                modifier = Modifier.size(42.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(64.dp)
+                                    .background(colors.primary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    Icons.Default.Eco,
+                                    contentDescription = "Nutierra",
+                                    tint = colors.onPrimary
+                                )
+                            }
                         }
 
                         Column(
@@ -306,7 +319,7 @@ fun AdminEditProductScreen(
                                     "Nueva imagen seleccionada."
                                 },
                                 fontSize = 12.sp,
-                                color = editMuted
+                                color = colors.onSurfaceVariant
                             )
 
                             Row(
@@ -338,7 +351,7 @@ fun AdminEditProductScreen(
                                     Icon(
                                         Icons.Default.Delete,
                                         contentDescription = "Eliminar nueva imagen",
-                                        tint = editMuted
+                                        tint = colors.onSurfaceVariant
                                     )
                                 }
                             }
@@ -347,9 +360,8 @@ fun AdminEditProductScreen(
                 }
             }
 
-            // Nombre comercial
             Surface(
-                color = Color.White,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(14.dp),
                 shadowElevation = 2.dp
             ) {
@@ -376,15 +388,13 @@ fun AdminEditProductScreen(
                     Text(
                         "Visible para clientes en la vitrina de compras",
                         fontSize = 12.sp,
-                        color = editMuted
+                        color = colors.onSurfaceVariant
                     )
-
                 }
             }
 
-            // Categoría
             Surface(
-                color = Color.White,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(14.dp),
                 shadowElevation = 2.dp
             ) {
@@ -402,7 +412,6 @@ fun AdminEditProductScreen(
                             "Semillas",
                             "Deshidratados"
                         ).forEach { option ->
-
                             val selected = category == option
 
                             Surface(
@@ -413,9 +422,9 @@ fun AdminEditProductScreen(
                                         viewModel.cambiarCategoria(option)
                                     },
                                 color = if (selected) {
-                                    editGreen
+                                    colors.primary
                                 } else {
-                                    editSoft
+                                    colors.surfaceContainer
                                 },
                                 shape = RoundedCornerShape(12.dp)
                             ) {
@@ -428,7 +437,7 @@ fun AdminEditProductScreen(
                                         Icon(
                                             Icons.Default.Check,
                                             contentDescription = null,
-                                            tint = Color.White,
+                                            tint = colors.onPrimary,
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
@@ -438,9 +447,9 @@ fun AdminEditProductScreen(
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = if (selected) {
-                                            Color.White
+                                            colors.onPrimary
                                         } else {
-                                            editMuted
+                                            colors.onSurfaceVariant
                                         }
                                     )
                                 }
@@ -451,7 +460,7 @@ fun AdminEditProductScreen(
             }
 
             Surface(
-                color = Color.White,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(14.dp),
                 shadowElevation = 2.dp
             ) {
@@ -477,7 +486,7 @@ fun AdminEditProductScreen(
                                 "CLP",
                                 modifier = Modifier.padding(end = 12.dp),
                                 fontSize = 12.sp,
-                                color = editMuted
+                                color = colors.onSurfaceVariant
                             )
                         },
                         keyboardOptions = KeyboardOptions(
@@ -497,16 +506,15 @@ fun AdminEditProductScreen(
                         Text(
                             "Precio final",
                             fontSize = 12.sp,
-                            color = editGreen,
+                            color = colors.primary,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-
                 }
             }
 
             Surface(
-                color = editSoft,
+                color = colors.surfaceContainer,
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Column(
@@ -520,26 +528,27 @@ fun AdminEditProductScreen(
                         Icon(
                             Icons.Default.Warehouse,
                             contentDescription = null,
-                            tint = editGreen
+                            tint = colors.primary
                         )
 
                         Text(
                             "Control Centralizado de Bodega",
                             fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
                     }
 
                     Text(
                         "Stock disponible: ${producto?.stock ?: 0} unidades",
                         fontWeight = FontWeight.Bold,
-                        color = editGreen
+                        color = colors.primary
                     )
 
                     Text(
                         "El inventario físico (${producto?.stock ?: 0} unidades actuales) se gestiona de forma centralizada desde el módulo Inventario para mantener trazabilidad con la base de datos de lotes y vencimientos.",
                         fontSize = 13.sp,
-                        color = editMuted,
+                        color = colors.onSurfaceVariant,
                         lineHeight = 19.sp
                     )
 
@@ -549,21 +558,20 @@ fun AdminEditProductScreen(
                     ) {
                         Text(
                             "Ir a Control de Inventario",
-                            color = editGreen
+                            color = colors.primary
                         )
                         Spacer(Modifier.width(8.dp))
                         Icon(
-                            Icons.Default.ArrowForward,
+                            Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = editGreen
+                            tint = colors.primary
                         )
                     }
                 }
             }
 
-            // Validación
             Surface(
-                color = editSoft,
+                color = colors.surfaceContainer,
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Row(
@@ -579,9 +587,9 @@ fun AdminEditProductScreen(
                         },
                         contentDescription = null,
                         tint = if (validName && validPrice) {
-                            editGreen
+                            colors.primary
                         } else {
-                            editError
+                            colors.error
                         }
                     )
 
@@ -592,41 +600,9 @@ fun AdminEditProductScreen(
                             "Revisa los campos obligatorios antes de guardar."
                         },
                         fontSize = 12.sp,
-                        color = editMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
-            }
-
-            // Acciones inferiores
-            Button(
-                onClick = { saveChanges() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = editGreen
-                ),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Icon(
-                    Icons.Default.Save,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Guardar modificaciones",
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Text("Descartar cambios")
             }
 
             Spacer(Modifier.height(8.dp))
@@ -639,15 +615,16 @@ private fun EditFieldLabel(text: String) {
     Text(
         text = text,
         fontSize = 14.sp,
-        fontWeight = FontWeight.SemiBold
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface
     )
 }
 
 @Composable
 private fun editTextFieldColors() =
     OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = editBackground,
-        unfocusedContainerColor = editBackground,
-        focusedBorderColor = editGreen,
+        focusedContainerColor = MaterialTheme.colorScheme.background,
+        unfocusedContainerColor = MaterialTheme.colorScheme.background,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = Color.Transparent
     )

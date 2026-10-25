@@ -1,64 +1,61 @@
-
 package com.example.nutierra.ui.screens
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.Camera
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import android.content.pm.PackageManager
+import android.Manifest
+import android.net.Uri
 import java.io.File
-import java.util.concurrent.Executors
 
-private val cameraGreen = Color(0xFF13522F)
-private val cameraBackground = Color(0xFFF5FBF3)
-private val cameraSoft = Color(0xFFEAF0E8)
-private val cameraText = Color(0xFF171D18)
-private val cameraMuted = Color(0xFF404941)
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductCameraScreen(
     onBack: () -> Unit,
     onPhotoSelected: (String) -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-
     val previewView = remember { mutableStateOf<PreviewView?>(null) }
     val cameraPreview = remember { mutableStateOf<Preview?>(null) }
+    var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
+    var frontCamera by remember { mutableStateOf(false) }
+    var flashMode by remember { mutableIntStateOf(ImageCapture.FLASH_MODE_AUTO) }
+    var showGrid by remember { mutableStateOf(true) }
+    var capturedUri by remember { mutableStateOf<Uri?>(null) }
+    var isCapturing by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     var cameraGranted by remember {
         mutableStateOf(
@@ -68,15 +65,6 @@ fun ProductCameraScreen(
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
-
-    var camera by remember { mutableStateOf<Camera?>(null) }
-    var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
-    var frontCamera by remember { mutableStateOf(false) }
-    var flashMode by remember { mutableIntStateOf(ImageCapture.FLASH_MODE_AUTO) }
-    var showGrid by remember { mutableStateOf(true) }
-    var capturedUri by remember { mutableStateOf<Uri?>(null) }
-    var isCapturing by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -103,7 +91,7 @@ fun ProductCameraScreen(
 
                 capturedUri = Uri.fromFile(file)
                 errorMessage = null
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 errorMessage = "No se pudo cargar la fotografía."
             }
         }
@@ -128,7 +116,6 @@ fun ProductCameraScreen(
                 if (!active) return@Runnable
                 try {
                     val cameraProvider = providerFuture.get()
-                    if (!active) return@Runnable
                     provider = cameraProvider
 
                     val selector = if (frontCamera) {
@@ -154,7 +141,7 @@ fun ProductCameraScreen(
                     )
 
                     imageCapture = capture
-                    cameraPreview.value = preview   // 👈 clave: publicas el Preview
+                    cameraPreview.value = preview
                     errorMessage = null
                 } catch (e: Exception) {
                     errorMessage = "No se pudo iniciar la cámara: ${e.message}"
@@ -214,11 +201,11 @@ fun ProductCameraScreen(
     }
 
     Scaffold(
-        containerColor = cameraBackground,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
-                color = cameraBackground,
+                color = colors.background,
                 shadowElevation = 2.dp
             ) {
                 Row(
@@ -240,15 +227,21 @@ fun ProductCameraScreen(
                         modifier = Modifier.weight(1f),
                         fontSize = 19.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = cameraText
+                        color = colors.onSurface
                     )
 
-                    Icon(
-                        Icons.Default.Eco,
-                        contentDescription = "Nutierra",
-                        tint = cameraGreen,
-                        modifier = Modifier.padding(end = 16.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(colors.primary, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Eco,
+                            contentDescription = "Nutierra",
+                            tint = colors.onPrimary
+                        )
+                    }
                 }
             }
         }
@@ -264,7 +257,7 @@ fun ProductCameraScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(cameraSoft)
+                    .background(colors.surfaceContainer)
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -275,13 +268,13 @@ fun ProductCameraScreen(
                         if (frontCamera) "Cámara frontal" else "Cámara trasera"
                     },
                     fontSize = 12.sp,
-                    color = cameraGreen
+                    color = colors.primary
                 )
 
                 Text(
                     if (cameraGranted) "Permiso activo" else "Sin permiso",
                     fontSize = 12.sp,
-                    color = cameraMuted
+                    color = colors.onSurfaceVariant
                 )
             }
 
@@ -396,7 +389,7 @@ fun ProductCameraScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
-                    color = cameraSoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -406,7 +399,7 @@ fun ProductCameraScreen(
                         Icon(
                             Icons.Default.Lightbulb,
                             contentDescription = null,
-                            tint = cameraGreen
+                            tint = colors.primary
                         )
 
                         Spacer(Modifier.width(10.dp))
@@ -415,7 +408,7 @@ fun ProductCameraScreen(
                             "Centra la bolsa o frasco dentro de las guías " +
                                     "para conseguir una buena fotografía del producto.",
                             fontSize = 12.sp,
-                            color = cameraMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -446,7 +439,7 @@ fun ProductCameraScreen(
                                 else -> Icons.Default.FlashAuto
                             },
                             contentDescription = "Cambiar flash",
-                            tint = cameraGreen
+                            tint = colors.primary
                         )
                     }
 
@@ -456,14 +449,14 @@ fun ProductCameraScreen(
                         Icon(
                             Icons.Default.GridOn,
                             contentDescription = "Cuadrícula",
-                            tint = cameraGreen
+                            tint = colors.primary
                         )
                     }
 
                     Icon(
                         Icons.Default.HdrAuto,
                         contentDescription = "Ajuste automático",
-                        tint = cameraMuted
+                        tint = colors.onSurfaceVariant
                     )
                 }
 
@@ -483,8 +476,8 @@ fun ProductCameraScreen(
                             },
                             modifier = Modifier.size(52.dp),
                             colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = cameraSoft,
-                                contentColor = cameraGreen
+                                containerColor = colors.surfaceContainer,
+                                contentColor = colors.primary
                             )
                         ) {
                             Icon(
@@ -503,7 +496,7 @@ fun ProductCameraScreen(
                                 !isCapturing,
                         modifier = Modifier.size(76.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = cameraGreen,
+                            containerColor = colors.primary,
                             contentColor = Color.White
                         )
                     ) {
@@ -530,8 +523,8 @@ fun ProductCameraScreen(
                             },
                             modifier = Modifier.size(52.dp),
                             colors = IconButtonDefaults.filledIconButtonColors(
-                                containerColor = cameraSoft,
-                                contentColor = cameraGreen
+                                containerColor = colors.surfaceContainer,
+                                contentColor = colors.primary
                             )
                         ) {
                             Icon(
@@ -554,13 +547,13 @@ fun ProductCameraScreen(
                         "Confirmar foto",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
-                        color = cameraText
+                        color = colors.onSurface
                     )
 
                     Text(
                         "Revisa la imagen antes de utilizarla en el catálogo.",
                         fontSize = 13.sp,
-                        color = cameraMuted
+                        color = colors.onSurfaceVariant
                     )
 
                     Button(
@@ -573,7 +566,7 @@ fun ProductCameraScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = cameraGreen
+                            containerColor = colors.primary
                         )
                     ) {
                         Icon(
@@ -608,8 +601,6 @@ fun ProductCameraScreen(
         }
     }
 }
-
-private var cameraPreviewSurfaceProvider: ((PreviewView) -> Unit)? = null
 
 @Composable
 private fun CameraGridOverlay() {

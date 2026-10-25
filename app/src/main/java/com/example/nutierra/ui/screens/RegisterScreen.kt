@@ -1,34 +1,35 @@
 package com.example.nutierra.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.ui.components.textoDeError
-import com.example.nutierra.ui.viewmodel.RegisterViewModel
-import kotlinx.coroutines.delay
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.viewmodel.RegisterViewModel
+import com.example.nutierra.ui.components.textoDeError
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun RegisterScreen(
@@ -39,8 +40,8 @@ fun RegisterScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
+    val fieldShape = RoundedCornerShape(12.dp)
 
-    // Estado del formulario: vive en el ViewModel (validaciones desacopladas de la UI)
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
 
     val firstName = estado.nombre.valor
@@ -53,20 +54,16 @@ fun RegisterScreen(
     val successMessage = estado.registroExitoso
     val passwordsMatch = estado.contrasenasCoinciden
 
-    // Estados solo visuales
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
 
-    // Tras guardar en SQLite: muestra el mensaje un momento y vuelve al login
     LaunchedEffect(estado.registroExitoso) {
         if (estado.registroExitoso) {
-            delay(1200)
+            delay(1200.milliseconds)
             viewModel.registroConsumido()
             onRegisterSuccess()
         }
     }
-
-    val fieldShape = RoundedCornerShape(12.dp)
 
     Scaffold(
         containerColor = colors.surface,
@@ -98,8 +95,6 @@ fun RegisterScreen(
                 .padding(horizontal = 16.dp)
                 .padding(bottom = 32.dp)
         ) {
-
-            // ENCABEZADO DE REGISTRO
             Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = fieldShape,
@@ -110,7 +105,6 @@ fun RegisterScreen(
                     modifier = Modifier.padding(24.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-
                     Surface(
                         color = colors.surfaceContainerHighest,
                         shape = RoundedCornerShape(50.dp)
@@ -199,7 +193,6 @@ fun RegisterScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // NOMBRE Y APELLIDO
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -253,7 +246,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // CORREO ELECTRÓNICO
             Text(
                 "Correo electrónico *",
                 style = typography.labelMedium,
@@ -289,7 +281,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // CONTRASEÑA
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -352,7 +343,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            // CONFIRMAR CONTRASEÑA
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -423,7 +413,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // TÉRMINOS Y CONDICIONES
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.Top
@@ -451,7 +440,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(20.dp))
 
-            // MENSAJE DE VALIDACIÓN
             AnimatedVisibility(
                 visible = errorMessage != null,
                 enter = fadeIn() + expandVertically(),
@@ -498,7 +486,6 @@ fun RegisterScreen(
               }
             }
 
-            // BOTÓN CREAR CUENTA
             Button(
                 onClick = viewModel::registrar,
                 enabled = !estado.guardando && !successMessage,
@@ -528,7 +515,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            // MENSAJE DE SEGURIDAD
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -550,7 +536,6 @@ fun RegisterScreen(
 
             Spacer(Modifier.height(32.dp))
 
-            // ENLACE A LOGIN
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,

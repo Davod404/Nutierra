@@ -1,25 +1,26 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.material.icons.Icons
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.ui.components.FilaError
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
+import com.example.nutierra.ui.components.FilaError
 
 private data class CheckoutProduct(
     val name: String,
@@ -160,7 +161,7 @@ fun CheckoutScreen(
                             )
                         } else {
                             Icon(
-                                Icons.Default.Send,
+                                Icons.AutoMirrored.Filled.Send,
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
@@ -601,7 +602,8 @@ fun CheckoutScreen(
                 Button(
                     onClick = {
                         showConfirmation = false
-                        viewModel.confirmarCompra { pedido ->
+                        viewModel.confirmarCompra { _ ->
+                            // No se entrega el pedido; se usará si se agrega una PayScreen.
                             onOrderSuccess()
                         }
                     },

@@ -1,30 +1,28 @@
 package com.example.nutierra.ui.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.nutierra.data.local.NutierraDatabase
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 import com.example.nutierra.data.repository.UsuarioRepository
+import com.example.nutierra.data.local.NutierraDatabase
 import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.model.CampoFormulario
 import com.example.nutierra.model.Validaciones
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import android.app.Application
+import kotlin.time.Duration.Companion.milliseconds
 
-/** Estado completo de la pantalla de inicio de sesión. */
 data class LoginUiState(
     val correo: CampoFormulario = CampoFormulario("cliente@nutierra.cl"),
     val contrasena: CampoFormulario = CampoFormulario("Semillas2025!"),
     val cargando: Boolean = false,
     val errorGeneral: String? = null,
-    // Rol del usuario autenticado; cuando deja de ser null la pantalla navega
     val rolAutenticado: String? = null
 ) {
-    // Rol sugerido mientras se escribe (solo informativo para las cuentas demo)
     val rolDetectado: String?
         get() = when (correo.valor.trim().lowercase()) {
             "admin@nutierra.cl" -> "Administrador"
@@ -42,11 +40,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {
-        // Crea las cuentas de demostración en SQLite si todavía no existen
         viewModelScope.launch {
             try {
                 repository.poblarSiEstaVacia()
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 _uiState.update { it.copy(errorGeneral = "No se pudo preparar la base de datos") }
             }
         }
@@ -75,7 +72,6 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         val actual = _uiState.value
         if (actual.cargando) return
 
-        // Revalida todos los campos antes de intentar
         val validado = actual.copy(
             correo = actual.correo.copy(error = Validaciones.correo(actual.correo.valor)),
             contrasena = actual.contrasena.copy(
@@ -89,14 +85,12 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         _uiState.update { it.copy(cargando = true) }
 
         viewModelScope.launch {
-            delay(700) // pequeña espera para mostrar el indicador de carga
+            delay(700.milliseconds)
             val usuario = try {
                 repository.autenticar(validado.correo.valor, validado.contrasena.valor)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
-
-            // Se guarda quién inició sesión para mostrar su cuenta personal
             if (usuario != null) {
                 SesionManager.iniciarSesion(usuario)
             }
@@ -114,6 +108,5 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    // La pantalla avisa que ya navegó, para no navegar dos veces
     fun navegacionRealizada() = _uiState.update { it.copy(rolAutenticado = null) }
 }

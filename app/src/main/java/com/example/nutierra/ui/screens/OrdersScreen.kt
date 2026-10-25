@@ -1,39 +1,31 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
 import com.example.nutierra.data.local.entity.EstadosPedido
 import com.example.nutierra.data.local.entity.PedidoResumen
 import com.example.nutierra.ui.components.formatoFechaPedido
 import com.example.nutierra.ui.components.formatoPesos
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-
-private val ordersGreen = Color(0xFF13522F)
-private val ordersBackground = Color(0xFFF5FBF3)
-private val ordersSoft = Color(0xFFEAF0E8)
-private val ordersMuted = Color(0xFF404941)
-private val ordersAmber = Color(0xFF855500)
 
 private data class ClientOrder(
     val id: String,
@@ -46,7 +38,6 @@ private data class ClientOrder(
     val progressMessage: String
 )
 
-// Convierte un pedido guardado en SQLite al formato de esta pantalla
 private fun PedidoResumen.aClientOrder(): ClientOrder {
     val estado = pedido.estado
     return ClientOrder(
@@ -75,12 +66,10 @@ fun OrdersScreen(
     onProfileClick: () -> Unit = {},
     pedidos: List<PedidoResumen> = emptyList()
 ) {
-    // Pedidos reales del cliente en sesión (SQLite)
     val demoClientOrders = remember(pedidos) { pedidos.map { it.aClientOrder() } }
     val entregados = demoClientOrders.count { it.status == "Entregado" }
 
     val colors = MaterialTheme.colorScheme
-    val typography = MaterialTheme.typography
 
     var selectedFilter by remember { mutableStateOf("Todos") }
     var selectedOrder by remember { mutableStateOf<ClientOrder?>(null) }
@@ -99,7 +88,7 @@ fun OrdersScreen(
     }
 
     Scaffold(
-        containerColor = ordersBackground,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -133,12 +122,12 @@ fun OrdersScreen(
                         Column {
                             Text(
                                 text = "Nutierra",
-                                style = typography.labelMedium,
+                                style = MaterialTheme.typography.labelMedium,
                                 color = colors.onSurfaceVariant
                             )
                             Text(
                                 text = "Pedidos",
-                                style = typography.titleMedium,
+                                style = MaterialTheme.typography.titleMedium,
                                 color = colors.onSurface
                             )
                         }
@@ -147,7 +136,7 @@ fun OrdersScreen(
                     Box(
                         modifier = Modifier
                             .size(32.dp)
-                            .background(ordersGreen, CircleShape)
+                            .background(colors.primary, CircleShape)
                             .clickable(onClick = onProfileClick),
                         contentAlignment = Alignment.Center
                     ) {
@@ -359,7 +348,7 @@ fun OrdersScreen(
                         Text(
                             "Historial de tus solicitudes de compra",
                             fontSize = 13.sp,
-                            color = ordersMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
 
@@ -367,14 +356,14 @@ fun OrdersScreen(
                         onClick = { refreshMessage = true },
                         modifier = Modifier
                             .background(
-                                ordersSoft,
+                                colors.surfaceContainer,
                                 RoundedCornerShape(50.dp)
                             )
                     ) {
                         Icon(
                             Icons.Default.Sync,
                             contentDescription = "Actualizar estado",
-                            tint = ordersGreen
+                            tint = colors.primary
                         )
                     }
                 }
@@ -383,7 +372,7 @@ fun OrdersScreen(
             if (refreshMessage) {
                 item {
                     Surface(
-                        color = ordersSoft,
+                        color = colors.surfaceContainer,
                         shape = RoundedCornerShape(10.dp)
                     ) {
                         Row(
@@ -427,7 +416,7 @@ fun OrdersScreen(
                             onClick = { selectedFilter = value },
                             label = { Text(label) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = ordersGreen,
+                                selectedContainerColor = colors.primary,
                                 selectedLabelColor = Color.White
                             )
                         )
@@ -444,7 +433,7 @@ fun OrdersScreen(
                             "No hay pedidos en esta categoría."
                         },
                         fontSize = 14.sp,
-                        color = ordersMuted,
+                        color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(vertical = 24.dp)
                     )
                 }
@@ -461,7 +450,7 @@ fun OrdersScreen(
 
             item {
                 Surface(
-                    color = ordersSoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Column(
@@ -472,13 +461,13 @@ fun OrdersScreen(
                             Icon(
                                 Icons.Default.VerifiedUser,
                                 contentDescription = null,
-                                tint = ordersGreen
+                                tint = colors.primary
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
                                 "Garantía de frescura artesanal",
                                 fontWeight = FontWeight.SemiBold,
-                                color = ordersGreen
+                                color = colors.primary
                             )
                         }
 
@@ -487,7 +476,7 @@ fun OrdersScreen(
                                     "por la tienda antes de su preparación física para " +
                                     "asegurar lotes frescos recién envasados.",
                             fontSize = 13.sp,
-                            color = ordersMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -498,7 +487,7 @@ fun OrdersScreen(
                     onClick = onCatalogClick,
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = ordersGreen
+                        containerColor = colors.primary
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
@@ -528,18 +517,18 @@ fun OrdersScreen(
                     Text(
                         "Total: ${order.total} CLP",
                         fontWeight = FontWeight.Bold,
-                        color = ordersGreen
+                        color = colors.primary
                     )
                     Text(
                         order.progressMessage,
                         fontSize = 12.sp,
-                        color = ordersMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
             },
             confirmButton = {
                 TextButton(onClick = { selectedOrder = null }) {
-                    Text("Cerrar", color = ordersGreen)
+                    Text("Cerrar", color = colors.primary)
                 }
             }
         )
@@ -559,7 +548,7 @@ fun OrdersScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showReceipt = null }) {
-                    Text("Cerrar", color = ordersGreen)
+                    Text("Cerrar", color = colors.primary)
                 }
             }
         )
@@ -577,7 +566,7 @@ fun OrdersScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showRepeat = false }) {
-                    Text("Entendido", color = ordersGreen)
+                    Text("Entendido", color = colors.primary)
                 }
             }
         )
@@ -591,6 +580,7 @@ private fun ClientOrderCard(
     onReceiptClick: () -> Unit,
     onRepeatClick: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
     val delivered = order.status == "Entregado"
     val pending = order.progress == 1
 
@@ -620,7 +610,7 @@ private fun ClientOrderCard(
                     Text(
                         order.date,
                         fontSize = 12.sp,
-                        color = ordersMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
 
@@ -640,7 +630,7 @@ private fun ClientOrderCard(
                         ),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (pending) ordersAmber else ordersGreen
+                        color = if (pending) colors.tertiaryContainer else colors.primary
                     )
                 }
             }
@@ -667,7 +657,7 @@ private fun ClientOrderCard(
                         Icon(
                             Icons.Default.Inventory2,
                             contentDescription = null,
-                            tint = ordersGreen
+                            tint = colors.primary
                         )
                     }
 
@@ -683,7 +673,7 @@ private fun ClientOrderCard(
                         Text(
                             order.summary,
                             fontSize = 11.sp,
-                            color = ordersMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
@@ -714,9 +704,9 @@ private fun ClientOrderCard(
                                     FontWeight.Normal
                                 },
                                 color = if (index + 1 <= order.progress) {
-                                    ordersGreen
+                                    colors.primary
                                 } else {
-                                    ordersMuted
+                                    colors.onSurfaceVariant
                                 }
                             )
                         }
@@ -730,20 +720,20 @@ private fun ClientOrderCard(
                         color = if (pending) {
                             Color(0xFFFFB959)
                         } else {
-                            ordersGreen
+                            colors.primary
                         },
-                        trackColor = ordersSoft
+                        trackColor = colors.surfaceContainer
                     )
 
                     Text(
                         order.progressMessage,
                         fontSize = 11.sp,
-                        color = if (pending) ordersAmber else ordersGreen
+                        color = if (pending) colors.tertiaryContainer else colors.primary
                     )
                 }
             }
 
-            HorizontalDivider(color = ordersSoft)
+            HorizontalDivider(color = colors.surfaceContainer)
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -754,13 +744,13 @@ private fun ClientOrderCard(
                     Text(
                         if (delivered) "Total final" else "Total orden",
                         fontSize = 11.sp,
-                        color = ordersMuted
+                        color = colors.onSurfaceVariant
                     )
                     Text(
                         "${order.total} CLP",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = ordersGreen
+                        color = colors.primary
                     )
                 }
 
@@ -769,12 +759,12 @@ private fun ClientOrderCard(
                         Text(
                             "Ver detalle",
                             fontSize = 12.sp,
-                            color = ordersGreen
+                            color = colors.primary
                         )
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = null,
-                            tint = ordersGreen,
+                            tint = colors.primary,
                             modifier = Modifier.size(17.dp)
                         )
                     }
@@ -803,7 +793,7 @@ private fun ClientOrderCard(
                         onClick = onRepeatClick,
                         modifier = Modifier.weight(1f),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = ordersGreen
+                            containerColor = colors.primary
                         )
                     ) {
                         Icon(
@@ -818,26 +808,4 @@ private fun ClientOrderCard(
             }
         }
     }
-}
-
-@Composable
-private fun RowScope.Order(
-    title: String,
-    icon: ImageVector,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
-    NavigationBarItem(
-        selected = selected,
-        onClick = onClick,
-        icon = {
-            Icon(
-                icon,
-                contentDescription = title
-            )
-        },
-        label = {
-            Text(title)
-        }
-    )
 }

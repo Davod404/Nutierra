@@ -1,12 +1,17 @@
 package com.example.nutierra.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
-import com.example.nutierra.data.local.entity.Roles
 import com.example.nutierra.data.local.entity.UsuarioEntity
+import com.example.nutierra.data.local.entity.Roles
+import com.example.nutierra.data.local.NutierraDatabase
 import com.example.nutierra.data.session.SesionManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import android.app.Application
 
-/** Datos listos para mostrar en la pantalla de cuenta. */
 data class PerfilUi(
     val nombreCompleto: String,
     val correo: String,
@@ -14,7 +19,6 @@ data class PerfilUi(
     val rol: String
 )
 
-/** Convierte el usuario guardado en SQLite en datos para la interfaz. */
 fun UsuarioEntity?.aPerfilUi(): PerfilUi {
     if (this == null) {
         return PerfilUi("Invitado", "Sin sesión iniciada", "?", "Sin sesión")
@@ -30,12 +34,45 @@ fun UsuarioEntity?.aPerfilUi(): PerfilUi {
     )
 }
 
-class PerfilViewModel : ViewModel() {
+class PerfilViewModel(application: Application) : AndroidViewModel(application) {
 
-    // Usuario que inició sesión (null si no hay sesión)
+    private val usuarioDao = NutierraDatabase.getDatabase(application).usuarioDao()
+
     val usuario: StateFlow<UsuarioEntity?> = SesionManager.usuarioActual
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
 
     fun cerrarSesion() {
         SesionManager.cerrarSesion()
+    }
+
+    fun actualizarPerfil(
+        nombre: String,
+        apellido: String,
+        correo: String,
+        telefono: String,
+        direccion: String,
+        onExito: () -> Unit
+    ) {
+        val actual = SesionManager.usuarioActual.value ?: return
+
+        viewModelScope.launch {
+            _error.value = null
+            try {
+                val actualizado = actual.copy(
+                    nombre = nombre.trim(),
+                    apellido = apellido.trim(),
+                    correo = correo.trim(),
+                    telefono = telefono.trim(),
+                    direccion = direccion.trim()
+                )
+                usuarioDao.actualizarUsuario(actualizado)
+                SesionManager.actualizarUsuario(actualizado)
+                onExito()
+            } catch (_: Exception) {
+                _error.value = "No se pudo actualizar el perfil"
+            }
+        }
     }
 }

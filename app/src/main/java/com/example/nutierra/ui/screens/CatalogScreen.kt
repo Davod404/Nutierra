@@ -1,41 +1,46 @@
 package com.example.nutierra.ui.screens
 
-import com.example.nutierra.data.local.entity.ProductoEntity
-import android.graphics.BitmapFactory
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.viewmodel.CarritoViewModel
+import android.graphics.BitmapFactory
+import androidx.compose.material.icons.automirrored.filled.Sort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.net.URL
 import java.text.NumberFormat
 import java.util.Locale
+import java.net.URL
 
 private val catalogCategories = listOf(
     "Todos", "Frutos secos", "Semillas", "Deshidratados"
@@ -55,20 +60,33 @@ fun CatalogScreen(
     onScanClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
-    onProductClick: (Int) -> Unit = {}
+    onCartClick: () -> Unit = {},
+    onProductClick: (Int) -> Unit = {},
+    viewModel: CarritoViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
 
-    val catalogProducts = productos
+    val cartItems by viewModel.items.collectAsStateWithLifecycle()
+    val cartCount = cartItems.sumOf { it.cantidad }
+    val error by viewModel.error.collectAsStateWithLifecycle()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(error) {
+        error?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.limpiarError()
+        }
+    }
 
     var search by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("Todos") }
     var sort by remember { mutableStateOf("Disponibilidad") }
     var sortExpanded by remember { mutableStateOf(false) }
 
-    val visibleProducts = remember(catalogProducts, search, category, sort) {
-        val filtered = catalogProducts.filter { product ->
+    val visibleProducts = remember(productos, search, category, sort) {
+        val filtered = productos.filter { product ->
             (category == "Todos" || product.categoria == category) &&
                     product.nombre.contains(search.trim(), ignoreCase = true)
         }
@@ -82,6 +100,7 @@ fun CatalogScreen(
 
     Scaffold(
         containerColor = colors.surface,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Surface(
                 color = colors.surface,
@@ -127,19 +146,60 @@ fun CatalogScreen(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(colors.primary, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Mi perfil",
-                            tint = colors.onPrimary,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Box {
+                            IconButton(
+                                onClick = onCartClick,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(
+                                        colors.surfaceContainer,
+                                        RoundedCornerShape(12.dp)
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Default.ShoppingCart,
+                                    contentDescription = "Carrito",
+                                    tint = colors.primary
+                                )
+                            }
+
+                            if (cartCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = 5.dp, y = (-5).dp)
+                                        .size(20.dp)
+                                        .background(colors.secondary, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = cartCount.toString(),
+                                        color = colors.onSecondary,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(colors.primary, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Mi perfil",
+                                tint = colors.onPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -162,7 +222,7 @@ fun CatalogScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -170,8 +230,8 @@ fun CatalogScreen(
                                 Icon(
                                     Icons.Default.Home,
                                     contentDescription = "Inicio",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -189,7 +249,7 @@ fun CatalogScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (true) MaterialTheme.colorScheme.tertiary
+                                        if (true) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -197,8 +257,8 @@ fun CatalogScreen(
                                 Icon(
                                     Icons.Default.Storefront,
                                     contentDescription = "Catálogo",
-                                    tint = if (true) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (true) colors.onTertiary
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -216,7 +276,7 @@ fun CatalogScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -224,8 +284,8 @@ fun CatalogScreen(
                                 Icon(
                                     Icons.Default.Map,
                                     contentDescription = "Mapa",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -243,7 +303,7 @@ fun CatalogScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -251,8 +311,8 @@ fun CatalogScreen(
                                 Icon(
                                     Icons.Default.QrCodeScanner,
                                     contentDescription = "Escanear",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -270,7 +330,7 @@ fun CatalogScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -278,8 +338,8 @@ fun CatalogScreen(
                                 Icon(
                                     Icons.AutoMirrored.Filled.ReceiptLong,
                                     contentDescription = "Pedidos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -297,7 +357,7 @@ fun CatalogScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
+                                        if (false) colors.tertiary
                                         else Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
@@ -305,8 +365,8 @@ fun CatalogScreen(
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = if (false) colors.surface
+                                    else colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -490,7 +550,7 @@ fun CatalogScreen(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 Icon(
-                                    Icons.Default.Sort,
+                                    Icons.AutoMirrored.Filled.Sort,
                                     contentDescription = null,
                                     tint = colors.primary,
                                     modifier = Modifier.size(18.dp)
@@ -576,7 +636,8 @@ fun CatalogScreen(
 
                         Text(
                             "Sin coincidencias",
-                            style = typography.titleMedium
+                            style = typography.titleMedium,
+                            color = colors.onSurface
                         )
 
                         Spacer(Modifier.height(4.dp))
@@ -616,6 +677,9 @@ fun CatalogScreen(
                         product = product,
                         onProductClick = {
                             onProductClick(product.id)
+                        },
+                        onAddToCart = {
+                            viewModel.agregar(product.id, 1)
                         }
                     )
                 }
@@ -627,7 +691,8 @@ fun CatalogScreen(
 @Composable
 private fun CatalogProductCard(
     product: ProductoEntity,
-    onProductClick: () -> Unit
+    onProductClick: () -> Unit,
+    onAddToCart: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
@@ -778,36 +843,64 @@ private fun CatalogProductCard(
 
                 Spacer(Modifier.height(8.dp))
 
-                Button(
-                    onClick = onProductClick,
-                    enabled = product.stock > 0,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(min = 48.dp),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 6.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = colors.primary,
-                        contentColor = colors.onPrimary,
-                        disabledContainerColor = colors.surfaceContainerHighest,
-                        disabledContentColor = colors.outline
-                    )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        if (product.stock > 0)
-                            "Ver producto"
-                        else
-                            "Agotado",
-                        style = typography.labelMedium,
-                        maxLines = 1
-                    )
+                    Button(
+                        onClick = onProductClick,
+                        enabled = product.stock > 0,
+                        modifier = Modifier
+                            .weight(1f)
+                            .heightIn(min = 48.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 6.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.primary,
+                            contentColor = colors.onPrimary,
+                            disabledContainerColor = colors.surfaceContainerHighest,
+                            disabledContentColor = colors.outline
+                        )
+                    ) {
+                        Text(
+                            if (product.stock > 0)
+                                "Ver producto"
+                            else
+                                "Agotado",
+                            style = typography.labelMedium,
+                            maxLines = 1
+                        )
 
-                    if (product.stock > 0) {
-                        Spacer(Modifier.width(4.dp))
+                        if (product.stock > 0) {
+                            Spacer(Modifier.width(4.dp))
+                            Icon(
+                                Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+
+                    IconButton(
+                        onClick = onAddToCart,
+                        enabled = product.stock > 0,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .background(
+                                if (product.stock > 0)
+                                    colors.surfaceContainerHigh
+                                else
+                                    colors.surfaceContainerHighest,
+                                RoundedCornerShape(8.dp)
+                            )
+                    ) {
                         Icon(
-                            Icons.AutoMirrored.Filled.ArrowForward,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
+                            Icons.Default.Add,
+                            contentDescription = "Agregar ${product.nombre}",
+                            tint = if (product.stock > 0)
+                                colors.primary
+                            else
+                                colors.outline
                         )
                     }
                 }
@@ -826,6 +919,7 @@ private fun CatalogRemoteImage(
     }
 
     LaunchedEffect(url) {
+        if (url.isNullOrBlank()) return@LaunchedEffect
         bitmap = withContext(Dispatchers.IO) {
             try {
                 val connection = URL(url).openConnection()
@@ -835,7 +929,7 @@ private fun CatalogRemoteImage(
                 connection.getInputStream().use { stream ->
                     BitmapFactory.decodeStream(stream)
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }

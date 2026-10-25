@@ -1,9 +1,9 @@
 package com.example.nutierra.data.local
 
-import com.example.nutierra.data.local.entity.ProductoEntity
-import com.example.nutierra.data.local.entity.Roles
-import com.example.nutierra.data.local.entity.UsuarioEntity
 import com.example.nutierra.data.repository.UsuarioRepository
+import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.data.local.entity.UsuarioEntity
+import com.example.nutierra.data.local.entity.Roles
 
 object DatosIniciales {
 

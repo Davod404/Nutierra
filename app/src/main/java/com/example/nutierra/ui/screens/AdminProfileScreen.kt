@@ -1,60 +1,49 @@
 package com.example.nutierra.ui.screens
 
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.material.icons.filled.AdminPanelSettings
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.Logout
-import androidx.compose.material.icons.automirrored.filled.ReceiptLong
-import androidx.compose.material.icons.filled.AdminPanelSettings
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Inventory
-import androidx.compose.material.icons.filled.Inventory2
-import androidx.compose.material.icons.filled.Storefront
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.ui.viewmodel.PerfilViewModel
 import com.example.nutierra.ui.viewmodel.aPerfilUi
 
-private val accountGreen = Color(0xFF13522F)
-private val accountBackground = Color(0xFFF5FBF3)
-private val accountSurface = Color.White
-private val accountMuted = Color(0xFF404941)
-private val accountMint = Color(0xFFB1F1C1)
-private val accountRed = Color(0xFFBA1A1A)
-
-
 @Composable
 fun AdminProfileScreen(
     onBack: () -> Unit = {},
-    onProductsClick: () -> Unit = {},
-    onInventoryClick: () -> Unit = {},
-    onOrdersClick: () -> Unit = {},
+    onEditProfileClick: () -> Unit = {},
     onLogout: () -> Unit = {},
     totalProductos: Int = 0,
+    totalPedidos: Int = 0,
     perfilViewModel: PerfilViewModel = viewModel()
 ) {
+    val colors = MaterialTheme.colorScheme
     val usuario by perfilViewModel.usuario.collectAsStateWithLifecycle()
     val perfil = usuario.aPerfilUi()
-
     var mostrarDialogoSalida by remember { mutableStateOf(false) }
 
     Scaffold(
-        containerColor = accountBackground,
+        containerColor = colors.background,
         topBar = {
             Row(
                 modifier = Modifier
@@ -67,13 +56,13 @@ fun AdminProfileScreen(
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Volver",
-                        tint = accountGreen
+                        tint = colors.primary
                     )
                 }
                 Text(
                     "Mi cuenta",
                     style = MaterialTheme.typography.titleLarge,
-                    color = accountGreen,
+                    color = colors.primary,
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -89,7 +78,7 @@ fun AdminProfileScreen(
         ) {
 
             Surface(
-                color = accountSurface,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(20.dp),
                 shadowElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth()
@@ -101,13 +90,13 @@ fun AdminProfileScreen(
                     Box(
                         modifier = Modifier
                             .size(80.dp)
-                            .background(accountGreen, CircleShape),
+                            .background(colors.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
                             perfil.iniciales,
                             style = MaterialTheme.typography.headlineMedium,
-                            color = Color.White,
+                            color = colors.onPrimary,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -118,12 +107,12 @@ fun AdminProfileScreen(
                         perfil.nombreCompleto,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = accountMuted
+                        color = colors.onSurface
                     )
 
                     Spacer(Modifier.height(8.dp))
 
-                    Surface(color = accountMint, shape = CircleShape) {
+                    Surface(color = colors.primaryFixed, shape = CircleShape) {
                         Row(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
@@ -132,54 +121,66 @@ fun AdminProfileScreen(
                             Icon(
                                 Icons.Default.AdminPanelSettings,
                                 contentDescription = null,
-                                tint = accountGreen,
+                                tint = colors.onPrimaryFixed,
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 "Rol: ${perfil.rol}",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = accountGreen
+                                color = colors.onPrimaryFixed
                             )
                         }
                     }
                 }
             }
+
             Surface(
-                color = accountSurface,
+                color = colors.surfaceContainerLowest,
                 shape = RoundedCornerShape(20.dp),
                 shadowElevation = 1.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     FilaDato(Icons.Default.Email, "Correo", perfil.correo)
-                    HorizontalDivider(color = accountBackground)
+                    HorizontalDivider(color = colors.outlineVariant)
                     FilaDato(
                         Icons.Default.Inventory2,
                         "Productos registrados",
                         totalProductos.toString()
                     )
-                }
-            }
+                    HorizontalDivider(color = colors.outlineVariant)
+                    FilaDato(
+                        Icons.AutoMirrored.Filled.ReceiptLong,
+                        "Pedidos registrados",
+                        totalPedidos.toString()
+                    )
+                    HorizontalDivider(color = colors.outlineVariant)
 
-            Text(
-                "Gestión",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = accountMuted
-            )
-
-            Surface(
-                color = accountSurface,
-                shape = RoundedCornerShape(20.dp),
-                shadowElevation = 1.dp,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column {
-                    FilaAcceso(Icons.Default.Storefront, "Productos", onProductsClick)
-                    HorizontalDivider(color = accountBackground)
-                    FilaAcceso(Icons.Default.Inventory, "Inventario", onInventoryClick)
-                    HorizontalDivider(color = accountBackground)
-                    FilaAcceso(Icons.AutoMirrored.Filled.ReceiptLong, "Pedidos", onOrdersClick)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onEditProfileClick)
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = null,
+                            tint = colors.primary
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Text(
+                            "Editar datos de la cuenta",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = colors.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = colors.onSurfaceVariant
+                        )
+                    }
                 }
             }
 
@@ -189,7 +190,7 @@ fun AdminProfileScreen(
                     .fillMaxWidth()
                     .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = accountRed)
+                colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.error)
             ) {
                 Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
@@ -204,7 +205,7 @@ fun AdminProfileScreen(
         AlertDialog(
             onDismissRequest = { mostrarDialogoSalida = false },
             icon = {
-                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = accountRed)
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, tint = colors.error)
             },
             title = { Text("¿Cerrar sesión?") },
             text = { Text("Tendrás que ingresar nuevamente para administrar la tienda.") },
@@ -216,8 +217,8 @@ fun AdminProfileScreen(
                         onLogout()
                     },
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = accountRed,
-                        contentColor = Color.White
+                        containerColor = colors.error,
+                        contentColor = colors.onError
                     )
                 ) {
                     Text("Sí, cerrar sesión")
@@ -234,47 +235,27 @@ fun AdminProfileScreen(
 
 @Composable
 private fun FilaDato(icono: ImageVector, etiqueta: String, valor: String) {
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icono, contentDescription = null, tint = accountGreen)
+        Icon(icono, contentDescription = null, tint = colors.primary)
         Spacer(Modifier.width(16.dp))
         Column {
-            Text(etiqueta, style = MaterialTheme.typography.labelMedium, color = accountMuted)
+            Text(
+                etiqueta,
+                style = MaterialTheme.typography.labelMedium,
+                color = colors.onSurfaceVariant
+            )
             Text(
                 valor,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = accountMuted
+                color = colors.onSurface
             )
         }
-    }
-}
-
-@Composable
-private fun FilaAcceso(icono: ImageVector, texto: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(icono, contentDescription = null, tint = accountGreen)
-        Spacer(Modifier.width(16.dp))
-        Text(
-            texto,
-            style = MaterialTheme.typography.bodyLarge,
-            color = accountMuted,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = accountMuted
-        )
     }
 }

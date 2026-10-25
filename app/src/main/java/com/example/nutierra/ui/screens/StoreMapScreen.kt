@@ -1,65 +1,56 @@
 package com.example.nutierra.ui.screens
 
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.LifecycleEventObserver
-import com.google.android.gms.location.LocationServices
+import androidx.lifecycle.Lifecycle
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.pm.PackageManager
+import android.content.Intent
+import android.Manifest
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.Marker
+import org.osmdroid.views.MapView
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.MapView
-import org.osmdroid.views.overlay.Marker
-import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
-import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
-
-private val mapGreen = Color(0xFF13522F)
-private val mapBackground = Color(0xFFF5FBF3)
-private val mapSoft = Color(0xFFEAF0E8)
-private val mapText = Color(0xFF171D18)
-private val mapMuted = Color(0xFF404941)
+import com.google.android.gms.location.LocationServices
+import androidx.core.net.toUri
 
 private val storeLocation = GeoPoint(-33.4246122, -70.6145784)
 
 private const val storeAddress =
     "Av. Providencia 1945, Local 4, Providencia, Santiago"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StoreMapScreen(
     onBack: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     val context = LocalContext.current
-
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
-
-    var satelliteMode by remember {
-        mutableStateOf(false)
-    }
+    var satelliteMode by remember { mutableStateOf(false) }
 
     var locationGranted by remember {
         mutableStateOf(
@@ -101,7 +92,6 @@ fun StoreMapScreen(
             locationMessage = "Necesitas autorizar el acceso a la ubicación."
         } else {
             locationGranted = true
-
             try {
                 locationClient.lastLocation
                     .addOnSuccessListener { location ->
@@ -124,7 +114,7 @@ fun StoreMapScreen(
                         locationMessage =
                             "No se pudo obtener tu ubicación."
                     }
-            } catch (e: SecurityException) {
+            } catch (_: SecurityException) {
                 locationGranted = false
                 locationMessage =
                     "No se concedió permiso de ubicación."
@@ -164,10 +154,10 @@ fun StoreMapScreen(
             context.startActivity(
                 Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse(url)
+                    url.toUri()
                 )
             )
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             locationMessage =
                 "No se encontró una aplicación para abrir el enlace."
         }
@@ -190,11 +180,11 @@ fun StoreMapScreen(
     }
 
     Scaffold(
-        containerColor = mapBackground,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
-                color = mapBackground,
+                color = colors.background,
                 shadowElevation = 2.dp
             ) {
                 Row(
@@ -208,7 +198,7 @@ fun StoreMapScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = mapText
+                            tint = colors.onSurface
                         )
                     }
 
@@ -217,19 +207,19 @@ fun StoreMapScreen(
                         modifier = Modifier.weight(1f),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = mapText
+                        color = colors.onSurface
                     )
 
                     Box(
                         modifier = Modifier
                             .size(34.dp)
-                            .background(mapGreen, CircleShape),
+                            .background(colors.primary, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             Icons.Default.Eco,
                             contentDescription = "Nutierra",
-                            tint = Color.White,
+                            tint = colors.surfaceContainerLowest,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -246,8 +236,6 @@ fun StoreMapScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
         ) {
-
-            // MAPA REAL (OpenStreetMap vía osmdroid)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -263,7 +251,6 @@ fun StoreMapScreen(
                             controller.setZoom(16.0)
                             controller.setCenter(storeLocation)
 
-                            // Marcador de la tienda
                             val marker = Marker(this).apply {
                                 position = storeLocation
                                 title = "Tienda Nutierra"
@@ -312,7 +299,7 @@ fun StoreMapScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Surface(
-                        color = Color.White,
+                        color = colors.surfaceContainerLowest,
                         shape = RoundedCornerShape(50.dp),
                         shadowElevation = 3.dp
                     ) {
@@ -326,7 +313,7 @@ fun StoreMapScreen(
                             Icon(
                                 Icons.Default.LocationOn,
                                 contentDescription = null,
-                                tint = mapGreen,
+                                tint = colors.primary,
                                 modifier = Modifier.size(16.dp)
                             )
 
@@ -339,7 +326,7 @@ fun StoreMapScreen(
                                     "Ubicación no autorizada"
                                 },
                                 fontSize = 11.sp,
-                                color = mapGreen,
+                                color = colors.primary,
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -355,7 +342,7 @@ fun StoreMapScreen(
                     verticalAlignment = Alignment.Bottom
                 ) {
                     Surface(
-                        color = Color.White,
+                        color = colors.surfaceContainerLowest,
                         shape = RoundedCornerShape(12.dp),
                         shadowElevation = 3.dp
                     ) {
@@ -366,8 +353,8 @@ fun StoreMapScreen(
                         modifier = Modifier.size(48.dp),
                         shape = RoundedCornerShape(14.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
-                            containerColor = Color.White,
-                            contentColor = mapGreen
+                            containerColor = colors.surfaceContainerLowest,
+                            contentColor = colors.primary
                         )
                     ) {
                         Icon(
@@ -380,7 +367,7 @@ fun StoreMapScreen(
 
             if (locationMessage != null) {
                 Surface(
-                    color = mapSoft,
+                    color = colors.surfaceContainer,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -390,7 +377,7 @@ fun StoreMapScreen(
                         Icon(
                             Icons.Default.Info,
                             contentDescription = null,
-                            tint = mapGreen
+                            tint = colors.primary
                         )
 
                         Spacer(Modifier.width(8.dp))
@@ -415,12 +402,11 @@ fun StoreMapScreen(
                 }
             }
 
-            // INFORMACIÓN DE LA TIENDA
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
-                        Color.White,
+                        colors.surfaceContainerLowest,
                         RoundedCornerShape(
                             topStart = 24.dp,
                             topEnd = 24.dp
@@ -429,19 +415,17 @@ fun StoreMapScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
                         .size(width = 40.dp, height = 5.dp)
                         .background(
-                            Color(0xFFDEE4DC),
+                            colors.surfaceContainerHighest,
                             RoundedCornerShape(50.dp)
                         )
                 )
-
                 Surface(
-                    color = mapSoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
@@ -450,7 +434,7 @@ fun StoreMapScreen(
                             horizontal = 10.dp,
                             vertical = 6.dp
                         ),
-                        color = mapGreen,
+                        color = colors.primary,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -460,14 +444,14 @@ fun StoreMapScreen(
                     "Nutierra — Tienda Principal Providencia",
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,
-                    color = mapText
+                    color = colors.onSurface
                 )
 
                 Text(
                     "Cosecha seleccionada, frutos secos a granel " +
                             "y deshidratados orgánicos.",
                     fontSize = 14.sp,
-                    color = mapMuted
+                    color = colors.onSurfaceVariant
                 )
 
                 Row(
@@ -525,7 +509,7 @@ fun StoreMapScreen(
                         .height(52.dp),
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = mapGreen
+                        containerColor = colors.primary
                     )
                 ) {
                     Icon(
@@ -554,7 +538,7 @@ fun StoreMapScreen(
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Icon(
-                            Icons.Default.Chat,
+                            Icons.AutoMirrored.Filled.Chat,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
@@ -610,7 +594,7 @@ fun StoreMapScreen(
                             Icon(
                                 Icons.Default.CloudOff,
                                 contentDescription = null,
-                                tint = mapGreen
+                                tint = colors.primary
                             )
 
                             Spacer(Modifier.width(10.dp))
@@ -626,7 +610,7 @@ fun StoreMapScreen(
                                 Text(
                                     "Guía desde Metro Pedro de Valdivia",
                                     fontSize = 11.sp,
-                                    color = mapMuted
+                                    color = colors.onSurfaceVariant
                                 )
                             }
 
@@ -676,7 +660,7 @@ fun StoreMapScreen(
                     "Dirección, horarios, contacto y beneficios " +
                             "mostrados como datos de demostración.",
                     fontSize = 11.sp,
-                    color = mapMuted
+                    color = colors.onSurfaceVariant
                 )
             }
         }
@@ -690,9 +674,10 @@ private fun MapFeatureCard(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     modifier: Modifier = Modifier
 ) {
+    val colors = MaterialTheme.colorScheme
     Surface(
         modifier = modifier,
-        color = mapSoft,
+        color = colors.surfaceContainer,
         shape = RoundedCornerShape(14.dp)
     ) {
         Column(
@@ -702,7 +687,7 @@ private fun MapFeatureCard(
             Icon(
                 icon,
                 contentDescription = null,
-                tint = mapGreen
+                tint = colors.primary
             )
 
             Text(
@@ -714,7 +699,7 @@ private fun MapFeatureCard(
             Text(
                 description,
                 fontSize = 11.sp,
-                color = mapMuted,
+                color = colors.onSurfaceVariant,
                 lineHeight = 15.sp
             )
         }
@@ -727,9 +712,10 @@ private fun MapInfoCard(
     content: String,
     icon: androidx.compose.ui.graphics.vector.ImageVector
 ) {
+    val colors = MaterialTheme.colorScheme
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = mapSoft,
+        color = colors.surfaceContainer,
         shape = RoundedCornerShape(14.dp)
     ) {
         Row(
@@ -740,7 +726,7 @@ private fun MapInfoCard(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        Color.White,
+                        colors.surfaceContainerLowest ,
                         RoundedCornerShape(10.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -748,7 +734,7 @@ private fun MapInfoCard(
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = mapGreen
+                    tint = colors.primary
                 )
             }
 
@@ -760,13 +746,13 @@ private fun MapInfoCard(
                 Text(
                     title,
                     fontSize = 12.sp,
-                    color = mapMuted
+                    color = colors.onSurfaceVariant
                 )
 
                 Text(
                     content,
                     fontSize = 13.sp,
-                    color = mapText,
+                    color = colors.onSurface,
                     lineHeight = 20.sp,
                     fontWeight = FontWeight.Medium
                 )

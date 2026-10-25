@@ -1,30 +1,31 @@
 package com.example.nutierra.ui.screens
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import com.example.nutierra.data.local.entity.ItemCarrito
-import java.text.NumberFormat
+import android.content.ClipboardManager
+import android.content.ClipData
+import android.content.Context
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.text.NumberFormat
 import java.util.Locale
+import java.util.Date
+import com.example.nutierra.data.local.entity.ItemCarrito
 
 private fun successPrice(value: Int): String {
     return "$" + NumberFormat.getIntegerInstance(
@@ -239,7 +240,7 @@ fun OrderSuccessScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                if (orderCode.isBlank()) "—" else orderCode,
+                                orderCode.ifBlank { "—" },
                                 style = typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = colors.primary
@@ -476,7 +477,7 @@ fun OrderSuccessScreen(
                 )
             ) {
                 Icon(
-                    Icons.Default.ReceiptLong,
+                    Icons.AutoMirrored.Filled.ReceiptLong,
                     contentDescription = null,
                     modifier = Modifier.size(20.dp)
                 )

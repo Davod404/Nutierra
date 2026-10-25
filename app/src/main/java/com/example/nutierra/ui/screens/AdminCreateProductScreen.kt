@@ -1,14 +1,6 @@
 package com.example.nutierra.ui.screens
 
 import androidx.compose.ui.platform.LocalContext
-import com.example.nutierra.ui.components.copiarImagenALaApp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.ui.components.FilaError
-import com.example.nutierra.ui.components.textoDeError
-import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,14 +18,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private val createGreen = Color(0xFF13522F)
-private val createBackground = Color(0xFFF5FBF3)
-private val createSoft = Color(0xFFEAF0E8)
-private val createMuted = Color(0xFF404941)
-private val createError = Color(0xFFBA1A1A)
+import com.example.nutierra.ui.components.FilaError
+import com.example.nutierra.ui.components.textoDeError
+import com.example.nutierra.ui.viewmodel.ProductoFormViewModel
+import com.example.nutierra.ui.components.copiarImagenALaApp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
 
 data class NewAdminProduct(
     val name: String,
@@ -53,7 +51,8 @@ fun AdminCreateProductScreen(
     fotoTomada: String? = null,
     viewModel: ProductoFormViewModel = viewModel()
 ) {
-    // Estado y validaciones viven en ProductoFormViewModel
+    val colors = MaterialTheme.colorScheme
+
     val estado by viewModel.uiState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -67,12 +66,10 @@ fun AdminCreateProductScreen(
     val weight = estado.peso
     val imageUri = estado.imagenUri
 
-    // Validez en vivo para la "Comprobación de integridad"
     val validName = estado.nombreValido
     val validPrice = estado.precioValido
     val validStock = estado.stockValido
 
-    // Foto tomada con la cámara (recurso nativo) que vuelve desde ProductCameraScreen
     LaunchedEffect(fotoTomada) {
         if (fotoTomada != null) {
             viewModel.cambiarImagen(fotoTomada)
@@ -85,13 +82,11 @@ fun AdminCreateProductScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         if (uri != null) {
-            // Se copia a la app para que la imagen se pueda mostrar siempre
             viewModel.cambiarImagen(copiarImagenALaApp(context, uri) ?: uri.toString())
         }
     }
 
     fun saveProduct() {
-        // El ViewModel revalida todo; solo se guarda si no hay errores
         if (viewModel.validar(exigirImagen = true)) {
             onSaveProduct(
                 NewAdminProduct(
@@ -107,7 +102,7 @@ fun AdminCreateProductScreen(
     }
 
     Scaffold(
-        containerColor = createBackground,
+        containerColor = colors.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -120,34 +115,61 @@ fun AdminCreateProductScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
                         )
                     }
-                },
-                actions = {
+                }
+            )
+        },
+        bottomBar = {
+            Surface(
+                color = colors.surface,
+                shadowElevation = 8.dp
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .weight(35f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Text(
+                            "Cancelar",
+                            maxLines = 1,
+                            softWrap = false
+                        )
+                    }
+
                     Button(
                         onClick = { saveProduct() },
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = createGreen
-                        ),
-                        contentPadding = PaddingValues(horizontal = 12.dp)
+                        modifier = Modifier
+                            .weight(65f)
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Icon(
-                            Icons.Default.Check,
+                            Icons.Default.Save,
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-                        Spacer(Modifier.width(4.dp))
-                        Text("Guardar")
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            "Guardar producto",
+                            maxLines = 1,
+                            softWrap = false
+                        )
                     }
-
-                    Spacer(Modifier.width(8.dp))
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = createBackground
-                )
-            )
+                }
+            }
         }
     ) { padding ->
 
@@ -159,10 +181,8 @@ fun AdminCreateProductScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp)
         ) {
-
-            // Banner de identificación
             Surface(
-                color = Color(0xFFE4EAE2),
+                color = colors.surfaceContainerHigh,
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Row(
@@ -174,7 +194,7 @@ fun AdminCreateProductScreen(
                     Icon(
                         Icons.Default.Storage,
                         contentDescription = null,
-                        tint = createGreen,
+                        tint = colors.primary,
                         modifier = Modifier.size(30.dp)
                     )
 
@@ -185,19 +205,18 @@ fun AdminCreateProductScreen(
                             "ID autogenerado: #PROD-2024-009",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = createGreen
+                            color = colors.primary
                         )
 
                         Text(
                             "Sincronización activa con Room local y backend Spring Boot",
                             fontSize = 12.sp,
-                            color = createMuted
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
             }
 
-            // Nombre comercial
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -210,7 +229,7 @@ fun AdminCreateProductScreen(
                     Text(
                         "${name.length}/60",
                         fontSize = 12.sp,
-                        color = createMuted
+                        color = colors.onSurfaceVariant
                     )
                 }
 
@@ -231,12 +250,10 @@ fun AdminCreateProductScreen(
                 Text(
                     "Indica el tipo de fruto, variedad y gramaje visible para el cliente chileno.",
                     fontSize = 12.sp,
-                    color = createMuted
+                    color = colors.onSurfaceVariant
                 )
-
             }
 
-            // Categoría
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -271,7 +288,6 @@ fun AdminCreateProductScreen(
                 }
             }
 
-            // Precio
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -288,7 +304,9 @@ fun AdminCreateProductScreen(
                             fontSize = 20.sp
                         )
                     },
-                    placeholder = { Text("Ej. 4.990") },
+                    placeholder = {
+                        Text("Ej. 4.990")
+                    },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Number
@@ -303,21 +321,20 @@ fun AdminCreateProductScreen(
                     "No se permiten precios negativos ni cero.",
                     fontSize = 12.sp,
                     color = if (estado.precio.error != null) {
-                        createError
+                        colors.error
                     } else {
-                        createMuted
+                        colors.onSurfaceVariant
                     }
                 )
             }
 
-            // Stock inicial
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CreateFieldLabel("Stock inicial (Unidades) *")
 
                 Surface(
-                    color = Color.White,
+                    color = colors.surfaceContainerLowest,
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Row(
@@ -341,7 +358,8 @@ fun AdminCreateProductScreen(
                         Text(
                             stock.toString(),
                             fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onSurface
                         )
 
                         IconButton(
@@ -350,7 +368,7 @@ fun AdminCreateProductScreen(
                             Icon(
                                 Icons.Default.Add,
                                 contentDescription = "Aumentar stock",
-                                tint = createGreen
+                                tint = colors.primary
                             )
                         }
                     }
@@ -359,27 +377,26 @@ fun AdminCreateProductScreen(
                 Text(
                     "Valor entero mayor o igual a 0. Genera alerta en bodega si es menor a 5.",
                     fontSize = 12.sp,
-                    color = createMuted
+                    color = colors.onSurfaceVariant
                 )
 
                 estado.errorStock?.let { FilaError(it) }
 
                 if (stock < 5) {
                     Surface(
-                        color = Color(0xFFFFDAD6),
+                        color = colors.errorContainer,
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
                             "Stock bajo: este producto requerirá atención en inventario.",
                             modifier = Modifier.padding(10.dp),
                             fontSize = 12.sp,
-                            color = createError
+                            color = colors.onErrorContainer
                         )
                     }
                 }
             }
 
-            // Formato / peso
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -394,9 +411,9 @@ fun AdminCreateProductScreen(
                             onClick = { viewModel.cambiarPeso(option) },
                             label = { Text(option) },
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = createGreen,
-                                selectedLabelColor = Color.White,
-                                containerColor = createSoft
+                                selectedContainerColor = colors.primary,
+                                selectedLabelColor = colors.onPrimary,
+                                containerColor = colors.surfaceContainer
                             ),
                             border = null
                         )
@@ -404,7 +421,6 @@ fun AdminCreateProductScreen(
                 }
             }
 
-            // Imagen referencial
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
@@ -413,7 +429,7 @@ fun AdminCreateProductScreen(
                 estado.errorImagen?.let { FilaError(it) }
 
                 Surface(
-                    color = Color.White,
+                    color = colors.surfaceContainerLowest,
                     shape = RoundedCornerShape(14.dp)
                 ) {
                     Column(
@@ -426,18 +442,31 @@ fun AdminCreateProductScreen(
                         Box(
                             modifier = Modifier
                                 .size(100.dp)
-                                .background(
-                                    createSoft,
-                                    RoundedCornerShape(14.dp)
-                                ),
+                                .clip(RoundedCornerShape(14.dp))
+                                .background(colors.surfaceContainer),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                Icons.Default.Image,
-                                contentDescription = "Imagen referencial",
-                                modifier = Modifier.size(44.dp),
-                                tint = createGreen
-                            )
+                            if (imageUri != null) {
+                                AsyncImage(
+                                    model = imageUri,
+                                    contentDescription = "Imagen del producto",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier
+                                        .size(64.dp)
+                                        .background(colors.primary, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        Icons.Default.Eco,
+                                        contentDescription = "Nutierra",
+                                        tint = colors.onPrimary
+                                    )
+                                }
+                            }
                         }
 
                         Text(
@@ -446,7 +475,8 @@ fun AdminCreateProductScreen(
                             } else {
                                 "Imagen seleccionada"
                             },
-                            fontWeight = FontWeight.SemiBold
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
                         )
 
                         Text(
@@ -456,7 +486,7 @@ fun AdminCreateProductScreen(
                                 "Archivo seleccionado desde el dispositivo"
                             },
                             fontSize = 12.sp,
-                            color = createMuted
+                            color = colors.onSurfaceVariant
                         )
 
                         OutlinedButton(onClick = onTakePhotoClick) {
@@ -484,9 +514,8 @@ fun AdminCreateProductScreen(
                 }
             }
 
-            // Comprobación
             Surface(
-                color = createSoft,
+                color = colors.surfaceContainer,
                 shape = RoundedCornerShape(14.dp)
             ) {
                 Column(
@@ -498,7 +527,8 @@ fun AdminCreateProductScreen(
                     Text(
                         "Comprobación de integridad",
                         fontWeight = FontWeight.SemiBold,
-                        fontSize = 16.sp
+                        fontSize = 16.sp,
+                        color = colors.onSurface
                     )
 
                     CreateValidationRow(
@@ -517,43 +547,6 @@ fun AdminCreateProductScreen(
                     )
                 }
             }
-
-            // Botones inferiores
-            Button(
-                onClick = { saveProduct() },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(14.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = createGreen
-                )
-            ) {
-                Icon(
-                    Icons.Default.Save,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    "Guardar producto",
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                shape = RoundedCornerShape(14.dp)
-            ) {
-                Icon(
-                    Icons.Default.Close,
-                    contentDescription = null
-                )
-                Spacer(Modifier.width(8.dp))
-                Text("Cancelar")
-            }
         }
     }
 }
@@ -564,7 +557,7 @@ private fun CreateFieldLabel(text: String) {
         text = text,
         fontSize = 14.sp,
         fontWeight = FontWeight.SemiBold,
-        color = Color(0xFF171D18)
+        color = MaterialTheme.colorScheme.onSurface
     )
 }
 
@@ -576,11 +569,13 @@ private fun CreateCategoryButton(
     selected: Boolean,
     onClick: () -> Unit
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Surface(
         modifier = modifier
             .height(76.dp)
             .clickable(onClick = onClick),
-        color = if (selected) createGreen else createSoft,
+        color = if (selected) colors.primary else colors.surfaceContainer,
         shape = RoundedCornerShape(12.dp)
     ) {
         Column(
@@ -592,14 +587,14 @@ private fun CreateCategoryButton(
                 icon,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                tint = if (selected) Color.White else createMuted
+                tint = if (selected) colors.onPrimary else colors.onSurfaceVariant
             )
             Spacer(Modifier.height(4.dp))
             Text(
                 text,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium,
-                color = if (selected) Color.White else createMuted
+                color = if (selected) colors.onPrimary else colors.onSurfaceVariant
             )
         }
     }
@@ -610,6 +605,8 @@ private fun CreateValidationRow(
     label: String,
     valid: Boolean
 ) {
+    val colors = MaterialTheme.colorScheme
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -619,13 +616,13 @@ private fun CreateValidationRow(
             else Icons.Default.RadioButtonUnchecked,
             contentDescription = null,
             modifier = Modifier.size(18.dp),
-            tint = if (valid) createGreen else createMuted
+            tint = if (valid) colors.primary else colors.onSurfaceVariant
         )
 
         Text(
             label,
             fontSize = 13.sp,
-            color = createMuted
+            color = colors.onSurfaceVariant
         )
     }
 }
@@ -633,8 +630,8 @@ private fun CreateValidationRow(
 @Composable
 private fun createFieldColors() =
     OutlinedTextFieldDefaults.colors(
-        focusedContainerColor = Color.White,
-        unfocusedContainerColor = Color.White,
-        focusedBorderColor = createGreen,
+        focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
+        focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = Color.Transparent
     )

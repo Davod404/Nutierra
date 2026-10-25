@@ -1,70 +1,57 @@
 package com.example.nutierra.ui.screens
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
-private val splashGreen = Color(0xFF13522F)
-private val splashBackground = Color(0xFFF5FBF3)
-private val splashSoft = Color(0xFFEAF0E8)
-private val splashMuted = Color(0xFF707971)
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun SplashScreen(
     onFinished: () -> Unit,
-    onBack: () -> Unit = {}
 ) {
+    val colors = MaterialTheme.colorScheme
+    val balanceo = rememberInfiniteTransition(label = "balanceo")
+    val logoEscala = remember { Animatable(0.6f) }
+    val logoAlpha = remember { Animatable(0f) }
+    val textosProgreso = remember { Animatable(0f) }
+    val cargaProgreso = remember { Animatable(0f) }
+    val salidaAlpha = remember { Animatable(1f) }
+    var messageIndex by remember { mutableIntStateOf(0) }
+
     val messages = listOf(
         "Cargando catálogo fresco...",
         "Verificando cosechas del valle...",
         "Preparando tus favoritos..."
     )
 
-    var messageIndex by remember { mutableIntStateOf(0) }
-
-    // ===== ANIMACIONES =====
-    // 1. Logo: aparece creciendo con un pequeño rebote (spring)
-    val logoEscala = remember { Animatable(0.6f) }
-    val logoAlpha = remember { Animatable(0f) }
-    // 2. Títulos y 3. zona de carga: suben y aparecen de forma escalonada
-    val textosProgreso = remember { Animatable(0f) }
-    val cargaProgreso = remember { Animatable(0f) }
-    // 5. Salida: toda la pantalla se desvanece antes de ir al login
-    val salidaAlpha = remember { Animatable(1f) }
-
-    // 4. La hoja del logo se balancea suavemente mientras carga (animación infinita)
-    val balanceo = rememberInfiniteTransition(label = "balanceo")
     val rotacionHoja by balanceo.animateFloat(
         initialValue = -8f,
         targetValue = 8f,
@@ -74,9 +61,8 @@ fun SplashScreen(
         ),
         label = "rotacionHoja"
     )
-
+    
     LaunchedEffect(Unit) {
-        // Entrada del logo: opacidad y escala al mismo tiempo
         launch { logoAlpha.animateTo(1f, tween(durationMillis = 500)) }
         logoEscala.animateTo(
             1f,
@@ -86,45 +72,38 @@ fun SplashScreen(
             )
         )
 
-        // Entrada escalonada de textos y carga
         launch { textosProgreso.animateTo(1f, tween(durationMillis = 500)) }
-        delay(250)
+        delay(250.milliseconds)
         cargaProgreso.animateTo(1f, tween(durationMillis = 400))
 
-        // Mensajes de carga (cambian con animación, ver AnimatedContent)
         repeat(3) {
-            delay(800)
+            delay(800.milliseconds)
             messageIndex = (messageIndex + 1) % messages.size
         }
 
-        // Salida suave y navegación
         salidaAlpha.animateTo(0f, tween(durationMillis = 350))
         onFinished()
     }
 
     Scaffold(
-        containerColor = splashBackground
+        containerColor = colors.background
     ) { padding ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .graphicsLayer { alpha = salidaAlpha.value }
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Spacer(Modifier.height(48.dp))
 
-                // Etiqueta superior
                 Surface(
-                    color = splashSoft,
+                    color = colors.surfaceContainer,
                     shape = RoundedCornerShape(50.dp),
                     shadowElevation = 2.dp
                 ) {
@@ -139,21 +118,20 @@ fun SplashScreen(
                         Icon(
                             Icons.Default.Eco,
                             contentDescription = null,
-                            tint = splashGreen,
+                            tint = colors.primary,
                             modifier = Modifier.size(16.dp)
                         )
 
                         Text(
                             "Cosecha & Selección Artesanal • Chile",
                             fontSize = 11.sp,
-                            color = Color(0xFF404941)
+                            color = colors.onSurfaceVariant
                         )
                     }
                 }
 
                 Spacer(Modifier.weight(1f))
 
-                // Emblema botánico
                 Surface(
                     modifier = Modifier
                         .size(112.dp)
@@ -162,7 +140,7 @@ fun SplashScreen(
                             scaleY = logoEscala.value
                             alpha = logoAlpha.value
                         },
-                    color = Color.White,
+                    color = colors.surfaceContainerLowest ,
                     shape = RoundedCornerShape(28.dp),
                     shadowElevation = 5.dp
                 ) {
@@ -171,7 +149,7 @@ fun SplashScreen(
                     ) {
                         Surface(
                             modifier = Modifier.size(96.dp),
-                            color = Color(0xFFEFF5ED),
+                            color = colors.surfaceContainerLow,
                             shape = RoundedCornerShape(22.dp)
                         ) {
                             Box(
@@ -180,7 +158,7 @@ fun SplashScreen(
                                 Icon(
                                     Icons.Default.Eco,
                                     contentDescription = "Logo OYL Frutos Secos",
-                                    tint = splashGreen,
+                                    tint = colors.primary,
                                     modifier = Modifier
                                         .size(64.dp)
                                         .rotate(rotacionHoja)
@@ -203,7 +181,7 @@ fun SplashScreen(
                     text = "OYL Frutos Secos",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = splashGreen,
+                    color = colors.primary,
                     textAlign = TextAlign.Center
                 )
 
@@ -212,14 +190,13 @@ fun SplashScreen(
                 Text(
                     text = "Naturalmente cerca de ti",
                     fontSize = 16.sp,
-                    color = splashMuted,
+                    color = colors.onSurfaceVariant,
                     textAlign = TextAlign.Center
                 )
                 }
 
                 Spacer(Modifier.weight(1f))
 
-                // Indicador de carga
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.graphicsLayer {
@@ -229,14 +206,13 @@ fun SplashScreen(
                 ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(32.dp),
-                    color = Color(0xFF2F6B45),
-                    trackColor = Color(0xFFDEE4DC),
+                    color = colors.primaryContainer,
+                    trackColor = colors.surfaceContainerHighest,
                     strokeWidth = 3.dp
                 )
 
                 Spacer(Modifier.height(16.dp))
 
-                // Cada mensaje nuevo entra desde abajo y el anterior sale hacia arriba
                 AnimatedContent(
                     targetState = messageIndex,
                     transitionSpec = {
@@ -249,7 +225,7 @@ fun SplashScreen(
                         text = messages[indice],
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF404941),
+                        color = colors.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -259,7 +235,7 @@ fun SplashScreen(
                 Text(
                     text = "v2.4.0",
                     fontSize = 11.sp,
-                    color = splashMuted
+                    color = colors.onSurfaceVariant
                 )
                 }
 

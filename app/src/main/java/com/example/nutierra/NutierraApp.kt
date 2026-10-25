@@ -1,7 +1,7 @@
 package com.example.nutierra
 
-import android.app.Application
 import org.osmdroid.config.Configuration
+import android.app.Application
 
 class NutierraApp : Application() {
     override fun onCreate() {

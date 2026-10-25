@@ -1,14 +1,13 @@
 package com.example.nutierra.data.repository
 
-import androidx.room.withTransaction
-import com.example.nutierra.data.local.NutierraDatabase
-import com.example.nutierra.data.local.entity.CarritoItemEntity
-import com.example.nutierra.data.local.entity.ItemCarrito
 import com.example.nutierra.data.local.entity.PedidoDetalleEntity
+import com.example.nutierra.data.local.entity.CarritoItemEntity
 import com.example.nutierra.data.local.entity.PedidoEntity
+import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.NutierraDatabase
+import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 
-/** Error de negocio al comprar (por ejemplo, stock insuficiente). */
 class CompraException(mensaje: String) : Exception(mensaje)
 
 class CarritoRepository(
@@ -21,10 +20,6 @@ class CarritoRepository(
     fun obtenerCarrito(usuarioId: Int): Flow<List<ItemCarrito>> =
         carritoDao.obtenerCarrito(usuarioId)
 
-    /**
-     * Suma [cantidad] unidades del producto al carrito, sin superar el stock.
-     * Devuelve la cantidad final que quedó en el carrito.
-     */
     suspend fun agregar(usuarioId: Int, productoId: Int, cantidad: Int): Int {
         val producto = productoDao.obtenerProductoPorId(productoId)
             ?: throw CompraException("El producto ya no existe")
@@ -36,7 +31,6 @@ class CarritoRepository(
         return nueva
     }
 
-    /** Cambia la cantidad de una línea; con 0 o menos se elimina. */
     suspend fun cambiarCantidad(usuarioId: Int, productoId: Int, cantidad: Int) {
         if (cantidad <= 0) {
             carritoDao.eliminar(usuarioId, productoId)
@@ -51,10 +45,6 @@ class CarritoRepository(
     suspend fun eliminar(usuarioId: Int, productoId: Int) =
         carritoDao.eliminar(usuarioId, productoId)
 
-    /**
-     * Confirma la compra en UNA transacción: valida stock, crea el pedido con su detalle,
-     * descuenta el stock y vacía el carrito. Si algo falla, no se guarda nada.
-     */
     suspend fun confirmarCompra(usuarioId: Int): PedidoEntity =
         database.withTransaction {
             val items = carritoDao.obtenerCarritoUnaVez(usuarioId)

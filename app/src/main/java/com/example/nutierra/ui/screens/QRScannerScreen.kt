@@ -1,72 +1,61 @@
-
 package com.example.nutierra.ui.screens
 
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import com.example.nutierra.data.local.entity.ProductoEntity
-import com.example.nutierra.ui.components.formatoPesos
-import android.Manifest
-import android.content.pm.PackageManager
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.camera.core.Camera
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.border
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.core.Camera
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
+import android.annotation.SuppressLint
+import android.Manifest
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
-import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
-private val qrGreen = Color(0xFF13522F)
-private val qrLight = Color(0xFFF5FBF3)
-private val qrSoft = Color(0xFFEAF0E8)
-private val qrText = Color(0xFF171D18)
-private val qrMuted = Color(0xFF404941)
-
 private sealed class QRResult {
-    data class Product(val id: Int, val code: String) : QRResult()
     data class Unknown(val code: String) : QRResult()
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QRScannerScreen(
     onBack: () -> Unit,
     onProductClick: (Int) -> Unit,
-    // Indica si el id leído corresponde a un producto guardado en SQLite
-    existeProducto: (Int) -> Boolean = { true },
-    // Devuelve el producto guardado en SQLite para mostrar sus datos reales
-    buscarProducto: (Int) -> ProductoEntity? = { null }
+    existeProducto: (Int) -> Boolean = { true }
 ) {
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val haptic = LocalHapticFeedback.current
 
     var cameraGranted by remember {
         mutableStateOf(
@@ -76,9 +65,6 @@ fun QRScannerScreen(
             ) == PackageManager.PERMISSION_GRANTED
         )
     }
-
-    // Vibración corta al reconocer un código nuevo
-    val haptic = LocalHapticFeedback.current
 
     var scanResult by remember {
         mutableStateOf<QRResult?>(null)
@@ -96,17 +82,19 @@ fun QRScannerScreen(
         mutableStateOf<String?>(null)
     }
 
-    val permissionLauncher =
-        rememberLauncherForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { granted ->
-            cameraGranted = granted
-        }
+    var navegando by remember {
+        mutableStateOf(false)
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        cameraGranted = granted
+    }
 
     LaunchedEffect(Unit) {
-        if (!cameraGranted) {
-            permissionLauncher.launch(Manifest.permission.CAMERA)
-        }
+        navegando = false
+        scanResult = null
     }
 
     LaunchedEffect(camera, torchEnabled) {
@@ -118,11 +106,11 @@ fun QRScannerScreen(
     }
 
     Scaffold(
-        containerColor = qrLight,
+        containerColor = colors.background,
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
-                color = qrLight,
+                color = colors.background,
                 shadowElevation = 2.dp
             ) {
                 Row(
@@ -136,7 +124,7 @@ fun QRScannerScreen(
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = qrText
+                            tint = colors.onSurface
                         )
                     }
 
@@ -145,20 +133,25 @@ fun QRScannerScreen(
                         modifier = Modifier.weight(1f),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = qrText
+                        color = colors.onSurface
                     )
 
-                    Icon(
-                        Icons.Default.Eco,
-                        contentDescription = "Nutierra",
-                        tint = qrGreen,
-                        modifier = Modifier.padding(end = 16.dp)
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(36.dp)
+                            .background(colors.primary, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Eco,
+                            contentDescription = "Nutierra",
+                            tint = colors.onPrimary
+                        )
+                    }
                 }
             }
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -176,13 +169,12 @@ fun QRScannerScreen(
                             bottomEnd = 24.dp
                         )
                     )
-                    .background(Color(0xFF252C27)),
+                    .background(colors.inverseSurface),
                 contentAlignment = Alignment.Center
             ) {
                 if (cameraGranted) {
                     QRCameraPreview(
-                        // Escaneo continuo: la cámara sigue leyendo aunque ya haya un resultado
-                        enabled = true,
+                        enabled = scanResult == null && !navegando,
                         onCameraReady = {
                             camera = it
                             cameraError = null
@@ -191,22 +183,25 @@ fun QRScannerScreen(
                             cameraError = it
                         },
                         onQRCode = { code ->
-                            val match = Regex(
-                                "^NUTIERRA:([1-9][0-9]*)$"
-                            ).matchEntire(code.trim())
+                            if (!navegando) {
+                                val match = Regex(
+                                    "^NUTIERRA:([1-9][0-9]*)$"
+                                ).matchEntire(code.trim())
 
-                            val id = match
-                                ?.groupValues
-                                ?.getOrNull(1)
-                                ?.toIntOrNull()
+                                val id = match
+                                    ?.groupValues
+                                    ?.getOrNull(1)
+                                    ?.toIntOrNull()
 
-                            scanResult = if (id != null && existeProducto(id)) {
-                                QRResult.Product(id, code)
-                            } else {
-                                QRResult.Unknown(code)
+                                if (id != null && existeProducto(id)) {
+                                    navegando = true
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                    onProductClick(id)
+                                } else {
+                                    scanResult = QRResult.Unknown(code)
+                                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                                }
                             }
-
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         }
                     )
                 } else {
@@ -218,13 +213,13 @@ fun QRScannerScreen(
                         Icon(
                             Icons.Default.NoPhotography,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = colors.inverseOnSurface,
                             modifier = Modifier.size(48.dp)
                         )
 
                         Text(
                             "Se necesita permiso de cámara",
-                            color = Color.White,
+                            color = colors.inverseOnSurface,
                             fontWeight = FontWeight.SemiBold,
                             textAlign = TextAlign.Center
                         )
@@ -242,7 +237,6 @@ fun QRScannerScreen(
                 }
 
                 if (cameraGranted) {
-                    // Controles superiores
                     Row(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
@@ -252,7 +246,7 @@ fun QRScannerScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            color = Color(0xDD252C27),
+                            color = colors.inverseSurface.copy(alpha = 0.87f),
                             shape = RoundedCornerShape(50.dp)
                         ) {
                             Row(
@@ -265,7 +259,7 @@ fun QRScannerScreen(
                                 Icon(
                                     Icons.Default.QrCodeScanner,
                                     contentDescription = null,
-                                    tint = Color(0xFF96D5A6),
+                                    tint = colors.primaryFixedDim,
                                     modifier = Modifier.size(16.dp)
                                 )
 
@@ -274,13 +268,10 @@ fun QRScannerScreen(
                                 Text(
                                     when (scanResult) {
                                         null -> "Buscando código..."
-                                        is QRResult.Product ->
-                                            "Código identificado"
-                                        is QRResult.Unknown ->
-                                            "Sin coincidencia"
+                                        is QRResult.Unknown -> "Sin coincidencia"
                                     },
                                     fontSize = 12.sp,
-                                    color = Color.White
+                                    color = colors.inverseOnSurface
                                 )
                             }
                         }
@@ -289,9 +280,9 @@ fun QRScannerScreen(
                             onClick = {
                                 torchEnabled = !torchEnabled
                             },
-                            enabled = camera != null,
+                            enabled = camera != null && scanResult == null,
                             colors = IconButtonDefaults.iconButtonColors(
-                                contentColor = Color.White
+                                contentColor = colors.inverseOnSurface
                             )
                         ) {
                             Icon(
@@ -305,13 +296,12 @@ fun QRScannerScreen(
                         }
                     }
 
-                    // Marco central del QR
                     Box(
                         modifier = Modifier
                             .size(260.dp)
                             .border(
                                 width = 4.dp,
-                                color = Color(0xFF96D5A6),
+                                color = colors.primaryFixedDim,
                                 shape = RoundedCornerShape(20.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -319,7 +309,7 @@ fun QRScannerScreen(
                         Icon(
                             Icons.Default.QrCode2,
                             contentDescription = null,
-                            tint = Color.White.copy(alpha = 0.35f),
+                            tint = colors.inverseOnSurface.copy(alpha = 0.35f),
                             modifier = Modifier.size(48.dp)
                         )
                     }
@@ -328,14 +318,14 @@ fun QRScannerScreen(
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
                             .padding(16.dp),
-                        color = Color(0xDD252C27),
+                        color = colors.inverseSurface.copy(alpha = 0.87f),
                         shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
                             "Ubica el código QR dentro del recuadro " +
                                     "para ver detalles del producto",
                             modifier = Modifier.padding(12.dp),
-                            color = Color.White,
+                            color = colors.inverseOnSurface,
                             fontSize = 13.sp,
                             textAlign = TextAlign.Center
                         )
@@ -347,7 +337,7 @@ fun QRScannerScreen(
                 Text(
                     cameraError.orEmpty(),
                     modifier = Modifier.padding(16.dp),
-                    color = MaterialTheme.colorScheme.error
+                    color = colors.error
                 )
             }
 
@@ -360,7 +350,7 @@ fun QRScannerScreen(
                 Icon(
                     Icons.Default.VerifiedUser,
                     contentDescription = null,
-                    tint = qrGreen,
+                    tint = colors.primary,
                     modifier = Modifier.size(18.dp)
                 )
 
@@ -373,126 +363,17 @@ fun QRScannerScreen(
                         "Permiso Cámara: Denegado"
                     },
                     fontSize = 12.sp,
-                    color = qrMuted
+                    color = colors.onSurfaceVariant
                 )
             }
 
             when (val result = scanResult) {
-                is QRResult.Product -> {
-                    val producto = buscarProducto(result.id)
-
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                        color = Color.White,
-                        shape = RoundedCornerShape(18.dp),
-                        shadowElevation = 3.dp
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.QrCodeScanner,
-                                    contentDescription = null,
-                                    tint = qrGreen
-                                )
-
-                                Spacer(Modifier.width(8.dp))
-
-                                Text(
-                                    "Código detectado: ${result.code}",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                )
-                            }
-
-                            HorizontalDivider()
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Default.Inventory2,
-                                    contentDescription = null,
-                                    tint = qrGreen,
-                                    modifier = Modifier.size(48.dp)
-                                )
-
-                                Spacer(Modifier.width(12.dp))
-
-                                Column {
-                                    Text(
-                                        producto?.categoria ?: "Producto",
-                                        fontSize = 12.sp,
-                                        color = qrMuted
-                                    )
-
-                                    Text(
-                                        producto?.nombre ?: "Producto #${result.id}",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 17.sp
-                                    )
-
-                                    Text(
-                                        producto?.let { formatoPesos(it.precio) + " CLP" } ?: "",
-                                        fontWeight = FontWeight.Bold,
-                                        color = qrGreen
-                                    )
-                                }
-                            }
-
-                            Text(
-                                when {
-                                    producto == null -> "Producto registrado en el catálogo."
-                                    producto.stock > 0 -> "Disponible: ${producto.stock} unidades en stock."
-                                    else -> "Sin stock por ahora."
-                                },
-                                fontSize = 12.sp,
-                                color = qrMuted
-                            )
-
-                            Button(
-                                onClick = {
-                                    onProductClick(result.id)
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(50.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = qrGreen
-                                )
-                            ) {
-                                Text("Ver ficha de producto")
-                                Spacer(Modifier.width(8.dp))
-                                Icon(
-                                    Icons.Default.ArrowForward,
-                                    contentDescription = null
-                                )
-                            }
-
-                            // Escaneo continuo: basta con apuntar a otro código
-                            Text(
-                                "Apunta la cámara a otro código para escanearlo.",
-                                fontSize = 12.sp,
-                                color = qrMuted,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-                }
-
                 is QRResult.Unknown -> {
                     Surface(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        color = Color.White,
+                        color = colors.surfaceContainerLowest,
                         shape = RoundedCornerShape(18.dp),
                         shadowElevation = 3.dp
                     ) {
@@ -503,35 +384,45 @@ fun QRScannerScreen(
                             Icon(
                                 Icons.Default.Warning,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.error
+                                tint = colors.error
                             )
 
                             Text(
                                 "Código no registrado",
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 18.sp
+                                fontSize = 18.sp,
+                                color = colors.onSurface
                             )
 
                             Text(
                                 "El código escaneado no corresponde " +
                                         "a un producto reconocido por esta versión.",
-                                color = qrMuted,
+                                color = colors.onSurfaceVariant,
                                 fontSize = 13.sp
                             )
 
                             Text(
                                 "Código: ${result.code.take(100)}",
                                 fontSize = 12.sp,
-                                color = qrMuted
+                                color = colors.onSurfaceVariant
                             )
 
-                            Text(
-                                "Apunta la cámara a un código de producto Nutierra.",
-                                fontSize = 12.sp,
-                                color = qrMuted,
-                                modifier = Modifier.fillMaxWidth(),
-                                textAlign = TextAlign.Center
-                            )
+                            TextButton(
+                                onClick = { scanResult = null },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    Icons.Default.QrCodeScanner,
+                                    contentDescription = null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    "Escanear otro código",
+                                    color = colors.primary
+                                )
+                            }
                         }
                     }
                 }
@@ -541,7 +432,7 @@ fun QRScannerScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp),
-                        color = qrSoft,
+                        color = colors.surfaceContainer,
                         shape = RoundedCornerShape(14.dp)
                     ) {
                         Row(
@@ -551,7 +442,7 @@ fun QRScannerScreen(
                             Icon(
                                 Icons.Default.Lightbulb,
                                 contentDescription = null,
-                                tint = qrGreen
+                                tint = colors.primary
                             )
 
                             Spacer(Modifier.width(10.dp))
@@ -560,18 +451,18 @@ fun QRScannerScreen(
                                 "Puedes escanear códigos QR desde " +
                                         "bolsas, cajas o exhibidores de Nutierra.",
                                 fontSize = 12.sp,
-                                color = qrMuted
+                                color = colors.onSurfaceVariant
                             )
                         }
                     }
                 }
             }
-
             Spacer(Modifier.height(24.dp))
         }
     }
 }
 
+@SuppressLint("UnsafeOptInUsageError")
 @Composable
 private fun QRCameraPreview(
     enabled: Boolean,
@@ -583,18 +474,22 @@ private fun QRCameraPreview(
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val currentOnQRCode by rememberUpdatedState(onQRCode)
-
-    // Tamaño del encuadre verde (260.dp, centrado sobre la cámara) en píxeles.
-    // Solo se aceptan códigos cuyo centro quede dentro de este cuadro.
     val marcoPx = with(LocalDensity.current) { 260.dp.toPx() }
     val currentOnCameraReady by rememberUpdatedState(onCameraReady)
     val currentOnCameraError by rememberUpdatedState(onCameraError)
-
     val scanningEnabled = rememberUpdatedState(enabled)
+
+    var providerRef by remember { mutableStateOf<ProcessCameraProvider?>(null) }
 
     val previewView = remember {
         PreviewView(context).apply {
             scaleType = PreviewView.ScaleType.FILL_CENTER
+        }
+    }
+
+    LaunchedEffect(enabled) {
+        if (!enabled) {
+            providerRef?.unbindAll()
         }
     }
 
@@ -607,13 +502,11 @@ private fun QRCameraPreview(
                 .build()
         )
 
-        val cameraProviderFuture =
-            ProcessCameraProvider.getInstance(context)
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
 
         var provider: ProcessCameraProvider? = null
         var active = true
         var processing = false
-        // Último código entregado: solo se avisa cuando se lee uno distinto
         var ultimoCodigo: String? = null
 
         val listener = Runnable {
@@ -621,16 +514,13 @@ private fun QRCameraPreview(
 
             try {
                 val cameraProvider = cameraProviderFuture.get()
-                if (!active) return@Runnable
 
                 provider = cameraProvider
+                providerRef = cameraProvider
 
                 val preview = Preview.Builder()
                     .build()
-                    .also {
-                        it.surfaceProvider =
-                            previewView.surfaceProvider
-                    }
+                    .also { it.surfaceProvider = previewView.surfaceProvider }
 
                 val analysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(
@@ -639,10 +529,7 @@ private fun QRCameraPreview(
                     .build()
 
                 analysis.setAnalyzer(executor) { imageProxy ->
-                    if (
-                        !scanningEnabled.value ||
-                        processing
-                    ) {
+                    if (!scanningEnabled.value || processing) {
                         imageProxy.close()
                     } else {
                         val mediaImage = imageProxy.image
@@ -652,7 +539,6 @@ private fun QRCameraPreview(
                         } else {
                             processing = true
 
-                            // Tamaño de la imagen "derecha" (ya rotada) que analiza ML Kit
                             val rotacion = imageProxy.imageInfo.rotationDegrees
                             val anchoImagen = if (rotacion == 90 || rotacion == 270) imageProxy.height else imageProxy.width
                             val altoImagen = if (rotacion == 90 || rotacion == 270) imageProxy.width else imageProxy.height
@@ -683,9 +569,7 @@ private fun QRCameraPreview(
                                         currentOnQRCode(value)
                                     }
                                 }
-                                .addOnFailureListener {
-                                    // Se mantiene el escaneo activo.
-                                }
+                                .addOnFailureListener { }
                                 .addOnCompleteListener {
                                     processing = false
                                     imageProxy.close()
@@ -694,8 +578,7 @@ private fun QRCameraPreview(
                     }
                 }
 
-                val cameraSelector =
-                    CameraSelector.DEFAULT_BACK_CAMERA
+                val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
 
                 cameraProvider.unbindAll()
 
@@ -709,12 +592,10 @@ private fun QRCameraPreview(
                 currentOnCameraReady(boundCamera)
 
             } catch (e: Exception) {
-                if (active) {
-                    currentOnCameraError(
-                        "No se pudo iniciar la cámara: " +
-                                (e.message ?: "Error desconocido")
-                    )
-                }
+                currentOnCameraError(
+                    "No se pudo iniciar la cámara: " +
+                            (e.message ?: "Error desconocido")
+                )
             }
         }
 
@@ -726,26 +607,18 @@ private fun QRCameraPreview(
         onDispose {
             active = false
             provider?.unbindAll()
+            providerRef = null
             executor.shutdown()
             scanner.close()
         }
     }
 
-    // La vista de la cámara se crea una sola vez. Antes se recreaba con key(enabled)
-    // reutilizando la misma PreviewView, que seguía agregada a la vista anterior,
-    // y Android cerraba la app al detectar un QR.
     AndroidView(
         factory = { previewView },
         modifier = Modifier.fillMaxSize()
     )
 }
 
-/**
- * Devuelve el código QR cuyo centro está dentro del encuadre verde (centrado en la vista),
- * o null si ninguno lo está. Si hay varios dentro, elige el más cercano al centro.
- * Convierte las coordenadas de la imagen de la cámara a la pantalla igual que la vista
- * previa (escala FILL_CENTER: llena la vista y recorta los bordes).
- */
 private fun codigoDentroDelMarco(
     barcodes: List<Barcode>,
     anchoImagen: Int,

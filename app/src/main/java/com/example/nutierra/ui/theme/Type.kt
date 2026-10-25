@@ -18,55 +18,42 @@ val Baloo = FontFamily(
 )
 
 val Typography = Typography(
-    // Headline Large - 28sp
     headlineLarge = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.Bold,
         fontSize = 28.sp,
         lineHeight = 34.sp
     ),
-
-    // Headline Medium - 24sp
     headlineMedium = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.SemiBold,
         fontSize = 24.sp,
         lineHeight = 30.sp
     ),
-
-    // Title Large - 20sp
     titleLarge = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.SemiBold,
         fontSize = 20.sp,
         lineHeight = 26.sp
     ),
-
-    // Title Medium - 18sp
     titleMedium = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.SemiBold,
         fontSize = 18.sp,
         lineHeight = 24.sp
     ),
-
-    // Body Large - 16sp
     bodyLarge = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 22.sp
     ),
-
-    // Body Medium - 14sp
     bodyMedium = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.Normal,
         fontSize = 14.sp,
         lineHeight = 20.sp
     ),
-
-    // Label Large - 14sp
     labelLarge = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.SemiBold,
@@ -74,8 +61,6 @@ val Typography = Typography(
         lineHeight = 18.sp,
         letterSpacing = 0.1.sp
     ),
-
-    // Label Medium - 12sp
     labelMedium = TextStyle(
         fontFamily = Baloo,
         fontWeight = FontWeight.Medium,
