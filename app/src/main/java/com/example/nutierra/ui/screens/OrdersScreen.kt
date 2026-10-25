@@ -168,16 +168,14 @@ fun OrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Home,
                                     contentDescription = "Inicio",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -195,16 +193,14 @@ fun OrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Storefront,
                                     contentDescription = "Catálogo",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -222,16 +218,14 @@ fun OrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Map,
                                     contentDescription = "Mapa",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -249,16 +243,14 @@ fun OrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.QrCodeScanner,
                                     contentDescription = "Escanear",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -276,16 +268,14 @@ fun OrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (true) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        MaterialTheme.colorScheme.tertiary
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ReceiptLong,
                                     contentDescription = "Pedidos",
-                                    tint = if (true) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.surface
                                 )
                             }
                         },
@@ -303,16 +293,14 @@ fun OrdersScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },

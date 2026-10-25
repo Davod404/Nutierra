@@ -189,16 +189,14 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) colors.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Dashboard,
                                     contentDescription = "Inicio",
-                                    tint = if (false) colors.surface
-                                    else colors.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -216,16 +214,14 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) colors.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Inventory2,
                                     contentDescription = "Productos",
-                                    tint = if (false) colors.surface
-                                    else colors.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -243,16 +239,14 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (true) colors.tertiary
-                                        else Color.Transparent
+                                        colors.tertiary
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Warehouse,
                                     contentDescription = "Inventario",
-                                    tint = if (true) colors.onTertiary
-                                    else colors.onSurfaceVariant
+                                    tint = colors.onTertiary
                                 )
                             }
                         },
@@ -270,16 +264,14 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) colors.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Assignment,
                                     contentDescription = "Pedidos",
-                                    tint = if (false) colors.surface
-                                    else colors.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -297,16 +289,14 @@ fun AdminInventoryScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) colors.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = if (false) colors.surface
-                                    else colors.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },

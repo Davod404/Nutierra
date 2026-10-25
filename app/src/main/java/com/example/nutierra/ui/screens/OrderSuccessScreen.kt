@@ -26,6 +26,7 @@ import java.text.NumberFormat
 import java.util.Locale
 import java.util.Date
 import com.example.nutierra.data.local.entity.ItemCarrito
+import kotlin.time.Duration.Companion.milliseconds
 
 private fun successPrice(value: Int): String {
     return "$" + NumberFormat.getIntegerInstance(
@@ -55,6 +56,13 @@ fun OrderSuccessScreen(
             "dd/MM/yyyy, HH:mm 'hrs'",
             Locale.forLanguageTag("es-CL")
         ).format(Date())
+    }
+
+    LaunchedEffect(codeCopied) {
+        if (codeCopied) {
+            kotlinx.coroutines.delay(2000L.milliseconds)
+            codeCopied = false
+        }
     }
 
     Scaffold(
@@ -253,6 +261,8 @@ fun OrderSuccessScreen(
                                             Context.CLIPBOARD_SERVICE
                                         ) as ClipboardManager
 
+                                        // Se usa setPrimaryClip() en lugar de primaryClip porque la propiedad
+                                        // sintética de Kotlin no soporta el setter (getter nullable, setter no).
                                         clipboard.setPrimaryClip(
                                             ClipData.newPlainText(
                                                 "Código de pedido",

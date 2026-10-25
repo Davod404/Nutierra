@@ -190,16 +190,14 @@ fun AdminHomeScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (true) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        MaterialTheme.colorScheme.tertiary
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Dashboard,
                                     contentDescription = "Inicio",
-                                    tint = if (true) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.surface
                                 )
                             }
                         },
@@ -217,16 +215,14 @@ fun AdminHomeScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Inventory2,
                                     contentDescription = "Productos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -244,16 +240,14 @@ fun AdminHomeScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Warehouse,
                                     contentDescription = "Inventario",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -271,16 +265,14 @@ fun AdminHomeScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Assignment,
                                     contentDescription = "Pedidos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -298,16 +290,14 @@ fun AdminHomeScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },

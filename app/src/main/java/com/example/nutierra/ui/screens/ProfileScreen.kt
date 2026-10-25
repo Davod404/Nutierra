@@ -130,16 +130,14 @@ fun ProfileScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Home,
                                     contentDescription = "Inicio",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -157,16 +155,14 @@ fun ProfileScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Storefront,
                                     contentDescription = "Catálogo",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -184,16 +180,14 @@ fun ProfileScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Map,
                                     contentDescription = "Mapa",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -211,16 +205,14 @@ fun ProfileScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.QrCodeScanner,
                                     contentDescription = "Escanear",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -238,16 +230,14 @@ fun ProfileScreen(
                                     .size(40.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        if (false) MaterialTheme.colorScheme.tertiary
-                                        else Color.Transparent
+                                        Color.Transparent
                                     ),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ReceiptLong,
                                     contentDescription = "Pedidos",
-                                    tint = if (false) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         },
@@ -265,16 +255,14 @@ fun ProfileScreen(
                                 .size(40.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (true) colors.tertiary
-                                    else Color.Transparent
+                                    colors.tertiary
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Person,
                                 contentDescription = "Perfil",
-                                tint = if (true) colors.onTertiary
-                                else colors.onSurfaceVariant
+                                tint = colors.onTertiary
                             )
                         }
                     },
