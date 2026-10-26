@@ -14,6 +14,7 @@ import androidx.navigation.NavType
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.ui.viewmodel.ProductoViewModel
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import com.example.nutierra.ui.viewmodel.PedidoViewModel
@@ -160,10 +161,14 @@ fun NutierraNavigation() {
         composable("splash") {
             SplashScreen(
                 onFinished = {
-                    navController.navigate("login") {
-                        popUpTo("splash") {
-                            inclusive = true
-                        }
+                    val usuario = SesionManager.usuarioActual.value
+                    val destino = when {
+                        usuario == null -> "login"
+                        usuario.rol == "ADMIN" -> "admin/home"
+                        else -> "home"
+                    }
+                    navController.navigate(destino) {
+                        popUpTo("splash") { inclusive = true }
                         launchSingleTop = true
                     }
                 }
@@ -305,9 +310,7 @@ fun NutierraNavigation() {
                 },
                 onLogout = {
                     navController.navigate("login") {
-                        popUpTo(navController.graph.id) {
-                            inclusive = true
-                        }
+                        popUpTo(navController.graph.id) { inclusive = true }
                         launchSingleTop = true
                     }
                 }
