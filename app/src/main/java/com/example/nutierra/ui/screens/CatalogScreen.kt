@@ -150,41 +150,6 @@ fun CatalogScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Box {
-                            IconButton(
-                                onClick = onCartClick,
-                                modifier = Modifier
-                                    .size(48.dp)
-                                    .background(
-                                        colors.surfaceContainer,
-                                        RoundedCornerShape(12.dp)
-                                    )
-                            ) {
-                                Icon(
-                                    Icons.Default.ShoppingCart,
-                                    contentDescription = "Carrito",
-                                    tint = colors.primary
-                                )
-                            }
-
-                            if (cartCount > 0) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .offset(x = 5.dp, y = (-5).dp)
-                                        .size(20.dp)
-                                        .background(colors.secondary, CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = cartCount.toString(),
-                                        color = colors.onSecondary,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                            }
-                        }
 
                         Box(
                             modifier = Modifier
@@ -397,21 +362,40 @@ fun CatalogScreen(
                             color = colors.onSurface
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .size(32.dp)
-                                .background(
-                                    colors.surfaceContainerHigh,
-                                    CircleShape
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                Icons.Default.Eco,
-                                contentDescription = null,
-                                tint = colors.primary,
-                                modifier = Modifier.size(20.dp)
-                            )
+                        Box {
+                            IconButton(
+                                onClick = onCartClick,
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .background(
+                                        colors.surfaceContainer,
+                                        RoundedCornerShape(12.dp)
+                                    )
+                            ) {
+                                Icon(
+                                    Icons.Default.ShoppingCart,
+                                    contentDescription = "Carrito",
+                                    tint = colors.primary
+                                )
+                            }
+
+                            if (cartCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .offset(x = 5.dp, y = (-5).dp)
+                                        .size(20.dp)
+                                        .background(colors.secondary, CircleShape),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = cartCount.toString(),
+                                        color = colors.onSecondary,
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
                         }
                     }
 

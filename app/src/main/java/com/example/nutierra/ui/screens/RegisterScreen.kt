@@ -568,6 +568,8 @@ private fun registerFieldColors(): TextFieldColors {
         unfocusedContainerColor = colors.surfaceContainerLowest,
         focusedBorderColor = colors.primary,
         unfocusedBorderColor = Color.Transparent,
-        cursorColor = colors.primary
+        cursorColor = colors.primary,
+        focusedPlaceholderColor = colors.outlineVariant,
+        unfocusedPlaceholderColor = colors.outlineVariant
     )
 }

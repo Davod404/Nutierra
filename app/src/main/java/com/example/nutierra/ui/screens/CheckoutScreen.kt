@@ -19,6 +19,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import com.example.nutierra.ui.components.FilaError
 
@@ -508,32 +509,25 @@ fun CheckoutScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
+                    val usuario = SesionManager.usuarioActual.value
+
                     CheckoutContactRow(
                         icon = Icons.Default.Badge,
                         label = "Cliente solicitante",
-                        value = "Francisca Morales"
+                        value = "${usuario?.nombre.orEmpty()} ${usuario?.apellido.orEmpty()}".trim()
+                            .ifBlank { "Invitado" }
                     )
 
                     CheckoutContactRow(
                         icon = Icons.Default.PhoneAndroid,
                         label = "Teléfono de contacto",
-                        value = "+56 9 8765 4321"
+                        value = usuario?.telefono?.takeIf { it.isNotBlank() } ?: "No registrado"
                     )
 
                     CheckoutContactRow(
                         icon = Icons.Default.Email,
                         label = "Correo electrónico",
-                        value = "francisca.morales@correo.cl"
-                    )
-
-                    HorizontalDivider(
-                        color = colors.surfaceContainerHigh
-                    )
-
-                    CheckoutContactRow(
-                        icon = Icons.Default.Storefront,
-                        label = "Modalidad acordada",
-                        value = "Retiro en tienda / Coordinación directa"
+                        value = usuario?.correo?.takeIf { it.isNotBlank() } ?: "No registrado"
                     )
                 }
             }
