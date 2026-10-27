@@ -633,5 +633,8 @@ private fun createFieldColors() =
         focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLowest,
         focusedBorderColor = MaterialTheme.colorScheme.primary,
-        unfocusedBorderColor = Color.Transparent
+        unfocusedBorderColor = Color.Transparent,
+        cursorColor = MaterialTheme.colorScheme.primary,
+        focusedPlaceholderColor = MaterialTheme.colorScheme.outlineVariant,
+        unfocusedPlaceholderColor = MaterialTheme.colorScheme.outlineVariant
     )

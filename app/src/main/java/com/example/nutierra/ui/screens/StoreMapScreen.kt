@@ -6,6 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.platform.LocalContext
@@ -36,19 +38,31 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import com.google.android.gms.location.LocationServices
 import androidx.core.net.toUri
+import com.example.nutierra.data.repository.TiendaRepository
 
-private val storeLocation = GeoPoint(-33.4246122, -70.6145784)
-
-private const val storeAddress =
-    "Av. Providencia 1945, Local 4, Providencia, Santiago"
+private val ESRI_SAT = object : org.osmdroid.tileprovider.tilesource.OnlineTileSourceBase(
+    "Esri World Imagery",
+    0, 18, 256, ".jpg",
+    arrayOf("https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/")
+) {
+    override fun getTileURLString(pMapTileIndex: Long): String {
+        return baseUrl +
+                org.osmdroid.util.MapTileIndex.getZoom(pMapTileIndex) + "/" +
+                org.osmdroid.util.MapTileIndex.getY(pMapTileIndex) + "/" +
+                org.osmdroid.util.MapTileIndex.getX(pMapTileIndex)
+    }
+}
 
 @Composable
 fun StoreMapScreen(
     onBack: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
-
     val context = LocalContext.current
+
+    val tiendas = remember { TiendaRepository().obtenerTiendas() }
+    var tiendaSeleccionada by remember { mutableStateOf(tiendas.firstOrNull()) }
+
     var mapViewRef by remember { mutableStateOf<MapView?>(null) }
     var satelliteMode by remember { mutableStateOf(false) }
 
@@ -65,13 +79,8 @@ fun StoreMapScreen(
         )
     }
 
-    var locationMessage by remember {
-        mutableStateOf<String?>(null)
-    }
-
-    var showDirectionsGuide by remember {
-        mutableStateOf(false)
-    }
+    var locationMessage by remember { mutableStateOf<String?>(null) }
+    var showDirectionsGuide by remember { mutableStateOf(false) }
 
     val locationClient = remember(context) {
         LocationServices.getFusedLocationProviderClient(context)
@@ -82,7 +91,6 @@ fun StoreMapScreen(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
-
         val coarseGranted = ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -97,10 +105,7 @@ fun StoreMapScreen(
                     .addOnSuccessListener { location ->
                         if (location != null) {
                             mapViewRef?.controller?.animateTo(
-                                GeoPoint(
-                                    location.latitude,
-                                    location.longitude
-                                ),
+                                GeoPoint(location.latitude, location.longitude),
                                 16.0,
                                 800L
                             )
@@ -111,13 +116,11 @@ fun StoreMapScreen(
                         }
                     }
                     .addOnFailureListener {
-                        locationMessage =
-                            "No se pudo obtener tu ubicación."
+                        locationMessage = "No se pudo obtener tu ubicación."
                     }
             } catch (_: SecurityException) {
                 locationGranted = false
-                locationMessage =
-                    "No se concedió permiso de ubicación."
+                locationMessage = "No se concedió permiso de ubicación."
             }
         }
     }
@@ -127,12 +130,10 @@ fun StoreMapScreen(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
             locationGranted = permissions.values.any { it }
-
             if (locationGranted) {
                 centerOnUser()
             } else {
-                locationMessage =
-                    "Permiso denegado. Puedes seguir consultando el mapa."
+                locationMessage = "Permiso denegado. Puedes seguir consultando el mapa."
             }
         }
 
@@ -151,15 +152,9 @@ fun StoreMapScreen(
 
     fun openExternalUrl(url: String) {
         try {
-            context.startActivity(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    url.toUri()
-                )
-            )
+            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
         } catch (_: Exception) {
-            locationMessage =
-                "No se encontró una aplicación para abrir el enlace."
+            locationMessage = "No se encontró una aplicación para abrir el enlace."
         }
     }
 
@@ -176,6 +171,17 @@ fun StoreMapScreen(
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
             mapViewRef?.onDetach()
+        }
+    }
+
+    // Cuando cambia la tienda seleccionada, centra el mapa en esa tienda
+    LaunchedEffect(tiendaSeleccionada) {
+        tiendaSeleccionada?.let { tienda ->
+            mapViewRef?.controller?.animateTo(
+                GeoPoint(tienda.lat, tienda.lon),
+                16.0,
+                800L
+            )
         }
     }
 
@@ -203,7 +209,7 @@ fun StoreMapScreen(
                     }
 
                     Text(
-                        "Nuestra ubicación",
+                        "Nuestras tiendas",
                         modifier = Modifier.weight(1f),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
@@ -219,7 +225,7 @@ fun StoreMapScreen(
                         Icon(
                             Icons.Default.Eco,
                             contentDescription = "Nutierra",
-                            tint = colors.surfaceContainerLowest,
+                            tint = colors.onPrimary,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -248,29 +254,37 @@ fun StoreMapScreen(
                             setTileSource(TileSourceFactory.MAPNIK)
                             setMultiTouchControls(true)
                             setUseDataConnection(true)
-                            controller.setZoom(16.0)
-                            controller.setCenter(storeLocation)
 
-                            val marker = Marker(this).apply {
-                                position = storeLocation
-                                title = "Tienda Nutierra"
-                                snippet = "Ubicación de demostración"
-                                setAnchor(
-                                    Marker.ANCHOR_CENTER,
-                                    Marker.ANCHOR_BOTTOM
-                                )
-                                icon = ContextCompat.getDrawable(
-                                    ctx,
-                                    org.osmdroid.library.R.drawable.marker_default
-                                )
+                            val primera = tiendas.firstOrNull()
+                            if (primera != null) {
+                                controller.setZoom(16.0)
+                                controller.setCenter(GeoPoint(primera.lat, primera.lon))
                             }
-                            overlays.add(marker)
+
+                            tiendas.forEach { tienda ->
+                                val marker = Marker(this).apply {
+                                    position = GeoPoint(tienda.lat, tienda.lon)
+                                    title = tienda.nombre
+                                    snippet = tienda.direccion
+                                    setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                                    icon = ContextCompat.getDrawable(
+                                        ctx,
+                                        org.osmdroid.library.R.drawable.marker_default
+                                    )
+                                    setOnMarkerClickListener { m, _ ->
+                                        tiendaSeleccionada = tienda
+                                        m.showInfoWindow()
+                                        true
+                                    }
+                                }
+                                overlays.add(marker)
+                            }
 
                             if (locationGranted) {
-                                val myLocationOverlay = MyLocationNewOverlay(
-                                    GpsMyLocationProvider(ctx),
-                                    this
-                                ).apply {
+                                val locationProvider = GpsMyLocationProvider(ctx).apply {
+                                    addLocationSource(android.location.LocationManager.NETWORK_PROVIDER)
+                                }
+                                val myLocationOverlay = MyLocationNewOverlay(locationProvider, this).apply {
                                     enableMyLocation()
                                 }
                                 overlays.add(myLocationOverlay)
@@ -281,11 +295,7 @@ fun StoreMapScreen(
                     },
                     update = { mapView ->
                         mapView.setTileSource(
-                            if (satelliteMode) {
-                                TileSourceFactory.USGS_SAT
-                            } else {
-                                TileSourceFactory.MAPNIK
-                            }
+                            if (satelliteMode) ESRI_SAT else TileSourceFactory.MAPNIK
                         )
                         mapView.invalidate()
                     }
@@ -316,9 +326,7 @@ fun StoreMapScreen(
                                 tint = colors.primary,
                                 modifier = Modifier.size(16.dp)
                             )
-
                             Spacer(Modifier.width(5.dp))
-
                             Text(
                                 if (locationGranted) {
                                     "Ubicación autorizada"
@@ -331,6 +339,21 @@ fun StoreMapScreen(
                             )
                         }
                     }
+
+                    FilledIconButton(
+                        onClick = {
+                            satelliteMode = !satelliteMode
+                        },
+                        colors = IconButtonDefaults.filledIconButtonColors(
+                            containerColor = colors.surfaceContainerLowest,
+                            contentColor = colors.primary
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Layers,
+                            contentDescription = "Cambiar tipo de mapa"
+                        )
+                    }
                 }
 
                 Row(
@@ -338,16 +361,9 @@ fun StoreMapScreen(
                         .align(Alignment.BottomCenter)
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
+                    horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Surface(
-                        color = colors.surfaceContainerLowest,
-                        shape = RoundedCornerShape(12.dp),
-                        shadowElevation = 3.dp
-                    ) {
-                    }
-
                     FilledIconButton(
                         onClick = { requestUserLocation() },
                         modifier = Modifier.size(48.dp),
@@ -379,19 +395,14 @@ fun StoreMapScreen(
                             contentDescription = null,
                             tint = colors.primary
                         )
-
                         Spacer(Modifier.width(8.dp))
-
                         Text(
                             locationMessage.orEmpty(),
                             modifier = Modifier.weight(1f),
                             fontSize = 12.sp
                         )
-
                         IconButton(
-                            onClick = {
-                                locationMessage = null
-                            }
+                            onClick = { locationMessage = null }
                         ) {
                             Icon(
                                 Icons.Default.Close,
@@ -402,15 +413,46 @@ fun StoreMapScreen(
                 }
             }
 
+            // Selector de tiendas
+            LazyRow(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(tiendas, key = { it.id }) { tienda ->
+                    val selected = tiendaSeleccionada?.id == tienda.id
+                    FilterChip(
+                        selected = selected,
+                        onClick = { tiendaSeleccionada = tienda },
+                        label = { Text(tienda.nombre) },
+                        leadingIcon = if (selected) {
+                            {
+                                Icon(
+                                    Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        } else null,
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = colors.primary,
+                            selectedLabelColor = colors.onPrimary,
+                            selectedLeadingIconColor = colors.onPrimary,
+                            containerColor = colors.surfaceContainer
+                        )
+                    )
+                }
+            }
+
+            val tienda = tiendaSeleccionada
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(
                         colors.surfaceContainerLowest,
-                        RoundedCornerShape(
-                            topStart = 24.dp,
-                            topEnd = 24.dp
-                        )
+                        RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)
                     )
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -424,6 +466,7 @@ fun StoreMapScreen(
                             RoundedCornerShape(50.dp)
                         )
                 )
+
                 Surface(
                     color = colors.surfaceContainer,
                     shape = RoundedCornerShape(8.dp)
@@ -441,7 +484,7 @@ fun StoreMapScreen(
                 }
 
                 Text(
-                    "Nutierra — Tienda Principal Providencia",
+                    tienda?.nombre ?: "Nutierra",
                     fontSize = 21.sp,
                     fontWeight = FontWeight.Bold,
                     color = colors.onSurface
@@ -463,7 +506,6 @@ fun StoreMapScreen(
                         icon = Icons.Default.Eco,
                         modifier = Modifier.weight(1f)
                     )
-
                     MapFeatureCard(
                         title = "Retiro Pick-Up",
                         description = "Listo en tienda en 30 minutos.",
@@ -474,35 +516,31 @@ fun StoreMapScreen(
 
                 MapInfoCard(
                     title = "Dirección física",
-                    content = "Av. Providencia 1945, Local 4\n" +
-                            "Providencia, Región Metropolitana\n" +
-                            "Metro Pedro de Valdivia",
+                    content = tienda?.direccion ?: "No registrada",
                     icon = Icons.Default.PinDrop
                 )
 
                 MapInfoCard(
                     title = "Horarios de atención",
-                    content = "Lun a Vie: 09:30 - 20:00\n" +
-                            "Sábados: 10:00 - 15:00\n" +
-                            "Domingos y festivos: Cerrado",
+                    content = tienda?.horario ?: "No registrado",
                     icon = Icons.Default.Schedule
                 )
 
                 MapInfoCard(
                     title = "Atención directa / WhatsApp",
-                    content = "+56 9 8765 4321\nhola@nutierra.cl",
+                    content = tienda?.telefono ?: "No registrado",
                     icon = Icons.Default.Call
                 )
 
                 Button(
                     onClick = {
-                        val lat = storeLocation.latitude
-                        val lon = storeLocation.longitude
-                        openExternalUrl(
-                            "https://www.openstreetmap.org/" +
-                                    "?mlat=$lat&mlon=$lon" +
-                                    "#map=17/$lat/$lon"
-                        )
+                        tienda?.let {
+                            openExternalUrl(
+                                "https://www.openstreetmap.org/" +
+                                        "?mlat=${it.lat}&mlon=${it.lon}" +
+                                        "#map=17/${it.lat}/${it.lon}"
+                            )
+                        }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -512,13 +550,8 @@ fun StoreMapScreen(
                         containerColor = colors.primary
                     )
                 ) {
-                    Icon(
-                        Icons.Default.Directions,
-                        contentDescription = null
-                    )
-
+                    Icon(Icons.Default.Directions, contentDescription = null)
                     Spacer(Modifier.width(8.dp))
-
                     Text(
                         "Cómo llegar en OpenStreetMap",
                         fontWeight = FontWeight.SemiBold
@@ -530,9 +563,11 @@ fun StoreMapScreen(
                 ) {
                     OutlinedButton(
                         onClick = {
-                            openExternalUrl(
-                                "https://wa.me/56987654321"
-                            )
+                            tienda?.let {
+                                openExternalUrl(
+                                    "https://wa.me/${it.telefono.replace("+", "").replace(" ", "")}"
+                                )
+                            }
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp)
@@ -542,29 +577,27 @@ fun StoreMapScreen(
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-
                         Spacer(Modifier.width(6.dp))
                         Text("WhatsApp")
                     }
 
                     OutlinedButton(
                         onClick = {
-                            val shareIntent = Intent(
-                                Intent.ACTION_SEND
-                            ).apply {
-                                type = "text/plain"
-                                putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "Tienda Nutierra\n$storeAddress"
+                            tienda?.let {
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(
+                                        Intent.EXTRA_TEXT,
+                                        "${it.nombre}\n${it.direccion}"
+                                    )
+                                }
+                                context.startActivity(
+                                    Intent.createChooser(
+                                        shareIntent,
+                                        "Compartir ubicación"
+                                    )
                                 )
                             }
-
-                            context.startActivity(
-                                Intent.createChooser(
-                                    shareIntent,
-                                    "Compartir ubicación"
-                                )
-                            )
                         },
                         modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(12.dp)
@@ -574,83 +607,77 @@ fun StoreMapScreen(
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-
                         Spacer(Modifier.width(6.dp))
                         Text("Compartir")
                     }
                 }
 
-                OutlinedCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                Icons.Default.CloudOff,
-                                contentDescription = null,
-                                tint = colors.primary
-                            )
-
-                            Spacer(Modifier.width(10.dp))
-
-                            Column(
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Text(
-                                    "¿Sin conexión a internet?",
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 13.sp
-                                )
-                                Text(
-                                    "Guía desde Metro Pedro de Valdivia",
-                                    fontSize = 11.sp,
-                                    color = colors.onSurfaceVariant
-                                )
-                            }
-
-                            IconButton(
-                                onClick = {
-                                    showDirectionsGuide =
-                                        !showDirectionsGuide
-                                }
+                if (tiendaSeleccionada?.id == 1) {
+                    OutlinedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp)
+                    ) {
+                        Column {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Icon(
-                                    if (showDirectionsGuide) {
-                                        Icons.Default.ExpandLess
-                                    } else {
-                                        Icons.Default.ExpandMore
-                                    },
-                                    contentDescription = "Mostrar guía"
+                                    Icons.Default.CloudOff,
+                                    contentDescription = null,
+                                    tint = colors.primary
                                 )
+                                Spacer(Modifier.width(10.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        "¿Sin conexión a internet?",
+                                        fontWeight = FontWeight.SemiBold,
+                                        fontSize = 13.sp,
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        "Guía desde Metro Pedro de Valdivia",
+                                        fontSize = 11.sp,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
+                                IconButton(
+                                    onClick = {
+                                        showDirectionsGuide = !showDirectionsGuide
+                                    }
+                                ) {
+                                    Icon(
+                                        if (showDirectionsGuide) {
+                                            Icons.Default.ExpandLess
+                                        } else {
+                                            Icons.Default.ExpandMore
+                                        },
+                                        contentDescription = "Mostrar guía"
+                                    )
+                                }
                             }
-                        }
 
-                        if (showDirectionsGuide) {
-                            HorizontalDivider()
-
-                            Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement =
-                                    Arrangement.spacedBy(10.dp)
-                            ) {
-                                Text(
-                                    "1. Salida norte de estación " +
-                                            "Pedro de Valdivia (Línea 1)."
-                                )
-                                Text(
-                                    "2. Camina hacia el sector " +
-                                            "de Av. Providencia 1945."
-                                )
-                                Text(
-                                    "3. Busca el Local 4 en la " +
-                                            "dirección indicada."
-                                )
+                            if (showDirectionsGuide) {
+                                HorizontalDivider(color = colors.outlineVariant)
+                                Column(
+                                    modifier = Modifier.padding(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        "1. Salida norte de estación Pedro de Valdivia (Línea 1).",
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        "2. Camina hacia el sector de Av. Providencia 1945.",
+                                        color = colors.onSurface
+                                    )
+                                    Text(
+                                        "3. Busca el Local 4 en la dirección indicada.",
+                                        color = colors.onSurface
+                                    )
+                                }
                             }
                         }
                     }
@@ -689,13 +716,11 @@ private fun MapFeatureCard(
                 contentDescription = null,
                 tint = colors.primary
             )
-
             Text(
                 title,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )
-
             Text(
                 description,
                 fontSize = 11.sp,
@@ -726,7 +751,7 @@ private fun MapInfoCard(
                 modifier = Modifier
                     .size(40.dp)
                     .background(
-                        colors.surfaceContainerLowest ,
+                        colors.surfaceContainerLowest,
                         RoundedCornerShape(10.dp)
                     ),
                 contentAlignment = Alignment.Center
@@ -737,9 +762,7 @@ private fun MapInfoCard(
                     tint = colors.primary
                 )
             }
-
             Spacer(Modifier.width(12.dp))
-
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
@@ -748,7 +771,6 @@ private fun MapInfoCard(
                     fontSize = 12.sp,
                     color = colors.onSurfaceVariant
                 )
-
                 Text(
                     content,
                     fontSize = 13.sp,

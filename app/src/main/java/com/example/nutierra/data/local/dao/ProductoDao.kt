@@ -18,6 +18,9 @@ interface ProductoDao {
     @Query("SELECT * FROM productos WHERE id = :id LIMIT 1")
     suspend fun obtenerProductoPorId(id: Int): ProductoEntity?
 
+    @Query("SELECT * FROM productos WHERE stock > 0")
+    suspend fun obtenerProductosConStock(): List<ProductoEntity>
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertarProducto(producto: ProductoEntity): Long
 
