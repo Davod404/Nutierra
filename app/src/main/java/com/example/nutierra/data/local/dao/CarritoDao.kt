@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.example.nutierra.data.local.entity.CarritoItemEntity
-import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.entity.CarritoItemDetalle
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -19,7 +19,7 @@ interface CarritoDao {
         WHERE c.usuarioId = :usuarioId
         ORDER BY p.nombre ASC
     """)
-    fun obtenerCarrito(usuarioId: Int): Flow<List<ItemCarrito>>
+    fun obtenerCarrito(usuarioId: Int): Flow<List<CarritoItemDetalle>>
 
     @Query("""
         SELECT c.productoId, c.cantidad, p.nombre, p.categoria, p.precio,
@@ -28,7 +28,7 @@ interface CarritoDao {
         INNER JOIN productos p ON p.id = c.productoId
         WHERE c.usuarioId = :usuarioId
     """)
-    suspend fun obtenerCarritoUnaVez(usuarioId: Int): List<ItemCarrito>
+    suspend fun obtenerCarritoUnaVez(usuarioId: Int): List<CarritoItemDetalle>
 
     @Query("SELECT cantidad FROM carrito WHERE usuarioId = :usuarioId AND productoId = :productoId")
     suspend fun cantidadActual(usuarioId: Int, productoId: Int): Int?

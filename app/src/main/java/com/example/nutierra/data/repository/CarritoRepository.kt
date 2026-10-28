@@ -3,7 +3,7 @@ package com.example.nutierra.data.repository
 import com.example.nutierra.data.local.entity.PedidoDetalleEntity
 import com.example.nutierra.data.local.entity.CarritoItemEntity
 import com.example.nutierra.data.local.entity.PedidoEntity
-import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.entity.CarritoItemDetalle
 import com.example.nutierra.data.local.NutierraDatabase
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +17,7 @@ class CarritoRepository(
     private val pedidoDao = database.pedidoDao()
     private val productoDao = database.productoDao()
 
-    fun obtenerCarrito(usuarioId: Int): Flow<List<ItemCarrito>> =
+    fun obtenerCarrito(usuarioId: Int): Flow<List<CarritoItemDetalle>> =
         carritoDao.obtenerCarrito(usuarioId)
 
     suspend fun agregar(usuarioId: Int, productoId: Int, cantidad: Int): Int {

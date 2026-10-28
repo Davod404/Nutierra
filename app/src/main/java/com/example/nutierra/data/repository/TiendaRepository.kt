@@ -1,10 +1,10 @@
 package com.example.nutierra.data.repository
 
-import com.example.nutierra.model.Tienda
+import com.example.nutierra.model.TiendaModels
 
 class TiendaRepository {
-    fun obtenerTiendas(): List<Tienda> = listOf(
-        Tienda(
+    fun obtenerTiendas(): List<TiendaModels> = listOf(
+        TiendaModels(
             id = 1,
             nombre = "Nutierra — Providencia",
             direccion = "Av. Providencia 1945, Local 4, Providencia",
@@ -13,7 +13,7 @@ class TiendaRepository {
             telefono = "+56 9 8765 4321",
             horario = "Lun a Vie: 09:30 - 20:00\nSábados: 10:00 - 15:00"
         ),
-        Tienda(
+        TiendaModels(
             id = 2,
             nombre = "Nutierra — Ñuñoa",
             direccion = "Av. Irarrázaval 3400, Ñuñoa",
@@ -22,7 +22,7 @@ class TiendaRepository {
             telefono = "+56 9 8765 4322",
             horario = "Lun a Vie: 10:00 - 19:00\nSábados: 10:00 - 14:00"
         ),
-        Tienda(
+        TiendaModels(
             id = 3,
             nombre = "Nutierra — Las Condes",
             direccion = "Av. Apoquindo 4500, Las Condes",

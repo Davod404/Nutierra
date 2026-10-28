@@ -36,6 +36,7 @@ import com.example.nutierra.data.local.entity.ProductoEntity
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import android.graphics.BitmapFactory
 import androidx.compose.material.icons.automirrored.filled.Sort
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.NumberFormat
@@ -62,6 +63,8 @@ fun CatalogScreen(
     onProfileClick: () -> Unit = {},
     onCartClick: () -> Unit = {},
     onProductClick: (Int) -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     viewModel: CarritoViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
@@ -150,6 +153,10 @@ fun CatalogScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        CampanitaNotificaciones(
+                            noLeidas = noLeidas,
+                            onClick = onNotificationsClick
+                        )
 
                         Box(
                             modifier = Modifier
@@ -364,7 +371,7 @@ fun CatalogScreen(
 
                         Box {
                             IconButton(
-                                onClick = onCartClick,
+                                onClick = { onCartClick() },
                                 modifier = Modifier
                                     .size(48.dp)
                                     .background(
@@ -379,22 +386,20 @@ fun CatalogScreen(
                                 )
                             }
 
-                            if (cartCount > 0) {
-                                Box(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .offset(x = 5.dp, y = (-5).dp)
-                                        .size(20.dp)
-                                        .background(colors.secondary, CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = cartCount.toString(),
-                                        color = colors.onSecondary,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .offset(x = 5.dp, y = (-5).dp)
+                                    .size(20.dp)
+                                    .background(colors.secondary, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = cartCount.toString(),
+                                    color = colors.onSecondary,
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
                             }
                         }
                     }

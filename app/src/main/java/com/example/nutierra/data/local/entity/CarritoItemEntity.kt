@@ -12,7 +12,7 @@ data class CarritoItemEntity(
     val cantidad: Int
 )
 
-data class ItemCarrito(
+data class CarritoItemDetalle(
     val productoId: Int,
     val cantidad: Int,
     val nombre: String,

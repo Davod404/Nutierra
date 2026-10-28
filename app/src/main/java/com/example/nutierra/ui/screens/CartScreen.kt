@@ -24,7 +24,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.entity.CarritoItemDetalle
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -486,7 +486,7 @@ fun CartScreen(
 
 @Composable
 private fun CartItemCard(
-    item: ItemCarrito,
+    item: CarritoItemDetalle,
     onRemove: () -> Unit,
     onDecrease: () -> Unit,
     onIncrease: () -> Unit

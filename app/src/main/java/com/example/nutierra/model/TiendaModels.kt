@@ -1,6 +1,6 @@
 package com.example.nutierra.model
 
-data class Tienda(
+data class TiendaModels(
     val id: Int,
     val nombre: String,
     val direccion: String,

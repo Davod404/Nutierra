@@ -9,10 +9,13 @@ import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.notifications.NotificacionesHelper
 import android.annotation.SuppressLint
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.launch
+import com.example.nutierra.data.local.entity.NotificacionEntity
+import com.example.nutierra.data.local.entity.TipoNotificacion
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.random.Random
 
@@ -22,10 +25,13 @@ class SimuladorViewModel(application: Application) : AndroidViewModel(applicatio
     private val pedidoDao = db.pedidoDao()
     private val usuarioDao = db.usuarioDao()
     private val productoDao = db.productoDao()
+    private val notificacionDao = db.notificacionDao()
+
     @SuppressLint("StaticFieldLeak")
     private val context = application.applicationContext
 
     private var iniciado = false
+
     fun iniciar() {
         if (iniciado) return
         iniciado = true
@@ -37,27 +43,43 @@ class SimuladorViewModel(application: Application) : AndroidViewModel(applicatio
 
                 val usuario = SesionManager.usuarioActual.value ?: continue
 
-                when (usuario.rol) {
-                    Roles.CLIENTE -> simularCliente(usuario.id)
-                    Roles.ADMIN -> simularAdmin()
+                try {
+                    when (usuario.rol) {
+                        Roles.CLIENTE -> simularCliente(usuario.id)
+                        Roles.ADMIN -> simularAdmin()
+                    }
+                } catch (e: Exception) {
+                    Log.e("SimuladorViewModel", "Error en simulación", e)
                 }
             }
         }
     }
 
+    @SuppressLint("MissingPermission")
     private suspend fun simularCliente(usuarioId: Int) {
         val pedidos = pedidoDao.obtenerPedidosDeUsuarioUnaVez(usuarioId)
         val pendiente = pedidos.firstOrNull { it.estado != EstadosPedido.ENTREGADO } ?: return
         val siguiente = EstadosPedido.siguiente(pendiente.estado) ?: return
+
         pedidoDao.actualizarEstado(pendiente.id, siguiente)
-        @SuppressLint("MissingPermission")
+
         NotificacionesHelper.mostrarPedidoActualizado(
             context,
             pendiente.codigo,
             siguiente
         )
+
+        notificacionDao.insertar(
+            NotificacionEntity(
+                titulo = "Pedido ${pendiente.codigo}",
+                mensaje = "Tu pedido pasó a: $siguiente",
+                tipo = TipoNotificacion.PEDIDO_CLIENTE,
+                rolDestino = TipoNotificacion.ROL_CLIENTE
+            )
+        )
     }
 
+    @SuppressLint("MissingPermission")
     private suspend fun simularAdmin() {
         val cliente = usuarioDao.obtenerUsuarioAleatorioPorRol(Roles.CLIENTE) ?: return
         val productos = productoDao.obtenerProductosConStock()
@@ -98,13 +120,22 @@ class SimuladorViewModel(application: Application) : AndroidViewModel(applicatio
             }
         )
 
+        notificacionDao.insertar(
+            NotificacionEntity(
+                titulo = "Nuevo pedido ${pedido.codigo}",
+                mensaje = "${cliente.nombre} ${cliente.apellido} — $total CLP",
+                tipo = TipoNotificacion.PEDIDO_ADMIN,
+                rolDestino = TipoNotificacion.ROL_ADMIN
+            )
+        )
+
         items.forEach { (producto, cantidad, _) ->
             productoDao.actualizarStock(
                 producto.id,
                 (producto.stock - cantidad).coerceAtLeast(0)
             )
         }
-        @SuppressLint("MissingPermission")
+
         NotificacionesHelper.mostrarNuevoPedidoAdmin(
             context,
             pedido.codigo,

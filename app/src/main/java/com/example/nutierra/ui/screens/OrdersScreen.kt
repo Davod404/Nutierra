@@ -24,6 +24,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import com.example.nutierra.data.local.entity.EstadosPedido
 import com.example.nutierra.data.local.entity.PedidoResumen
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 import com.example.nutierra.ui.components.formatoFechaPedido
 import com.example.nutierra.ui.components.formatoPesos
 
@@ -64,6 +65,8 @@ fun OrdersScreen(
     onMapClick: () -> Unit = {},
     onScanClick: () -> Unit = {},
     onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     pedidos: List<PedidoResumen> = emptyList()
 ) {
     val demoClientOrders = remember(pedidos) { pedidos.map { it.aClientOrder() } }
@@ -133,19 +136,31 @@ fun OrdersScreen(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(colors.primary, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Perfil",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Box {
+                            CampanitaNotificaciones(
+                                noLeidas = noLeidas,
+                                onClick = onNotificationsClick
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(colors.primary, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Perfil",
+                                tint = colors.onPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }

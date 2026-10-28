@@ -1,21 +1,23 @@
 package com.example.nutierra.data.local
 
 import com.example.nutierra.data.local.entity.PedidoDetalleEntity
+import com.example.nutierra.data.local.entity.NotificacionEntity
 import com.example.nutierra.data.local.entity.CarritoItemEntity
 import com.example.nutierra.data.local.entity.ProductoEntity
 import com.example.nutierra.data.local.entity.UsuarioEntity
 import com.example.nutierra.data.local.entity.PedidoEntity
+import com.example.nutierra.data.local.dao.NotificacionDao
 import com.example.nutierra.data.local.dao.ProductoDao
-import com.example.nutierra.data.local.dao.UsuarioDao
 import com.example.nutierra.data.local.dao.CarritoDao
+import com.example.nutierra.data.local.dao.UsuarioDao
 import com.example.nutierra.data.local.dao.PedidoDao
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import androidx.room.RoomDatabase
 import androidx.room.Database
 import androidx.room.Room
 import androidx.sqlite.db.SupportSQLiteDatabase
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import android.content.Context
 
 @Database(
@@ -24,13 +26,15 @@ import android.content.Context
         UsuarioEntity::class,
         CarritoItemEntity::class,
         PedidoEntity::class,
-        PedidoDetalleEntity::class
+        PedidoDetalleEntity::class,
+        NotificacionEntity::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class NutierraDatabase : RoomDatabase() {
 
+    abstract fun notificacionDao(): NotificacionDao
     abstract fun productoDao(): ProductoDao
     abstract fun usuarioDao(): UsuarioDao
     abstract fun carritoDao(): CarritoDao
@@ -52,9 +56,8 @@ abstract class NutierraDatabase : RoomDatabase() {
                         super.onCreate(db)
 
                         CoroutineScope(Dispatchers.IO).launch {
-                            INSTANCE?.productoDao()?.insertarProductos(
-                                DatosIniciales.productos
-                            )
+                            INSTANCE?.productoDao()?.insertarProductos(DatosIniciales.productos)
+                            INSTANCE?.usuarioDao()?.insertarSiNoExisten(DatosIniciales.usuarios)
                         }
                     }
                 })

@@ -16,6 +16,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.Alignment
@@ -23,8 +25,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 import com.example.nutierra.ui.viewmodel.PerfilViewModel
 import com.example.nutierra.ui.viewmodel.aPerfilUi
 
@@ -33,6 +37,8 @@ fun AdminProfileScreen(
     onBack: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
     onLogout: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     totalProductos: Int = 0,
     totalPedidos: Int = 0,
     perfilViewModel: PerfilViewModel = viewModel()
@@ -61,10 +67,34 @@ fun AdminProfileScreen(
                 }
                 Text(
                     "Mi cuenta",
+                    modifier = Modifier.weight(1f),   // ← NUEVO: empuja el Row de la derecha
                     style = MaterialTheme.typography.titleLarge,
                     color = colors.primary,
                     fontWeight = FontWeight.Bold
                 )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CampanitaNotificaciones(
+                        noLeidas = noLeidas,
+                        onClick = onNotificationsClick
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(colors.primary, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = "Perfil",
+                            tint = colors.onPrimary,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
             }
         }
     ) { padding ->
@@ -142,18 +172,69 @@ fun AdminProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(vertical = 8.dp)) {
                     FilaDato(Icons.Default.Email, "Correo", perfil.correo)
+
                     HorizontalDivider(color = colors.outlineVariant)
+
                     FilaDato(
                         Icons.Default.Inventory2,
                         "Productos registrados",
                         totalProductos.toString()
                     )
+
                     HorizontalDivider(color = colors.outlineVariant)
+
                     FilaDato(
                         Icons.AutoMirrored.Filled.ReceiptLong,
                         "Pedidos registrados",
                         totalPedidos.toString()
                     )
+
+                    HorizontalDivider(color = colors.outlineVariant)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable(onClick = onNotificationsClick)
+                            .padding(horizontal = 20.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Notifications,
+                            contentDescription = null,
+                            tint = colors.primary
+                        )
+                        Spacer(Modifier.width(16.dp))
+                        Text(
+                            "Notificaciones",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = colors.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (noLeidas > 0) {
+                            Surface(
+                                color = colors.error,
+                                shape = CircleShape
+                            ) {
+                                Text(
+                                    text = if (noLeidas > 9) "9+" else noLeidas.toString(),
+                                    modifier = Modifier.padding(
+                                        horizontal = 12.dp,
+                                        vertical = 4.dp
+                                    ),
+                                    color = colors.onError,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } else {
+                            Icon(
+                                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = null,
+                                tint = colors.onSurfaceVariant
+                            )
+                        }
+                    }
+
                     HorizontalDivider(color = colors.outlineVariant)
 
                     Row(

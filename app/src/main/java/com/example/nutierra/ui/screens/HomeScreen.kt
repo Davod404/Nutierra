@@ -33,6 +33,7 @@ import android.graphics.BitmapFactory
 import com.example.nutierra.data.local.entity.ProductoEntity
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import com.example.nutierra.data.session.SesionManager
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
@@ -46,6 +47,8 @@ fun HomeScreen(
     onCartClick: () -> Unit,
     onMapClick: () -> Unit = {},
     onScanClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     viewModel: CarritoViewModel = viewModel()
 ) {
     val colors = MaterialTheme.colorScheme
@@ -123,19 +126,31 @@ fun HomeScreen(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(colors.primary, CircleShape)
-                            .clickable(onClick = onProfileClick),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Perfil",
-                            tint = colors.onPrimary,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Box {
+                            CampanitaNotificaciones(
+                                noLeidas = noLeidas,
+                                onClick = onNotificationsClick
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(colors.primary, CircleShape)
+                                .clickable(onClick = onProfileClick),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Perfil",
+                                tint = colors.onPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }

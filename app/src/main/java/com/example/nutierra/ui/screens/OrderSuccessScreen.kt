@@ -25,7 +25,7 @@ import java.text.SimpleDateFormat
 import java.text.NumberFormat
 import java.util.Locale
 import java.util.Date
-import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.entity.CarritoItemDetalle
 import kotlin.time.Duration.Companion.milliseconds
 
 private fun successPrice(value: Int): String {
@@ -40,7 +40,7 @@ fun OrderSuccessScreen(
     total: Int = 0,
     productCount: Int = 0,
     unitCount: Int = 0,
-    items: List<ItemCarrito> = emptyList(),
+    items: List<CarritoItemDetalle> = emptyList(),
     onBack: () -> Unit = {},
     onViewOrder: () -> Unit = {},
     onCatalogClick: () -> Unit = {}

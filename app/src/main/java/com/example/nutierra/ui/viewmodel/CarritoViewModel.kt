@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import com.example.nutierra.data.local.entity.PedidoEntity
-import com.example.nutierra.data.local.entity.ItemCarrito
+import com.example.nutierra.data.local.entity.CarritoItemDetalle
 import com.example.nutierra.data.local.NutierraDatabase
 import com.example.nutierra.data.repository.CarritoRepository
 import com.example.nutierra.data.repository.CompraException
@@ -27,7 +27,7 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
 
     private fun usuarioId(): Int = SesionManager.usuarioActual.value?.id ?: 0
 
-    val items: StateFlow<List<ItemCarrito>> =
+    val items: StateFlow<List<CarritoItemDetalle>> =
         SesionManager.usuarioActual
             .flatMapLatest { usuario ->
                 Log.d("CarritoViewModel", "observando carrito de ${usuario?.id}")
@@ -48,8 +48,8 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
     private val _ultimoPedido = MutableStateFlow<PedidoEntity?>(null)
     val ultimoPedido: StateFlow<PedidoEntity?> = _ultimoPedido.asStateFlow()
 
-    private val _ultimoPedidoItems = MutableStateFlow<List<ItemCarrito>>(emptyList())
-    val ultimoPedidoItems: StateFlow<List<ItemCarrito>> = _ultimoPedidoItems.asStateFlow()
+    private val _ultimoPedidoItems = MutableStateFlow<List<CarritoItemDetalle>>(emptyList())
+    val ultimoPedidoItems: StateFlow<List<CarritoItemDetalle>> = _ultimoPedidoItems.asStateFlow()
 
     fun agregar(productoId: Int, cantidad: Int) {
         viewModelScope.launch {

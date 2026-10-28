@@ -20,8 +20,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 import com.example.nutierra.ui.viewmodel.PedidoViewModel
 import com.example.nutierra.ui.viewmodel.PerfilViewModel
 import com.example.nutierra.ui.viewmodel.aPerfilUi
@@ -35,6 +37,8 @@ fun ProfileScreen(
     onOrdersClick: () -> Unit = {},
     onEditProfileClick: () -> Unit = {},
     onLogout: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     perfilViewModel: PerfilViewModel = viewModel(),
     pedidoViewModel: PedidoViewModel = viewModel()
 ) {
@@ -95,18 +99,30 @@ fun ProfileScreen(
                         }
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(32.dp)
-                            .background(colors.primary, CircleShape),
-                        contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Person,
-                            contentDescription = "Perfil",
-                            tint = colors.onPrimary,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Box {
+                            CampanitaNotificaciones(
+                                noLeidas = noLeidas,
+                                onClick = onNotificationsClick
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(colors.primary, CircleShape),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.Person,
+                                contentDescription = "Perfil",
+                                tint = colors.onPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -540,6 +556,73 @@ fun ProfileScreen(
                                 modifier = Modifier.size(14.dp)
                             )
                         }
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onNotificationsClick),
+                shape = RoundedCornerShape(12.dp),
+                color = colors.surfaceContainerLowest,
+                shadowElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                colors.secondaryContainer.copy(alpha = 0.4f),
+                                RoundedCornerShape(8.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Notifications,
+                            contentDescription = null,
+                            tint = colors.secondary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            "Notificaciones",
+                            style = typography.labelMedium,
+                            color = colors.onSurfaceVariant
+                        )
+                        Text(
+                            if (noLeidas > 0) "$noLeidas sin leer" else "Al día",
+                            style = typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = colors.onSurface
+                        )
+                    }
+
+                    if (noLeidas > 0) {
+                        Surface(color = colors.error, shape = CircleShape) {
+                            Text(
+                                text = if (noLeidas > 9) "9+" else noLeidas.toString(),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                color = colors.onError,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    } else {
+                        Icon(
+                            Icons.Default.ChevronRight,
+                            contentDescription = null,
+                            tint = colors.outlineVariant,
+                            modifier = Modifier.size(18.dp)
+                        )
                     }
                 }
             }

@@ -25,6 +25,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.local.entity.EstadosPedido
 import com.example.nutierra.data.session.SesionManager
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 import com.example.nutierra.ui.viewmodel.PedidoViewModel
 import com.example.nutierra.ui.viewmodel.ProductoViewModel
 import java.text.NumberFormat
@@ -58,6 +59,8 @@ fun AdminHomeScreen(
     onInventoryClick: () -> Unit,
     onOrdersClick: () -> Unit,
     onProfileClick: () -> Unit = {},
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     productoViewModel: ProductoViewModel = viewModel(),
     pedidoViewModel: PedidoViewModel = viewModel()
 ) {
@@ -153,18 +156,28 @@ fun AdminHomeScreen(
                         }
                     }
 
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box {
+                            CampanitaNotificaciones(
+                                noLeidas = noLeidas,
+                                onClick = onNotificationsClick
+                            )
+                        }
+
                         Box(
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(32.dp)
                                 .background(colors.primary, CircleShape)
                                 .clickable(onClick = onProfileClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Administrador",
-                                tint = Color.White,
+                                contentDescription = "Perfil",
+                                tint = colors.onPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }

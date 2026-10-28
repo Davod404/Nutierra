@@ -26,6 +26,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import coil.compose.AsyncImage
 import com.example.nutierra.data.local.entity.ProductoEntity
+import com.example.nutierra.ui.components.CampanitaNotificaciones
 
 private data class InventoryProduct(
     val id: Int,
@@ -44,6 +45,8 @@ fun AdminInventoryScreen(
     onProductsClick: () -> Unit,
     onOrdersClick: () -> Unit,
     productos: List<ProductoEntity> = emptyList(),
+    onNotificationsClick: () -> Unit = {},
+    noLeidas: Int = 0,
     onActualizarStock: (Int, Int) -> Unit = { _, _ -> },
     onProfileClick: () -> Unit = {}
 ) {
@@ -152,17 +155,27 @@ fun AdminInventoryScreen(
                             }
                         }
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Box {
+                            CampanitaNotificaciones(
+                                noLeidas = noLeidas,
+                                onClick = onNotificationsClick
+                            )
+                        }
+
                         Box(
                             modifier = Modifier
-                                .size(34.dp)
+                                .size(32.dp)
                                 .background(colors.primary, CircleShape)
                                 .clickable(onClick = onProfileClick),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 Icons.Default.Person,
-                                contentDescription = "Administrador",
+                                contentDescription = "Perfil",
                                 tint = colors.onPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
