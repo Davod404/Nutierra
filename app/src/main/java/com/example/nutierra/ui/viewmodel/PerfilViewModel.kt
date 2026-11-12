@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import android.app.Application
+import com.example.nutierra.data.session.SessionPreferences
 
 data class PerfilUi(
     val nombreCompleto: String,
@@ -45,6 +46,9 @@ class PerfilViewModel(application: Application) : AndroidViewModel(application) 
 
     fun cerrarSesion() {
         SesionManager.cerrarSesion()
+        viewModelScope.launch {
+            SessionPreferences.borrarUsuarioId(getApplication())
+        }
     }
 
     fun actualizarPerfil(

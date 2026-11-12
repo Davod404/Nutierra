@@ -414,39 +414,58 @@ fun LoginScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // ← NUEVO: Checkbox "Recordar sesión"
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = estado.recordarSesion,
+                    onCheckedChange = viewModel::cambiarRecordarSesion,
+                    colors = CheckboxDefaults.colors(checkedColor = colors.primary)
+                )
+                Text(
+                    "Recordar sesión",
+                    style = typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
             AnimatedVisibility(
                 visible = errorMessage != null,
                 enter = fadeIn() + expandVertically(),
                 exit = fadeOut() + shrinkVertically()
             ) {
-              Column {
-                val message = errorMessage ?: ""
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    color = colors.errorContainer,
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(12.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column {
+                    val message = errorMessage ?: ""
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        color = colors.errorContainer,
+                        shape = RoundedCornerShape(12.dp)
                     ) {
-                        Icon(
-                            Icons.Default.Error,
-                            contentDescription = null,
-                            tint = colors.error
-                        )
+                        Row(
+                            modifier = Modifier.padding(12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Error,
+                                contentDescription = null,
+                                tint = colors.error
+                            )
 
-                        Text(
-                            text = message,
-                            style = typography.labelMedium,
-                            color = colors.onErrorContainer
-                        )
+                            Text(
+                                text = message,
+                                style = typography.labelMedium,
+                                color = colors.onErrorContainer
+                            )
+                        }
                     }
-                }
 
-                Spacer(Modifier.height(16.dp))
-              }
+                    Spacer(Modifier.height(16.dp))
+                }
             }
 
             Row(

@@ -19,6 +19,9 @@ interface UsuarioDao {
     @Update
     suspend fun actualizarUsuario(usuario: UsuarioEntity)
 
+    @Query("SELECT * FROM usuarios WHERE id = :id LIMIT 1")
+    suspend fun buscarPorId(id: Int): UsuarioEntity?
+
     @Query("SELECT * FROM usuarios WHERE rol = :rol ORDER BY RANDOM() LIMIT 1")
     suspend fun obtenerUsuarioAleatorioPorRol(rol: String): UsuarioEntity?
 

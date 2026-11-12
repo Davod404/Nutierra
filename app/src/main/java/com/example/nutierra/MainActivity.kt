@@ -16,6 +16,9 @@ import android.os.Build
 import android.os.Bundle
 import android.Manifest
 import android.content.pm.PackageManager
+import com.example.nutierra.data.remote.ApiRepository
+import com.example.nutierra.data.session.SesionManager
+import com.example.nutierra.data.session.SessionPreferences
 import com.example.nutierra.ui.viewmodel.SimuladorViewModel
 import com.example.nutierra.ui.theme.NutierraTheme
 import com.example.nutierra.navigation.NutierraNavigation
@@ -26,7 +29,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val context = LocalContext.current
-
             var notificacionesPermitidas by remember { mutableStateOf(false) }
 
             val permissionLauncher = rememberLauncherForActivityResult(
@@ -49,9 +51,38 @@ class MainActivity : ComponentActivity() {
             }
 
             LaunchedEffect(Unit) {
+                SessionPreferences.leerUsuarioId(context).collect { id ->
+                    if (id != null && SesionManager.usuarioActual.value == null) {
+                        val usuarioGuardado = com.example.nutierra.data.local.NutierraDatabase
+                            .getDatabase(context)
+                            .usuarioDao()
+                            .buscarPorId(id)
+                        if (usuarioGuardado != null) {
+                            SesionManager.iniciarSesion(usuarioGuardado)
+                        }
+                    }
+                }
+            }
+
+            LaunchedEffect(Unit) {
                 kotlinx.coroutines.delay(3000.milliseconds)
                 com.example.nutierra.notifications.NotificacionesHelper
                     .mostrarRecordatorioCarrito(context)
+            }
+
+            LaunchedEffect(Unit) {
+                try {
+                    val apiRepository = ApiRepository()
+                    val resultado = apiRepository.getProductos()
+                    resultado.onSuccess { productos ->
+                        android.util.Log.e("API_TEST", "Productos: ${productos.size}")
+                        productos.forEach { android.util.Log.e("API_TEST", "  - ${it.nombre}") }
+                    }.onFailure { error ->
+                        android.util.Log.e("API_TEST", "Error: ${error.message}")
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.e("API_TEST", "Excepción: ${e.message}", e)
+                }
             }
 
             val simulador: SimuladorViewModel = viewModel()

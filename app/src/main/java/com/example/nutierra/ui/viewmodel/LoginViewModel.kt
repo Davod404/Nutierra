@@ -14,11 +14,13 @@ import com.example.nutierra.model.Validaciones
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import android.app.Application
+import com.example.nutierra.data.session.SessionPreferences
 import kotlin.time.Duration.Companion.milliseconds
 
 data class LoginUiState(
     val correo: CampoFormulario = CampoFormulario("cliente@nutierra.cl"),
     val contrasena: CampoFormulario = CampoFormulario("Semillas2025!"),
+    val recordarSesion: Boolean = true,  // ← NUEVO
     val cargando: Boolean = false,
     val errorGeneral: String? = null,
     val rolAutenticado: String? = null
@@ -60,6 +62,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
+    // ← NUEVO
+    fun cambiarRecordarSesion(valor: Boolean) = _uiState.update {
+        it.copy(recordarSesion = valor)
+    }
+
     fun usarCuentaDemo(correo: String, contrasena: String) = _uiState.update {
         it.copy(
             correo = CampoFormulario(correo),
@@ -93,6 +100,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             }
             if (usuario != null) {
                 SesionManager.iniciarSesion(usuario)
+
+                // ← NUEVO: guardar o borrar según el checkbox
+                if (validado.recordarSesion) {
+                    SessionPreferences.guardarUsuarioId(getApplication(), usuario.id)
+                } else {
+                    SessionPreferences.borrarUsuarioId(getApplication())
+                }
             }
 
             _uiState.update {
