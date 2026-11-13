@@ -1,8 +1,11 @@
 package com.example.nutierra.ui.theme
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 private val NutierraColorScheme = lightColorScheme(
     primary = Primary,
@@ -64,12 +67,71 @@ private val NutierraColorScheme = lightColorScheme(
     onTertiaryFixedVariant = OnTertiaryFixedVariant
 )
 
+private val NutierraDarkColorScheme = darkColorScheme(
+    primary = PrimaryFixedDim,
+    onPrimary = Color(0xFF00210E),
+    primaryContainer = Color(0xFF11512E),
+    onPrimaryContainer = PrimaryFixed,
+    inversePrimary = Primary,
+
+    secondary = SecondaryFixedDim,
+    onSecondary = Color(0xFF301400),
+    secondaryContainer = Color(0xFF653D1E),
+    onSecondaryContainer = SecondaryFixed,
+
+    tertiary = TertiaryFixedDim,
+    onTertiary = Color(0xFF2A1800),
+    tertiaryContainer = Color(0xFF643F00),
+    onTertiaryContainer = TertiaryFixed,
+
+    background = Color(0xFF121212),
+    onBackground = Color(0xFFEDF2EA),
+    surface = Color(0xFF121212),
+    onSurface = Color(0xFFEDF2EA),
+    surfaceVariant = Color(0xFF404941),
+    onSurfaceVariant = Color(0xFFC0C9BF),
+    surfaceDim = Color(0xFF0E0E0E),
+    surfaceBright = Color(0xFF3A3A3A),
+    surfaceContainerLowest = Color(0xFF0E0E0E),
+    surfaceContainerLow = Color(0xFF1A1A1A),
+    surfaceContainer = Color(0xFF1E1E1E),
+    surfaceContainerHigh = Color(0xFF2A2A2A),
+    surfaceContainerHighest = Color(0xFF353535),
+    surfaceTint = PrimaryFixed,
+
+    inverseSurface = Color(0xFFEDF2EA),
+    inverseOnSurface = Color(0xFF2C322D),
+
+    outline = Color(0xFF8A9389),
+    outlineVariant = Color(0xFF404941),
+
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6),
+
+    primaryFixed = PrimaryFixed,
+    primaryFixedDim = PrimaryFixedDim,
+    onPrimaryFixed = OnPrimaryFixed,
+    onPrimaryFixedVariant = OnPrimaryFixedVariant,
+
+    secondaryFixed = SecondaryFixed,
+    secondaryFixedDim = SecondaryFixedDim,
+    onSecondaryFixed = OnSecondaryFixed,
+    onSecondaryFixedVariant = OnSecondaryFixedVariant,
+
+    tertiaryFixed = TertiaryFixed,
+    tertiaryFixedDim = TertiaryFixedDim,
+    onTertiaryFixed = OnTertiaryFixed,
+    onTertiaryFixedVariant = OnTertiaryFixedVariant
+)
 @Composable
 fun NutierraTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = NutierraColorScheme,
+        colorScheme = if (darkTheme) NutierraDarkColorScheme else NutierraColorScheme,
         typography = Typography,
         shapes = NutierraShapes,
         content = content

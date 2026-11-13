@@ -284,7 +284,7 @@ fun ProductCameraScreen(
                     .padding(16.dp)
                     .aspectRatio(1f)
                     .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF252C27)),
+                    .background(colors.inverseSurface),
                 contentAlignment = Alignment.Center
             ) {
                 if (capturedUri != null) {
@@ -331,7 +331,7 @@ fun ProductCameraScreen(
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(12.dp),
-                        color = Color(0xCC252C27),
+                        color = colors.inverseSurface.copy(alpha = 0.8f),
                         shape = RoundedCornerShape(50.dp)
                     ) {
                         Text(
@@ -340,7 +340,7 @@ fun ProductCameraScreen(
                                 horizontal = 12.dp,
                                 vertical = 6.dp
                             ),
-                            color = Color.White,
+                            color = colors.inverseOnSurface,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -353,13 +353,13 @@ fun ProductCameraScreen(
                         Icon(
                             Icons.Default.NoPhotography,
                             contentDescription = null,
-                            tint = Color.White,
+                            tint = colors.inverseOnSurface,
                             modifier = Modifier.size(48.dp)
                         )
 
                         Text(
                             "Autoriza el acceso a la cámara",
-                            color = Color.White
+                            color = colors.inverseOnSurface
                         )
 
                         Button(
@@ -379,7 +379,7 @@ fun ProductCameraScreen(
                 Text(
                     errorMessage.orEmpty(),
                     modifier = Modifier.padding(horizontal = 16.dp),
-                    color = MaterialTheme.colorScheme.error,
+                    color = colors.error,
                     fontSize = 13.sp
                 )
             }
@@ -486,7 +486,7 @@ fun ProductCameraScreen(
                             )
                         }
 
-                        Text("Galería", fontSize = 11.sp)
+                        Text("Galería", fontSize = 11.sp, color = colors.onSurface)
                     }
 
                     FilledIconButton(
@@ -497,12 +497,12 @@ fun ProductCameraScreen(
                         modifier = Modifier.size(76.dp),
                         colors = IconButtonDefaults.filledIconButtonColors(
                             containerColor = colors.primary,
-                            contentColor = Color.White
+                            contentColor = colors.onPrimary
                         )
                     ) {
                         if (isCapturing) {
                             CircularProgressIndicator(
-                                color = Color.White,
+                                color = colors.onPrimary,
                                 modifier = Modifier.size(26.dp)
                             )
                         } else {
@@ -533,7 +533,7 @@ fun ProductCameraScreen(
                             )
                         }
 
-                        Text("Rotar", fontSize = 11.sp)
+                        Text("Rotar", fontSize = 11.sp, color = colors.onSurface)
                     }
                 }
             } else {
@@ -604,13 +604,15 @@ fun ProductCameraScreen(
 
 @Composable
 private fun CameraGridOverlay() {
+    val colors = MaterialTheme.colorScheme
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(20.dp)
             .border(
                 2.dp,
-                Color(0xFF96D5A6),
+                colors.primaryFixedDim,
                 RoundedCornerShape(12.dp)
             )
     ) {
@@ -620,14 +622,14 @@ private fun CameraGridOverlay() {
                 Modifier
                     .fillMaxHeight()
                     .width(1.dp)
-                    .background(Color.White.copy(alpha = 0.4f))
+                    .background(colors.inverseOnSurface.copy(alpha = 0.4f))
             )
             Spacer(Modifier.weight(1f))
             Box(
                 Modifier
                     .fillMaxHeight()
                     .width(1.dp)
-                    .background(Color.White.copy(alpha = 0.4f))
+                    .background(colors.inverseOnSurface.copy(alpha = 0.4f))
             )
             Spacer(Modifier.weight(1f))
         }
@@ -638,14 +640,14 @@ private fun CameraGridOverlay() {
                 Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Color.White.copy(alpha = 0.4f))
+                    .background(colors.inverseOnSurface.copy(alpha = 0.4f))
             )
             Spacer(Modifier.weight(1f))
             Box(
                 Modifier
                     .fillMaxWidth()
                     .height(1.dp)
-                    .background(Color.White.copy(alpha = 0.4f))
+                    .background(colors.inverseOnSurface.copy(alpha = 0.4f))
             )
             Spacer(Modifier.weight(1f))
         }

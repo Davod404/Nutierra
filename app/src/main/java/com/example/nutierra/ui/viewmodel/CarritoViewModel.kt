@@ -92,31 +92,28 @@ class CarritoViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             _procesando.value = true
             _error.value = null
-
-            val itemsAntes = items.value
-
-            val pedido = try {
-                repository.confirmarCompra(usuarioId())
+            try {
+                val pedido = repository.confirmarCompra(usuarioId())
+                _ultimoPedido.value = pedido
+                _ultimoPedidoItems.value = items.value
+                onExito(pedido)
             } catch (e: CompraException) {
                 _error.value = e.message
-                null
             } catch (e: Exception) {
-                Log.e("CarritoViewModel", "Error confirmando compra", e)
                 _error.value = "No se pudo confirmar la compra"
-                null
             } finally {
                 _procesando.value = false
             }
+        }
+    }
 
-            if (pedido != null) {
-                _ultimoPedido.value = pedido
-                _ultimoPedidoItems.value = itemsAntes
-                try {
-                    onExito(pedido)
-                } catch (e: Exception) {
-                    Log.e("CarritoViewModel", "Error en onExito", e)
-                }
-            }
+    fun simularPagoRechazado(motivo: String) {
+        if (_procesando.value) return
+        _procesando.value = true
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(1000)
+            _error.value = motivo
+            _procesando.value = false
         }
     }
 

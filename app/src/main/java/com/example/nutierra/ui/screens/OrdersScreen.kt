@@ -182,15 +182,13 @@ fun OrdersScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Home,
                                     contentDescription = "Inicio",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -207,15 +205,13 @@ fun OrdersScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Storefront,
                                     contentDescription = "Catálogo",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -232,15 +228,13 @@ fun OrdersScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Map,
                                     contentDescription = "Mapa",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -257,15 +251,13 @@ fun OrdersScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.QrCodeScanner,
                                     contentDescription = "Escanear",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -282,15 +274,13 @@ fun OrdersScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        MaterialTheme.colorScheme.tertiary
-                                    ),
+                                    .background(colors.tertiary),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.ReceiptLong,
                                     contentDescription = "Pedidos",
-                                    tint = MaterialTheme.colorScheme.surface
+                                    tint = colors.onTertiary
                                 )
                             }
                         },
@@ -307,15 +297,13 @@ fun OrdersScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -346,7 +334,8 @@ fun OrdersScreen(
                         Text(
                             "Mis pedidos",
                             fontSize = 24.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onSurface
                         )
                         Text(
                             "Historial de tus solicitudes de compra",
@@ -387,7 +376,8 @@ fun OrdersScreen(
                             Text(
                                 "Los estados se actualizan automáticamente cuando la tienda avanza tu pedido.",
                                 modifier = Modifier.weight(1f),
-                                fontSize = 12.sp
+                                fontSize = 12.sp,
+                                color = colors.onSurface
                             )
                             IconButton(
                                 onClick = { refreshMessage = false }
@@ -420,7 +410,7 @@ fun OrdersScreen(
                             label = { Text(label) },
                             colors = FilterChipDefaults.filterChipColors(
                                 selectedContainerColor = colors.primary,
-                                selectedLabelColor = Color.White
+                                selectedLabelColor = colors.onPrimary
                             )
                         )
                     }
@@ -588,7 +578,7 @@ private fun ClientOrderCard(
     val pending = order.progress == 1
 
     Surface(
-        color = Color.White,
+        color = colors.surfaceContainerLowest,
         shape = RoundedCornerShape(14.dp),
         shadowElevation = 2.dp
     ) {
@@ -607,7 +597,8 @@ private fun ClientOrderCard(
                     Text(
                         order.id,
                         fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        color = colors.onSurface
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
@@ -618,11 +609,7 @@ private fun ClientOrderCard(
                 }
 
                 Surface(
-                    color = when {
-                        pending -> Color(0xFFFFDDB6)
-                        delivered -> Color(0xFFB1F1C1)
-                        else -> Color(0xFFB1F1C1)
-                    },
+                    color = if (pending) colors.tertiaryContainer else colors.primaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
@@ -633,13 +620,13 @@ private fun ClientOrderCard(
                         ),
                         fontSize = 10.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (pending) colors.tertiaryContainer else colors.primary
+                        color = if (pending) colors.onTertiaryContainer else colors.onPrimaryContainer
                     )
                 }
             }
 
             Surface(
-                color = Color(0xFFEFF5ED),
+                color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Row(
@@ -652,7 +639,7 @@ private fun ClientOrderCard(
                         modifier = Modifier
                             .size(48.dp)
                             .background(
-                                Color(0xFFDEE4DC),
+                                colors.surfaceContainer,
                                 RoundedCornerShape(8.dp)
                             ),
                         contentAlignment = Alignment.Center
@@ -670,7 +657,8 @@ private fun ClientOrderCard(
                         Text(
                             order.products,
                             fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
+                            fontWeight = FontWeight.Medium,
+                            color = colors.onSurface
                         )
                         Spacer(Modifier.height(3.dp))
                         Text(
@@ -720,18 +708,14 @@ private fun ClientOrderCard(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp),
-                        color = if (pending) {
-                            Color(0xFFFFB959)
-                        } else {
-                            colors.primary
-                        },
+                        color = if (pending) colors.tertiaryFixedDim else colors.primary,
                         trackColor = colors.surfaceContainer
                     )
 
                     Text(
                         order.progressMessage,
                         fontSize = 11.sp,
-                        color = if (pending) colors.tertiaryContainer else colors.primary
+                        color = if (pending) colors.onTertiaryContainer else colors.primary
                     )
                 }
             }

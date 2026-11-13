@@ -22,6 +22,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.nutierra.data.session.SesionManager
 import com.example.nutierra.ui.viewmodel.CarritoViewModel
 import com.example.nutierra.ui.components.FilaError
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.unit.sp
 
 private data class CheckoutProduct(
     val name: String,
@@ -63,13 +65,10 @@ fun CheckoutScreen(
     val total = checkoutProducts.sumOf { it.price * it.quantity }
     val totalUnits = checkoutProducts.sumOf { it.quantity }
 
-    var showConfirmation by remember {
-        mutableStateOf(false)
-    }
+    var showConfirmation by remember { mutableStateOf(false) }
 
     Scaffold(
         containerColor = colors.surface,
-
         topBar = {
             Surface(
                 modifier = Modifier.statusBarsPadding(),
@@ -127,7 +126,6 @@ fun CheckoutScreen(
                 }
             }
         },
-
         bottomBar = {
             Surface(
                 color = colors.surface,
@@ -136,15 +134,14 @@ fun CheckoutScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .navigationBarsPadding()
                         .padding(horizontal = 16.dp, vertical = 12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     mensajeError?.let { FilaError(it) }
 
                     Button(
-                        onClick = {
-                            showConfirmation = true
-                        },
+                        onClick = { showConfirmation = true },
                         enabled = checkoutProducts.isNotEmpty() && !procesando,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -166,9 +163,7 @@ fun CheckoutScreen(
                                 contentDescription = null,
                                 modifier = Modifier.size(20.dp)
                             )
-
                             Spacer(Modifier.width(8.dp))
-
                             Text(
                                 "Enviar solicitud de compra",
                                 style = typography.labelLarge
@@ -185,9 +180,7 @@ fun CheckoutScreen(
                             contentDescription = null,
                             modifier = Modifier.size(18.dp)
                         )
-
                         Spacer(Modifier.width(6.dp))
-
                         Text(
                             "Regresar al carrito",
                             style = typography.labelLarge,
@@ -198,19 +191,18 @@ fun CheckoutScreen(
             }
         }
     ) { innerPadding ->
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
-                .padding(bottom = 24.dp),
+                .padding(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
             Spacer(Modifier.height(4.dp))
 
+            // --- PASO 2 DE 2 ---
             Surface(
                 color = colors.surfaceContainerLow,
                 shape = RoundedCornerShape(12.dp),
@@ -242,14 +234,12 @@ fun CheckoutScreen(
                                     color = colors.onPrimary
                                 )
                             }
-
                             Text(
                                 "Paso 2 de 2",
                                 style = typography.labelLarge,
                                 color = colors.primary
                             )
                         }
-
                         Text(
                             "Revisión y envío",
                             style = typography.labelMedium,
@@ -280,14 +270,12 @@ fun CheckoutScreen(
                                 tint = colors.primary,
                                 modifier = Modifier.size(14.dp)
                             )
-
                             Text(
                                 "Carrito armado",
                                 style = typography.labelMedium,
                                 color = colors.primary
                             )
                         }
-
                         Text(
                             "Confirmación final",
                             style = typography.labelMedium,
@@ -375,7 +363,6 @@ fun CheckoutScreen(
                         contentDescription = null,
                         tint = colors.primary
                     )
-
                     Text(
                         "Resumen de artículos",
                         style = typography.titleMedium
@@ -406,9 +393,7 @@ fun CheckoutScreen(
                     modifier = Modifier.padding(12.dp)
                 ) {
                     checkoutProducts.forEachIndexed { index, product ->
-
                         CheckoutProductRow(product)
-
                         if (index < checkoutProducts.lastIndex) {
                             HorizontalDivider(
                                 modifier = Modifier.padding(vertical = 8.dp),
@@ -431,16 +416,13 @@ fun CheckoutScreen(
                         "Desglose de bultos:",
                         "$totalUnits unidades totales"
                     )
-
                     CheckoutInfoRow(
                         "Modalidad de pago:",
                         "Al coordinar / En retiro"
                     )
-
                     HorizontalDivider(
                         color = colors.surfaceContainerHigh
                     )
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -454,14 +436,12 @@ fun CheckoutScreen(
                                 style = typography.titleMedium,
                                 fontWeight = FontWeight.Bold
                             )
-
                             Text(
                                 "Sin cobros adicionales",
                                 style = typography.labelMedium,
                                 color = colors.onSurfaceVariant
                             )
                         }
-
                         Text(
                             "${checkoutPrice(total)} CLP",
                             style = typography.titleLarge,
@@ -486,13 +466,11 @@ fun CheckoutScreen(
                         contentDescription = null,
                         tint = colors.primary
                     )
-
                     Text(
                         "Datos de coordinación",
                         style = typography.titleMedium
                     )
                 }
-
                 Text(
                     "Verificado",
                     style = typography.labelMedium,
@@ -509,21 +487,18 @@ fun CheckoutScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    val usuario = SesionManager.usuarioActual.value
-
+                    val usuario = SesionManager.usuarioActual.collectAsState().value
                     CheckoutContactRow(
                         icon = Icons.Default.Badge,
                         label = "Cliente solicitante",
                         value = "${usuario?.nombre.orEmpty()} ${usuario?.apellido.orEmpty()}".trim()
                             .ifBlank { "Invitado" }
                     )
-
                     CheckoutContactRow(
                         icon = Icons.Default.PhoneAndroid,
                         label = "Teléfono de contacto",
                         value = usuario?.telefono?.takeIf { it.isNotBlank() } ?: "No registrado"
                     )
-
                     CheckoutContactRow(
                         icon = Icons.Default.Email,
                         label = "Correo electrónico",
@@ -547,13 +522,11 @@ fun CheckoutScreen(
                         tint = colors.primary,
                         modifier = Modifier.size(28.dp)
                     )
-
                     Column {
                         Text(
                             "Atención directa Nutierra",
                             style = typography.labelLarge
                         )
-
                         Text(
                             "Tienda activa",
                             style = typography.bodyMedium,
@@ -567,9 +540,7 @@ fun CheckoutScreen(
 
     if (showConfirmation) {
         AlertDialog(
-            onDismissRequest = {
-                showConfirmation = false
-            },
+            onDismissRequest = { showConfirmation = false },
             icon = {
                 Icon(
                     Icons.Default.CheckCircle,
@@ -578,28 +549,39 @@ fun CheckoutScreen(
                     modifier = Modifier.size(48.dp)
                 )
             },
-            title = {
-                Text(
-                    "¿Confirmar tu pedido?",
-                    textAlign = TextAlign.Center
-                )
-            },
+            title = { Text("¿Confirmar tu pedido?", textAlign = TextAlign.Center) },
             text = {
-                Text(
-                    "Se registrará tu orden por " +
-                            "${checkoutPrice(total)} CLP " +
-                            "($totalUnits unidades) y se descontará del inventario.",
-                    textAlign = TextAlign.Center
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "Se registrará tu orden por ${checkoutPrice(total)} CLP " +
+                                "($totalUnits unidades) y se descontará del inventario.",
+                        textAlign = TextAlign.Center
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedButton(
+                        onClick = {
+                            showConfirmation = false
+                            viewModel.simularPagoRechazado(
+                                "Pago rechazado: Fondos insuficientes en la tarjeta. " +
+                                        "Por favor, intenta con otro medio de pago."
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = colors.error
+                        )
+                    ) {
+                        Text("Simular fondos insuficientes", fontSize = 12.sp)
+                    }
+                }
             },
             confirmButton = {
                 Button(
                     onClick = {
                         showConfirmation = false
-                        viewModel.confirmarCompra { _ ->
-                            // No se entrega el pedido; se usará si se agrega una PayScreen.
-                            onOrderSuccess()
-                        }
+                        viewModel.confirmarCompra { _ -> onOrderSuccess() }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -670,7 +652,6 @@ private fun CheckoutProductRow(
                 style = typography.labelLarge,
                 color = colors.onSurface
             )
-
             Text(
                 "Formato ${product.format}",
                 style = typography.labelMedium,
@@ -687,7 +668,6 @@ private fun CheckoutProductRow(
                 fontWeight = FontWeight.Bold,
                 color = colors.primary
             )
-
             Text(
                 "${checkoutPrice(product.price)} c/u",
                 style = typography.labelMedium,
@@ -712,7 +692,6 @@ private fun CheckoutInfoRow(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
-
         Text(
             value,
             style = MaterialTheme.typography.labelLarge
@@ -755,7 +734,6 @@ private fun CheckoutContactRow(
                 style = typography.labelMedium,
                 color = colors.onSurfaceVariant
             )
-
             Text(
                 value,
                 style = typography.bodyMedium,

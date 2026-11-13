@@ -7,9 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    // Emulador: 10.0.2.2 es el localhost de tu PC
-    // Celular físico: usa la IP de tu PC, ej. "http://192.168.100.44:8080/"
-    private const val BASE_URL = "http://192.168.100.44:8080/"
+    private const val BASE_URL = "http://10.139.110.108:8080/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY

@@ -143,14 +143,16 @@ fun AdminHomeScreen(
                                                 vertical = 3.dp
                                             ),
                                             fontSize = 10.sp,
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.Bold,
+                                            color = colors.onPrimaryFixed
                                         )
                                     }
                                 }
                                 Text(
                                     "Inicio",
                                     fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = colors.onSurface
                                 )
                             }
                         }
@@ -160,12 +162,10 @@ fun AdminHomeScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Box {
-                            CampanitaNotificaciones(
-                                noLeidas = noLeidas,
-                                onClick = onNotificationsClick
-                            )
-                        }
+                        CampanitaNotificaciones(
+                            noLeidas = noLeidas,
+                            onClick = onNotificationsClick
+                        )
 
                         Box(
                             modifier = Modifier
@@ -202,15 +202,13 @@ fun AdminHomeScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        MaterialTheme.colorScheme.tertiary
-                                    ),
+                                    .background(colors.tertiary),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Dashboard,
                                     contentDescription = "Inicio",
-                                    tint = MaterialTheme.colorScheme.surface
+                                    tint = colors.onTertiary
                                 )
                             }
                         },
@@ -227,15 +225,13 @@ fun AdminHomeScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Inventory2,
                                     contentDescription = "Productos",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -252,15 +248,13 @@ fun AdminHomeScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Warehouse,
                                     contentDescription = "Inventario",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -277,15 +271,13 @@ fun AdminHomeScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.AutoMirrored.Filled.Assignment,
                                     contentDescription = "Pedidos",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -302,15 +294,13 @@ fun AdminHomeScreen(
                                 modifier = Modifier
                                     .size(40.dp)
                                     .clip(CircleShape)
-                                    .background(
-                                        Color.Transparent
-                                    ),
+                                    .background(Color.Transparent),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     Icons.Default.Person,
                                     contentDescription = "Perfil",
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                                    tint = colors.onSurfaceVariant
                                 )
                             }
                         },
@@ -338,7 +328,7 @@ fun AdminHomeScreen(
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Surface(
-                        color = Color(0xFFE4EAE2),
+                        color = colors.surfaceContainerHigh,
                         shape = RoundedCornerShape(20.dp)
                     ) {
                         Text(
@@ -362,7 +352,8 @@ fun AdminHomeScreen(
                             Text(
                                 "¡Hola, $nombreAdmin!",
                                 fontSize = 24.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                color = colors.onSurface
                             )
                             Text(
                                 "Control operativo y balance de hoy",
@@ -383,15 +374,20 @@ fun AdminHomeScreen(
                             value = productosActivos.toString(),
                             description = "Productos activos",
                             status = if (productosActivos == productos.size) "Al día" else "${productos.size - productosActivos} sin stock",
-                            background = Color.White
+                            background = colors.surfaceContainerLowest,
+                            contentColor = colors.primary,
+                            secondaryContentColor = colors.onSurfaceVariant
                         )
+
                         AdminMetric(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.Warning,
                             value = bajoStock.size.toString(),
                             description = "Bajo stock físico",
                             status = if (criticos.isEmpty()) "Sin críticos" else "${criticos.size} críticos",
-                            background = Color(0xFFFFDCC5)
+                            background = colors.secondaryContainer,
+                            contentColor = colors.onSecondaryContainer,
+                            secondaryContentColor = colors.onSecondaryContainer.copy(alpha = 0.7f)
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -401,16 +397,20 @@ fun AdminHomeScreen(
                             value = pendientes.size.toString(),
                             description = "Por validar",
                             status = if (pendientes.isEmpty()) "Todo al día" else "Requiere acción",
-                            background = Color(0xFFFFDDB6)
+                            background = colors.tertiaryContainer,
+                            contentColor = colors.onTertiaryContainer,
+                            secondaryContentColor = colors.onTertiaryContainer.copy(alpha = 0.7f)
                         )
+
                         AdminMetric(
                             modifier = Modifier.weight(1f),
                             icon = Icons.Default.PointOfSale,
                             value = adminPrice(recaudadoHoy),
                             description = "Total recaudado hoy",
                             status = "${pedidosHoy.size} pedidos",
-                            background = colors.primary,
-                            dark = true
+                            background = colors.primaryContainer,
+                            contentColor = colors.onPrimaryContainer,
+                            secondaryContentColor = colors.onPrimaryContainer.copy(alpha = 0.7f)
                         )
                     }
                 }
@@ -462,7 +462,8 @@ fun AdminHomeScreen(
                             Text("Ver todos", color = colors.primary)
                             Icon(
                                 Icons.Default.ChevronRight,
-                                contentDescription = null
+                                contentDescription = null,
+                                tint = colors.primary
                             )
                         }
                     }
@@ -470,7 +471,7 @@ fun AdminHomeScreen(
                     if (prioridad.isEmpty()) {
                         Surface(
                             shape = RoundedCornerShape(16.dp),
-                            color = Color.White,
+                            color = colors.surfaceContainerLowest,
                             shadowElevation = 2.dp
                         ) {
                             Text(
@@ -519,7 +520,8 @@ fun AdminHomeScreen(
                         IconButton(onClick = onInventoryClick) {
                             Icon(
                                 Icons.Default.ChevronRight,
-                                contentDescription = "Ver inventario"
+                                contentDescription = "Ver inventario",
+                                tint = colors.onSurfaceVariant
                             )
                         }
                     }
@@ -527,7 +529,7 @@ fun AdminHomeScreen(
                     if (inventarioCritico.isEmpty()) {
                         Surface(
                             shape = RoundedCornerShape(14.dp),
-                            color = Color.White,
+                            color = colors.surfaceContainerLowest,
                             shadowElevation = 1.dp
                         ) {
                             Text(
@@ -562,7 +564,8 @@ private fun AdminSectionTitle(title: String) {
     Text(
         text = title,
         fontSize = 18.sp,
-        fontWeight = FontWeight.SemiBold
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface
     )
 }
 
@@ -574,10 +577,9 @@ private fun AdminMetric(
     description: String,
     status: String,
     background: Color,
-    dark: Boolean = false
+    contentColor: Color,
+    secondaryContentColor: Color
 ) {
-    val colors = MaterialTheme.colorScheme
-
     Surface(
         modifier = modifier.height(150.dp),
         shape = RoundedCornerShape(16.dp),
@@ -596,14 +598,14 @@ private fun AdminMetric(
                 Icon(
                     icon,
                     contentDescription = null,
-                    tint = if (dark) Color.White else colors.primary,
+                    tint = contentColor,
                     modifier = Modifier.size(25.dp)
                 )
                 Text(
                     status,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (dark) colors.primaryFixed else colors.primary,
+                    color = secondaryContentColor,
                     maxLines = 2
                 )
             }
@@ -613,12 +615,12 @@ private fun AdminMetric(
                     value,
                     fontSize = if (value.length > 6) 20.sp else 28.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (dark) Color.White else Color(0xFF171D18)
+                    color = contentColor
                 )
                 Text(
                     description,
                     fontSize = 12.sp,
-                    color = if (dark) colors.primaryFixed else colors.onSurfaceVariant
+                    color = secondaryContentColor
                 )
             }
         }
@@ -639,7 +641,7 @@ private fun AdminQuickAction(
             .height(116.dp)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = colors.surfaceContainerLowest,
         shadowElevation = 2.dp
     ) {
         Column(
@@ -665,7 +667,8 @@ private fun AdminQuickAction(
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
                 lineHeight = 14.sp,
-                maxLines = 2
+                maxLines = 2,
+                color = colors.onSurface
             )
         }
     }
@@ -684,7 +687,7 @@ private fun AdminOrderCard(
 
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = colors.surfaceContainerLowest,
         shadowElevation = 2.dp
     ) {
         Column(
@@ -712,7 +715,8 @@ private fun AdminOrderCard(
                 Column {
                     Text(
                         customer,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = colors.onSurface
                     )
                     Text(
                         detail,
@@ -724,7 +728,7 @@ private fun AdminOrderCard(
 
             Text(
                 "Por Validar",
-                color = Color(0xFF855500),
+                color = colors.tertiaryContainer,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.SemiBold
             )
@@ -743,7 +747,8 @@ private fun AdminOrderCard(
                     Text(
                         amount,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 17.sp
+                        fontSize = 17.sp,
+                        color = colors.onSurface
                     )
                 }
                 Row {
@@ -776,7 +781,7 @@ private fun AdminStockCard(
 
     Surface(
         shape = RoundedCornerShape(14.dp),
-        color = Color.White,
+        color = colors.surfaceContainerLowest,
         shadowElevation = 1.dp
     ) {
         Row(
@@ -789,7 +794,8 @@ private fun AdminStockCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     name,
-                    fontWeight = FontWeight.SemiBold
+                    fontWeight = FontWeight.SemiBold,
+                    color = colors.onSurface
                 )
                 Text(
                     detail,
@@ -799,7 +805,7 @@ private fun AdminStockCard(
                 Text(
                     stock,
                     fontSize = 12.sp,
-                    color = Color(0xFFBA1A1A),
+                    color = colors.error,
                     fontWeight = FontWeight.SemiBold
                 )
             }
